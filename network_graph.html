@@ -1,0 +1,550 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+                <link href="lib/tom-select/tom-select.css" rel="stylesheet">
+                <script src="lib/tom-select/tom-select.complete.min.js"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 900px;
+                 background-color: #ffffff;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+                <div id="select-menu" class="card-header">
+                    <div class="row no-gutters">
+                        <div class="col-10 pb-2">
+                            <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            onchange="selectNode([value]);"
+                            id="select-node"
+                            placeholder="Select node..."
+                            >
+                                <option selected>Select a Node by ID</option>
+                                
+                                    <option value="Alex Dietrich">Alex Dietrich</option>
+                                
+                                    <option value="NatGeo doc">NatGeo doc</option>
+                                
+                                    <option value="Allen Hynek">Allen Hynek</option>
+                                
+                                    <option value="Andre Carson">Andre Carson</option>
+                                
+                                    <option value="Barack Obama">Barack Obama</option>
+                                
+                                    <option value="Beatriz Villaroel">Beatriz Villaroel</option>
+                                
+                                    <option value="Cap. Mantell">Cap. Mantell</option>
+                                
+                                    <option value="Chad Underwood">Chad Underwood</option>
+                                
+                                    <option value="Chaz King">Chaz King</option>
+                                
+                                    <option value="Christopher Mellon">Christopher Mellon</option>
+                                
+                                    <option value="Chuck Schumer">Chuck Schumer</option>
+                                
+                                    <option value="David Fravor">David Fravor</option>
+                                
+                                    <option value="David Grusch">David Grusch</option>
+                                
+                                    <option value="David Schindele">David Schindele</option>
+                                
+                                    <option value="Derrick Pitts">Derrick Pitts</option>
+                                
+                                    <option value="Donald Keyhoe">Donald Keyhoe</option>
+                                
+                                    <option value="Edward Condon">Edward Condon</option>
+                                
+                                    <option value="Fife Symington">Fife Symington</option>
+                                
+                                    <option value="Frank Mannor">Frank Mannor</option>
+                                
+                                    <option value="Garrett Graff">Garrett Graff</option>
+                                
+                                    <option value="Garry Nolan">Garry Nolan</option>
+                                
+                                    <option value="George W. Bush">George W. Bush</option>
+                                
+                                    <option value="Harry Reid">Harry Reid</option>
+                                
+                                    <option value="Helene Cooper">Helene Cooper</option>
+                                
+                                    <option value="Jacques Valle">Jacques Valle</option>
+                                
+                                    <option value="Jeffrey Nuccetelli">Jeffrey Nuccetelli</option>
+                                
+                                    <option value="Jimmy Carter">Jimmy Carter</option>
+                                
+                                    <option value="John Brennan">John Brennan</option>
+                                
+                                    <option value="John Podesta">John Podesta</option>
+                                
+                                    <option value="Karl Nell">Karl Nell</option>
+                                
+                                    <option value="Kristen Gillibrand">Kristen Gillibrand</option>
+                                
+                                    <option value="Lawrence J. Tacker">Lawrence J. Tacker</option>
+                                
+                                    <option value="Linda Powell">Linda Powell</option>
+                                
+                                    <option value="Lt. General John A. Samford">Lt. General John A. Samford</option>
+                                
+                                    <option value="Lue Elizondo">Lue Elizondo</option>
+                                
+                                    <option value="Marco Rubio">Marco Rubio</option>
+                                
+                                    <option value="Mark Rodeghier">Mark Rodeghier</option>
+                                
+                                    <option value="Michio Kaku">Michio Kaku</option>
+                                
+                                    <option value="Ralph Blumenthal">Ralph Blumenthal</option>
+                                
+                                    <option value="Richard Heines">Richard Heines</option>
+                                
+                                    <option value="Robert Jamison">Robert Jamison</option>
+                                
+                                    <option value="Robert Powell">Robert Powell</option>
+                                
+                                    <option value="Robert Salas">Robert Salas</option>
+                                
+                                    <option value="Ryan Graves">Ryan Graves</option>
+                                
+                                    <option value="Shane Harris">Shane Harris</option>
+                                
+                                    <option value="Tim Burchett">Tim Burchett</option>
+                                
+                                    <option value="Tim Gallaudet">Tim Gallaudet</option>
+                                
+                                    <option value="Leslie Kean">Leslie Kean</option>
+                                
+                                    <option value="Steven Spielberg">Steven Spielberg</option>
+                                
+                                    <option value="The Disclosure Project">The Disclosure Project</option>
+                                
+                                    <option value="Diana Pasulka">Diana Pasulka</option>
+                                
+                                    <option value="Joe Rogan">Joe Rogan</option>
+                                
+                                    <option value="Steven Greer">Steven Greer</option>
+                                
+                                    <option value="Avi Loeb">Avi Loeb</option>
+                                
+                                    <option value="Neil D Tyson">Neil D Tyson</option>
+                                
+                                    <option value="Ross Coulthart">Ross Coulthart</option>
+                                
+                                    <option value="Richard Dolan">Richard Dolan</option>
+                                
+                                    <option value="Tim Ventura">Tim Ventura</option>
+                                
+                                    <option value="Shawn Ryan">Shawn Ryan</option>
+                                
+                                    <option value="Jacob Barber">Jacob Barber</option>
+                                
+                                    <option value="Billy Carson">Billy Carson</option>
+                                
+                                    <option value="Asymmetric Disclosure">Asymmetric Disclosure</option>
+                                
+                                    <option value="Blake Cousins">Blake Cousins</option>
+                                
+                                    <option value="James C. Goodall">James C. Goodall</option>
+                                
+                                    <option value="Michael Schratt">Michael Schratt</option>
+                                
+                                    <option value="Hal Puthof">Hal Puthof</option>
+                                
+                                    <option value="Michael Herrera">Michael Herrera</option>
+                                
+                                    <option value="Danny Sheehan">Danny Sheehan</option>
+                                
+                                    <option value="Bob Lazar">Bob Lazar</option>
+                                
+                                    <option value="James Fox">James Fox</option>
+                                
+                                    <option value="Jeremy Corbell">Jeremy Corbell</option>
+                                
+                                    <option value="Jesse Michels">Jesse Michels</option>
+                                
+                                    <option value="Robert Bigelow">Robert Bigelow</option>
+                                
+                                    <option value="Tom DeLonge">Tom DeLonge</option>
+                                
+                                    <option value="Tulsi Gabbard">Tulsi Gabbard</option>
+                                
+                                    <option value="Stanton Friedman">Stanton Friedman</option>
+                                
+                                    <option value="Matthew Brown">Matthew Brown</option>
+                                
+                                    <option value="George Knapp">George Knapp</option>
+                                
+                                    <option value="Leonard Stringfield">Leonard Stringfield</option>
+                                
+                                    <option value="Randy Anderson">Randy Anderson</option>
+                                
+                                    <option value="James Lacatski">James Lacatski</option>
+                                
+                                    <option value="Jay Stratton">Jay Stratton</option>
+                                
+                                    <option value="Peter Gumpel">Peter Gumpel</option>
+                                
+                                    <option value="Steven J. Dick">Steven J. Dick</option>
+                                
+                                    <option value="Stewart Alexander">Stewart Alexander</option>
+                                
+                                    <option value="Whitley Strieber">Whitley Strieber</option>
+                                
+                                    <option value="Eric Davis">Eric Davis</option>
+                                
+                                    <option value="Carl Jung">Carl Jung</option>
+                                
+                                    <option value="Jeffrey Kripal">Jeffrey Kripal</option>
+                                
+                                    <option value="Joshua Cutchin">Joshua Cutchin</option>
+                                
+                                    <option value="Philip K. Dick">Philip K. Dick</option>
+                                
+                                    <option value="DC Long">DC Long</option>
+                                
+                                    <option value="Alien Scientist">Alien Scientist</option>
+                                
+                                    <option value="Chris Lehto">Chris Lehto</option>
+                                
+                                    <option value="Eamonn Ansbro">Eamonn Ansbro</option>
+                                
+                                    <option value="Jack Sarfatti">Jack Sarfatti</option>
+                                
+                            </select>
+                        </div>
+                        <div class="col-2 pb-2">
+                            <button type="button" class="btn btn-primary btn-block" onclick="neighbourhoodHighlight({nodes: []});">Reset Selection</button>
+                        </div>
+                    </div>
+                </div>
+            
+            
+              <div id="filter-menu" class="card-header">
+                <div class="row no-gutters">
+                  <div class="col-3 pb-2">
+                    <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            onchange="updateFilter(value, 'item')"
+                            id="select-item"
+                        >
+                        <option value="">Select a network item</option>
+                        <option value="edge">edge</option>
+                        <option value="node">node</option>
+                    </select>
+                  </div>
+                  <div class="col-3 pb-2">
+                    <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            onchange="updateFilter(value, 'property')"
+                            id="select-property"
+                        >
+                        <option value="">Select a property...</option>
+                    </select>
+                  </div>
+                  <div class="col-3 pb-2">
+                    <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            id="select-value"
+                        >
+                        <option value="">Select value(s)...</option>
+                    </select>
+                  </div>
+                  <div class="col-1 pb-2">
+                    <button type="button" class="btn btn-primary btn-block" onclick="highlightFilter(filter);">Filter</button>
+                  </div>
+                  <div class="col-2 pb-2">
+                    <button type="button" class="btn btn-primary btn-block" onclick="clearFilter(true)">Reset Selection</button>
+                  </div>
+                </div>
+              </div>
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+                  new TomSelect("#select-node",{
+                      create: false,
+                      sortField: {
+                          field: "text",
+                          direction: "asc"
+                      }
+                  });
+              
+
+              
+                  // explicitly using onItemAdd and this function as we need to save multiple values
+                  let updateValueFilter = function() {
+                      return function () {
+                      filter['value'].push(arguments[0])
+                      }
+                  }
+
+                  let valueControl = new TomSelect("#select-value",{
+                      maxItems: null,
+                      valueField: 'id',
+                      labelField: 'title',
+                      searchField: 'title',
+                      create: false,
+                      sortField: {
+                          field: "text",
+                          direction: "asc"
+                      },
+                      onItemAdd: updateValueFilter()
+                  });
+
+                  let addValues = function() {
+                      return function () {
+                          // clear the current value options and add the selected attribute values
+                          // tom-select handles duplicates
+                          let selectedProperty = arguments[0];
+                          valueControl.clear();
+                          valueControl.clearOptions();
+                          filter['value'] = []
+                          if (filter['item'] === 'node') {
+                              for (let each in allNodes) {
+                                  valueControl.addOption({
+                                      id:allNodes[each][selectedProperty],
+                                      title:allNodes[each][selectedProperty]
+                                  })
+                              }
+                          }
+                          else if (filter['item'] === 'edge') {
+                              for (let each in allEdges) {
+                                  valueControl.addOption({
+                                      id:allEdges[each][selectedProperty],
+                                      title:allEdges[each][selectedProperty]
+                                  })
+                              }
+                          }
+                      }
+                  };
+
+                  let propControl = new TomSelect("#select-property",{
+                      valueField: 'id',
+                      labelField: 'title',
+                      searchField: 'title',
+                      create: false,
+                      sortField: {
+                          field: "text",
+                          direction: "asc"
+                      },
+                      onItemAdd: addValues()
+                  });
+
+                  let addProperties = function() {
+                      return function () {
+                          // loops through the selected network item and adds the attributes to dropdown
+                          // tom-select handles duplicates
+                          clearFilter(false)
+                          if (arguments[0] === 'edge') {
+                              for (let each in allEdges) {
+                                  if (allEdges.hasOwnProperty(each)) {
+                                      for (let eachProp in allEdges[each]) {
+                                          if (allEdges[each].hasOwnProperty(eachProp)) {
+                                              propControl.addOption({id: eachProp, title: eachProp})
+                                          }
+                                      }
+                                  }
+                              }
+                          }
+                          else if (arguments[0] === 'node') {
+                              for (let each in allNodes) {
+                                  if (allNodes.hasOwnProperty(each)) {
+                                      for (let eachProp in allNodes[each]) {
+                                          if (allNodes[each].hasOwnProperty(eachProp)
+                                              && (eachProp !== 'hidden' && eachProp !== 'savedLabel'
+                                                  && eachProp !== 'hiddenLabel')) {
+                                              propControl.addOption({id: eachProp, title: eachProp})
+
+                                          }
+                                      }
+                                  }
+                              }
+                          }
+                      }
+                  };
+
+                  let itemControl = new TomSelect("#select-item",{
+                      create: false,
+                      sortField:{
+                          field: "text",
+                          direction: "asc"
+                      },
+                      onItemAdd: addProperties()
+                  });
+
+                  function clearFilter(reset) {
+                      // utility function to clear all the selected filter options
+                      // if reset is set to true, the existing filter will be removed
+                      // else, only the dropdown options are cleared
+                      propControl.clear();
+                      propControl.clearOptions();
+                      valueControl.clear();
+                      valueControl.clearOptions();
+                      filter = {
+                          item : '',
+                          property : '',
+                          value : []
+                      }
+                      if (reset) {
+                          itemControl.clear();
+                          filterHighlight({nodes: []})
+                      }
+                  }
+
+                  function updateFilter(value, key) {
+                      // key could be 'item' or 'property' and value is as selected in dropdown
+                      filter[key] = value
+                  }
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#0080ff", "id": "Alex Dietrich", "label": "Alex Dietrich", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "NatGeo doc", "label": "NatGeo doc", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Allen Hynek", "label": "Allen Hynek", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Andre Carson", "label": "Andre Carson", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Barack Obama", "label": "Barack Obama", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Beatriz Villaroel", "label": "Beatriz Villaroel", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Cap. Mantell", "label": "Cap. Mantell", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Chad Underwood", "label": "Chad Underwood", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Chaz King", "label": "Chaz King", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Christopher Mellon", "label": "Christopher Mellon", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Chuck Schumer", "label": "Chuck Schumer", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "David Fravor", "label": "David Fravor", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "David Grusch", "label": "David Grusch", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "David Schindele", "label": "David Schindele", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Derrick Pitts", "label": "Derrick Pitts", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Donald Keyhoe", "label": "Donald Keyhoe", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Edward Condon", "label": "Edward Condon", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Fife Symington", "label": "Fife Symington", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Frank Mannor", "label": "Frank Mannor", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Garrett Graff", "label": "Garrett Graff", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Garry Nolan", "label": "Garry Nolan", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "George W. Bush", "label": "George W. Bush", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Harry Reid", "label": "Harry Reid", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Helene Cooper", "label": "Helene Cooper", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Jacques Valle", "label": "Jacques Valle", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Jeffrey Nuccetelli", "label": "Jeffrey Nuccetelli", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Jimmy Carter", "label": "Jimmy Carter", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "John Brennan", "label": "John Brennan", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "John Podesta", "label": "John Podesta", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Karl Nell", "label": "Karl Nell", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Kristen Gillibrand", "label": "Kristen Gillibrand", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Lawrence J. Tacker", "label": "Lawrence J. Tacker", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Linda Powell", "label": "Linda Powell", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Lt. General John A. Samford", "label": "Lt. General John A. Samford", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Lue Elizondo", "label": "Lue Elizondo", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Marco Rubio", "label": "Marco Rubio", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Mark Rodeghier", "label": "Mark Rodeghier", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Michio Kaku", "label": "Michio Kaku", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Ralph Blumenthal", "label": "Ralph Blumenthal", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Richard Heines", "label": "Richard Heines", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Robert Jamison", "label": "Robert Jamison", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Robert Powell", "label": "Robert Powell", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Robert Salas", "label": "Robert Salas", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Ryan Graves", "label": "Ryan Graves", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Shane Harris", "label": "Shane Harris", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Tim Burchett", "label": "Tim Burchett", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Tim Gallaudet", "label": "Tim Gallaudet", "shape": "dot", "size": 10}, {"color": "#ff5314", "id": "Leslie Kean", "label": "Leslie Kean", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Steven Spielberg", "label": "Steven Spielberg", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "The Disclosure Project", "label": "The Disclosure Project", "shape": "dot", "size": 10}, {"color": "#ff2c41", "id": "Diana Pasulka", "label": "Diana Pasulka", "shape": "dot", "size": 10}, {"color": "red", "id": "Joe Rogan", "label": "Joe Rogan", "shape": "dot", "size": 10}, {"color": "green", "id": "Steven Greer", "label": "Steven Greer", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Avi Loeb", "label": "Avi Loeb", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "Neil D Tyson", "label": "Neil D Tyson", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Ross Coulthart", "label": "Ross Coulthart", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Richard Dolan", "label": "Richard Dolan", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Tim Ventura", "label": "Tim Ventura", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Shawn Ryan", "label": "Shawn Ryan", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "Jacob Barber", "label": "Jacob Barber", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Billy Carson", "label": "Billy Carson", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "Asymmetric Disclosure", "label": "Asymmetric Disclosure", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Blake Cousins", "label": "Blake Cousins", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "James C. Goodall", "label": "James C. Goodall", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Michael Schratt", "label": "Michael Schratt", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Hal Puthof", "label": "Hal Puthof", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Michael Herrera", "label": "Michael Herrera", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Danny Sheehan", "label": "Danny Sheehan", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "Bob Lazar", "label": "Bob Lazar", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "James Fox", "label": "James Fox", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Jeremy Corbell", "label": "Jeremy Corbell", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Jesse Michels", "label": "Jesse Michels", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "Robert Bigelow", "label": "Robert Bigelow", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "Tom DeLonge", "label": "Tom DeLonge", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "Tulsi Gabbard", "label": "Tulsi Gabbard", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "Stanton Friedman", "label": "Stanton Friedman", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "Matthew Brown", "label": "Matthew Brown", "shape": "dot", "size": 10}, {"color": "#0080ff", "id": "George Knapp", "label": "George Knapp", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "Leonard Stringfield", "label": "Leonard Stringfield", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "Randy Anderson", "label": "Randy Anderson", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "James Lacatski", "label": "James Lacatski", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "Jay Stratton", "label": "Jay Stratton", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "Peter Gumpel", "label": "Peter Gumpel", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "Steven J. Dick", "label": "Steven J. Dick", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "Stewart Alexander", "label": "Stewart Alexander", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "Whitley Strieber", "label": "Whitley Strieber", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "Eric Davis", "label": "Eric Davis", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "Carl Jung", "label": "Carl Jung", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "Jeffrey Kripal", "label": "Jeffrey Kripal", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "Joshua Cutchin", "label": "Joshua Cutchin", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "Philip K. Dick", "label": "Philip K. Dick", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "DC Long", "label": "DC Long", "shape": "dot", "size": 10}, {"color": "green", "id": "Alien Scientist", "label": "Alien Scientist", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "Chris Lehto", "label": "Chris Lehto", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "Eamonn Ansbro", "label": "Eamonn Ansbro", "shape": "dot", "size": 10}, {"color": "#97c2fc", "id": "Jack Sarfatti", "label": "Jack Sarfatti", "shape": "dot", "size": 10}]);
+                  edges = new vis.DataSet([{"date": "2024-10-05", "edge_color": "#0080ff", "edge_type": "nan", "from": "Alex Dietrich", "relationship": "appeared_on", "relationship_list": ["appeared_on"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "NatGeo doc", "url": "https://www.youtube.com/watch?v=1WwGGuQljl4", "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "mentioned_in", "relationship_list": ["mentioned_in"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Allen Hynek", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "appeared_on", "relationship_list": ["appeared_on"], "source type": "documentary", "source_color": "#0080ff", "target type": "politician", "target_color": "yellow", "to": "Andre Carson", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "mentioned_in", "relationship_list": ["mentioned_in"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Barack Obama", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "appeared_on", "relationship_list": ["appeared_on", "appeared_on"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Beatriz Villaroel", "url": NaN, "url title": NaN, "width": 2.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "appeared_on", "relationship_list": ["appeared_on"], "source type": "military", "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Cap. Mantell", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2024-10-05", "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "mentioned_in", "relationship_list": ["mentioned_in"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Chad Underwood", "url": "https://www.youtube.com/watch?v=1WwGGuQljl4", "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "appeared_on", "relationship_list": ["appeared_on"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Chaz King", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2024-10-05", "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "appeared_on", "relationship_list": ["appeared_on"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Christopher Mellon", "url": "https://www.youtube.com/watch?v=1WwGGuQljl4", "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "appeared_on", "relationship_list": ["appeared_on"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Chuck Schumer", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2024-10-05", "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "appeared_on", "relationship_list": ["appeared_on"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "David Fravor", "url": "https://www.youtube.com/watch?v=1WwGGuQljl4", "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "appeared_on", "relationship_list": ["appeared_on"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "David Grusch", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2024-10-05", "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "mentioned_in", "relationship_list": ["mentioned_in"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "David Schindele", "url": "https://www.youtube.com/watch?v=1WwGGuQljl4", "url title": NaN, "width": 1.0}, {"date": "2024-10-05", "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "mentioned_in", "relationship_list": ["mentioned_in"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Derrick Pitts", "url": "https://www.youtube.com/watch?v=1WwGGuQljl4", "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "mentioned_in", "relationship_list": ["mentioned_in"], "source type": "gov", "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Donald Keyhoe", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "appeared_on", "relationship_list": ["appeared_on"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Edward Condon", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2024-10-05", "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "mentioned_in", "relationship_list": ["mentioned_in"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Fife Symington", "url": "https://www.youtube.com/watch?v=1WwGGuQljl4", "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "mentioned_in", "relationship_list": ["mentioned_in"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Frank Mannor", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "appeared_on", "relationship_list": ["appeared_on"], "source type": "UFO author", "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Garrett Graff", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2024-10-05", "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "appeared_on", "relationship_list": ["appeared_on"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Garry Nolan", "url": "https://www.youtube.com/watch?v=1WwGGuQljl4", "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "mentioned_in", "relationship_list": ["mentioned_in"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "George W. Bush", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "appeared_on", "relationship_list": ["appeared_on"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Harry Reid", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2024-10-05", "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "mentioned_in", "relationship_list": ["mentioned_in"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Helene Cooper", "url": "https://www.youtube.com/watch?v=1WwGGuQljl4", "url title": NaN, "width": 1.0}, {"date": "2024-10-05", "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "appeared_on", "relationship_list": ["appeared_on"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Jacques Valle", "url": "https://www.youtube.com/watch?v=1WwGGuQljl4", "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "appeared_on", "relationship_list": ["appeared_on"], "source type": "military", "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Jeffrey Nuccetelli", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2024-10-05", "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "mentioned_in", "relationship_list": ["mentioned_in"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Jimmy Carter", "url": "https://www.youtube.com/watch?v=1WwGGuQljl4", "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "mentioned", "relationship_list": ["mentioned"], "source type": "gov", "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "John Brennan", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2024-10-05", "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "mentioned_in", "relationship_list": ["mentioned_in"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "John Podesta", "url": "https://www.youtube.com/watch?v=1WwGGuQljl4", "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "mentioned_in", "relationship_list": ["mentioned_in"], "source type": "military", "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Karl Nell", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2024-10-05", "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "appeared_on", "relationship_list": ["appeared_on"], "source type": NaN, "source_color": "#0080ff", "target type": "politician", "target_color": "yellow", "to": "Kristen Gillibrand", "url": "https://www.youtube.com/watch?v=1WwGGuQljl4", "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "mentioned_in", "relationship_list": ["mentioned_in"], "source type": NaN, "source_color": "#0080ff", "target type": "military", "target_color": "yellow", "to": "Lawrence J. Tacker", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "appeared_on", "relationship_list": ["appeared_on"], "source type": "ufo writer", "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Linda Powell", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "mentioned_in", "relationship_list": ["mentioned_in"], "source type": NaN, "source_color": "#0080ff", "target type": "military", "target_color": "yellow", "to": "Lt. General John A. Samford", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "appeared_on", "relationship_list": ["appeared_on"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Lue Elizondo", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2024-10-05", "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "appeared_on", "relationship_list": ["appeared_on"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Marco Rubio", "url": "https://www.youtube.com/watch?v=1WwGGuQljl4", "url title": "Nat Geo - UFO\u0027s investigating the unkown", "width": 1.0}, {"date": "2024-10-05", "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "mentioned_in", "relationship_list": ["mentioned_in"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Mark Rodeghier", "url": "https://www.youtube.com/watch?v=1WwGGuQljl4", "url title": NaN, "width": 1.0}, {"date": "2024-10-05", "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "appeared_on", "relationship_list": ["appeared_on"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Michio Kaku", "url": "https://www.youtube.com/watch?v=1WwGGuQljl4", "url title": NaN, "width": 1.0}, {"date": "2024-10-05", "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "appeared_on", "relationship_list": ["appeared_on"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Ralph Blumenthal", "url": "https://www.youtube.com/watch?v=1WwGGuQljl4", "url title": NaN, "width": 1.0}, {"date": "2024-10-05", "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "mentioned_in", "relationship_list": ["mentioned_in"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Richard Heines", "url": "https://www.youtube.com/watch?v=1WwGGuQljl4", "url title": NaN, "width": 1.0}, {"date": "2024-10-05", "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "mentioned_in", "relationship_list": ["mentioned_in"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Robert Jamison", "url": "https://www.youtube.com/watch?v=1WwGGuQljl4", "url title": NaN, "width": 1.0}, {"date": "2024-10-05", "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "appeared_on", "relationship_list": ["appeared_on", "appeared_on"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Robert Powell", "url": "https://www.youtube.com/watch?v=1WwGGuQljl4", "url title": NaN, "width": 2.0}, {"date": "2024-10-05", "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "appeared_on", "relationship_list": ["appeared_on"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Robert Salas", "url": "https://www.youtube.com/watch?v=1WwGGuQljl4", "url title": NaN, "width": 1.0}, {"date": "2024-10-05", "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "appeared_on", "relationship_list": ["appeared_on"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Ryan Graves", "url": "https://www.youtube.com/watch?v=1WwGGuQljl4", "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "appeared_on", "relationship_list": ["appeared_on"], "source type": "WaPo writer", "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Shane Harris", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "appeared_on", "relationship_list": ["appeared_on"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Tim Burchett", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "NatGeo doc", "relationship": "appeared_on", "relationship_list": ["appeared_on"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "yellow", "to": "Tim Gallaudet", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2024-10-05", "edge_color": "#ff5314", "edge_type": "nan", "from": "NatGeo doc", "relationship": "appeared_on", "relationship_list": ["appeared_on"], "source type": NaN, "source_color": "#ff5314", "target type": NaN, "target_color": "yellow", "to": "Leslie Kean", "url": "https://www.youtube.com/watch?v=1WwGGuQljl4", "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Allen Hynek", "relationship": "collaborated_with", "relationship_list": ["collaborated_with"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Jacques Valle", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Allen Hynek", "relationship": "collaborated_with", "relationship_list": ["collaborated_with"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Mark Rodeghier", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Allen Hynek", "relationship": "collaborated_with", "relationship_list": ["collaborated_with"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Steven Spielberg", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Allen Hynek", "relationship": "mentioned_in", "relationship_list": ["mentioned_in"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "The Disclosure Project", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#ff5314", "edge_type": "nan", "from": "Allen Hynek", "relationship": "mentioned", "relationship_list": ["mentioned"], "source type": NaN, "source_color": "#ff5314", "target type": NaN, "target_color": "#0080ff", "to": "Leslie Kean", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#0080ff", "edge_type": "nan", "from": "Jacques Valle", "relationship": "collaborated_with", "relationship_list": ["collaborated_with"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Garry Nolan", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Jacques Valle", "relationship": "collaborated_with", "relationship_list": ["collaborated_with"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Steven Spielberg", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#ff2c41", "edge_type": "nan", "from": "Jacques Valle", "relationship": "collaborated_with", "relationship_list": ["collaborated_with"], "source type": NaN, "source_color": "#ff2c41", "target type": NaN, "target_color": "#0080ff", "to": "Diana Pasulka", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "red", "edge_type": "nan", "from": "Jacques Valle", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "red", "target type": NaN, "target_color": "#0080ff", "to": "Joe Rogan", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "green", "edge_type": "nan", "from": "The Disclosure Project", "relationship": "mentioned_in", "relationship_list": ["mentioned_in"], "source type": NaN, "source_color": "green", "target type": NaN, "target_color": "#0080ff", "to": "Steven Greer", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2022-03-12", "edge_color": "#0080ff", "edge_type": "media", "from": "Avi Loeb", "relationship": "criticized", "relationship_list": ["criticized"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Neil D Tyson", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#0080ff", "edge_type": "nan", "from": "Avi Loeb", "relationship": "criticized", "relationship_list": ["criticized"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Ross Coulthart", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#0080ff", "edge_type": "media", "from": "Avi Loeb", "relationship": "mentioned", "relationship_list": ["mentioned"], "source type": "writer", "source_color": "#0080ff", "target type": "physicist", "target_color": "#0080ff", "to": "Richard Dolan", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#0080ff", "edge_type": "nan", "from": "Avi Loeb", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Tim Ventura", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Avi Loeb", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Shawn Ryan", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2024-10-05", "edge_color": "#ff5314", "edge_type": "nan", "from": "Avi Loeb", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#ff5314", "target type": NaN, "target_color": "#0080ff", "to": "Leslie Kean", "url": "https://www.youtube.com/watch?v=1WwGGuQljl4", "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "green", "edge_type": "nan", "from": "Avi Loeb", "relationship": "criticized", "relationship_list": ["criticized"], "source type": NaN, "source_color": "green", "target type": NaN, "target_color": "#0080ff", "to": "Steven Greer", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "red", "edge_type": "nan", "from": "Avi Loeb", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "red", "target type": NaN, "target_color": "#0080ff", "to": "Joe Rogan", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#0080ff", "edge_type": "nan", "from": "Neil D Tyson", "relationship": "criticized", "relationship_list": ["criticized"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Garry Nolan", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "red", "edge_type": "nan", "from": "Neil D Tyson", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "red", "target type": NaN, "target_color": "#0080ff", "to": "Joe Rogan", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#0080ff", "edge_type": "media", "from": "Ross Coulthart", "relationship": "mentioned", "relationship_list": ["mentioned"], "source type": "writer", "source_color": "#0080ff", "target type": "journalist", "target_color": "#0080ff", "to": "Richard Dolan", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#0080ff", "edge_type": "nan", "from": "Ross Coulthart", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "David Grusch", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#0080ff", "edge_type": "nan", "from": "Ross Coulthart", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Garry Nolan", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#0080ff", "edge_type": "media", "from": "Ross Coulthart", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": "journalist", "source_color": "#0080ff", "target type": "military", "target_color": "#0080ff", "to": "Jacob Barber", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#0080ff", "edge_type": "nan", "from": "Ross Coulthart", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Lue Elizondo", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Ross Coulthart", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Tim Gallaudet", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Billy Carson", "relationship": "appeared_on", "relationship_list": ["appeared_on"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Asymmetric Disclosure", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Billy Carson", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Shawn Ryan", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Asymmetric Disclosure", "relationship": "appeared_on", "relationship_list": ["appeared_on"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Blake Cousins", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Asymmetric Disclosure", "relationship": "appeared_on", "relationship_list": ["appeared_on"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "James C. Goodall", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Asymmetric Disclosure", "relationship": "appeared_on", "relationship_list": ["appeared_on"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Michael Schratt", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Asymmetric Disclosure", "relationship": "appeared_on", "relationship_list": ["appeared_on"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Tim Burchett", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "green", "edge_type": "nan", "from": "Asymmetric Disclosure", "relationship": "appeared_on", "relationship_list": ["appeared_on"], "source type": NaN, "source_color": "green", "target type": NaN, "target_color": "#0080ff", "to": "Steven Greer", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Blake Cousins", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": "third pase of the moon, spokesperson", "source_color": "#0080ff", "target type": "aerospace historian", "target_color": "#0080ff", "to": "Michael Schratt", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Blake Cousins", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "green", "to": "Steven Greer", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Steven Greer", "relationship": "collaborated_with", "relationship_list": ["collaborated_with"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "green", "to": "Hal Puthof", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Steven Greer", "relationship": "collaborated_with", "relationship_list": ["collaborated_with"], "source type": "military", "source_color": "#0080ff", "target type": NaN, "target_color": "green", "to": "Michael Herrera", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Steven Greer", "relationship": "collaborated_with", "relationship_list": ["collaborated_with"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "green", "to": "Robert Salas", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#0080ff", "edge_type": "nan", "from": "Steven Greer", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "green", "to": "Shawn Ryan", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "green", "edge_type": "nan", "from": "Steven Greer", "relationship": "collaborated_with", "relationship_list": ["collaborated_with"], "source type": NaN, "source_color": "green", "target type": NaN, "target_color": "#0080ff", "to": "Danny Sheehan", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "green", "edge_type": "activism", "from": "Steven Greer", "relationship": "collaborated_with", "relationship_list": ["collaborated_with"], "source type": "activist", "source_color": "green", "target type": "military", "target_color": "#0080ff", "to": "Jacob Barber", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "green", "edge_type": "nan", "from": "Steven Greer", "relationship": "criticized", "relationship_list": ["criticized"], "source type": NaN, "source_color": "green", "target type": NaN, "target_color": "#0080ff", "to": "Lue Elizondo", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "green", "edge_type": "nan", "from": "Steven Greer", "relationship": "criticized", "relationship_list": ["criticized"], "source type": NaN, "source_color": "green", "target type": NaN, "target_color": "#0080ff", "to": "Tim Burchett", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "red", "edge_type": "nan", "from": "Steven Greer", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "red", "target type": NaN, "target_color": "green", "to": "Joe Rogan", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Chaz King", "relationship": "collaborated_with", "relationship_list": ["collaborated_with"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Jeffrey Nuccetelli", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2023-11-02", "edge_color": "#0080ff", "edge_type": "media", "from": "Christopher Mellon", "relationship": "appeared_on", "relationship_list": ["appeared_on", "interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "red", "to": "Joe Rogan", "url": NaN, "url title": NaN, "width": 3.0}, {"date": "2024-05-10", "edge_color": "#0080ff", "edge_type": "media", "from": "Christopher Mellon", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Garry Nolan", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#0080ff", "edge_type": "nan", "from": "Christopher Mellon", "relationship": "collaborated_with", "relationship_list": ["collaborated_with"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Lue Elizondo", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2020-06-05", "edge_color": "#0080ff", "edge_type": "gov", "from": "Christopher Mellon", "relationship": "briefed", "relationship_list": ["briefed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Marco Rubio", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2019-06-01", "edge_color": "red", "edge_type": "media", "from": "Joe Rogan", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "red", "target type": NaN, "target_color": "#0080ff", "to": "Bob Lazar", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "red", "edge_type": "nan", "from": "Joe Rogan", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "red", "target type": NaN, "target_color": "#0080ff", "to": "David Fravor", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "red", "edge_type": "nan", "from": "Joe Rogan", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "red", "target type": NaN, "target_color": "#ff2c41", "to": "Diana Pasulka", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "red", "edge_type": "nan", "from": "Joe Rogan", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "red", "target type": NaN, "target_color": "#0080ff", "to": "Garry Nolan", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "red", "edge_type": "nan", "from": "Joe Rogan", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "red", "target type": NaN, "target_color": "#0080ff", "to": "Hal Puthof", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "red", "edge_type": "nan", "from": "Joe Rogan", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "red", "target type": NaN, "target_color": "#0080ff", "to": "James Fox", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "red", "edge_type": "nan", "from": "Joe Rogan", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "red", "target type": NaN, "target_color": "#0080ff", "to": "Jeremy Corbell", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "red", "edge_type": "nan", "from": "Joe Rogan", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "red", "target type": NaN, "target_color": "#0080ff", "to": "Jesse Michels", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "red", "edge_type": "nan", "from": "Joe Rogan", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "red", "target type": NaN, "target_color": "#0080ff", "to": "Lue Elizondo", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "red", "edge_type": "nan", "from": "Joe Rogan", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "red", "target type": NaN, "target_color": "#0080ff", "to": "Robert Bigelow", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "red", "edge_type": "media", "from": "Joe Rogan", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "red", "target type": NaN, "target_color": "#0080ff", "to": "Ryan Graves", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "red", "edge_type": "nan", "from": "Joe Rogan", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "red", "target type": NaN, "target_color": "#0080ff", "to": "Tom DeLonge", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2022-10-25", "edge_color": "red", "edge_type": "media", "from": "Joe Rogan", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "red", "target type": NaN, "target_color": "#0080ff", "to": "Tulsi Gabbard", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "red", "edge_type": "nan", "from": "Joe Rogan", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "red", "target type": NaN, "target_color": "#0080ff", "to": "Shawn Ryan", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#ff5314", "edge_type": "nan", "from": "Chuck Schumer", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#ff5314", "target type": NaN, "target_color": "#0080ff", "to": "Leslie Kean", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Danny Sheehan", "relationship": "collaborated_with", "relationship_list": ["collaborated_with"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Stanton Friedman", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Stanton Friedman", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Jeremy Corbell", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "David Fravor", "relationship": "collaborated_with", "relationship_list": ["collaborated_with"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "David Grusch", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "David Fravor", "relationship": "collaborated_with", "relationship_list": ["collaborated_with"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Tim Gallaudet", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "David Fravor", "relationship": "collaborated_with", "relationship_list": ["collaborated_with", "interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Ryan Graves", "url": NaN, "url title": NaN, "width": 2.0}, {"date": "2025-11-08", "edge_color": "#0080ff", "edge_type": "nan", "from": "David Grusch", "relationship": "collaborated_with", "relationship_list": ["collaborated_with"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Garry Nolan", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#0080ff", "edge_type": "nan", "from": "David Grusch", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Jesse Michels", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "David Grusch", "relationship": "collaborated_with", "relationship_list": ["collaborated_with"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Matthew Brown", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "David Grusch", "relationship": "collaborated_with", "relationship_list": ["collaborated_with"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Ryan Graves", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#ff5314", "edge_type": "nan", "from": "David Grusch", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#ff5314", "target type": NaN, "target_color": "#0080ff", "to": "Leslie Kean", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Tim Gallaudet", "relationship": "collaborated_with", "relationship_list": ["collaborated_with"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Ryan Graves", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Tim Gallaudet", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Shawn Ryan", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#ff2c41", "edge_type": "nan", "from": "Tim Gallaudet", "relationship": "collaborated_with", "relationship_list": ["collaborated_with"], "source type": NaN, "source_color": "#ff2c41", "target type": NaN, "target_color": "#0080ff", "to": "Diana Pasulka", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#0080ff", "edge_type": "nan", "from": "Garry Nolan", "relationship": "criticized", "relationship_list": ["criticized"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Bob Lazar", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Garry Nolan", "relationship": "mentioned", "relationship_list": ["mentioned"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Richard Dolan", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Garry Nolan", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Tim Ventura", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#ff2c41", "edge_type": "nan", "from": "Garry Nolan", "relationship": "collaborated_with", "relationship_list": ["collaborated_with"], "source type": NaN, "source_color": "#ff2c41", "target type": NaN, "target_color": "#0080ff", "to": "Diana Pasulka", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#0080ff", "edge_type": "nan", "from": "Bob Lazar", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "George Knapp", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#0080ff", "edge_type": "nan", "from": "Bob Lazar", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Jeremy Corbell", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#0080ff", "edge_type": "media", "from": "Richard Dolan", "relationship": "mentioned", "relationship_list": ["mentioned"], "source type": "writer", "source_color": "#0080ff", "target type": "military", "target_color": "#0080ff", "to": "Jacob Barber", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#0080ff", "edge_type": "literature", "from": "Richard Dolan", "relationship": "wrote_about", "relationship_list": ["wrote_about"], "source type": "writer", "source_color": "#0080ff", "target type": "researcher", "target_color": "#0080ff", "to": "Leonard Stringfield", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#0080ff", "edge_type": "media", "from": "Richard Dolan", "relationship": "mentioned", "relationship_list": ["mentioned"], "source type": "writer", "source_color": "#0080ff", "target type": "military", "target_color": "#0080ff", "to": "Randy Anderson", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "George Knapp", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "James Lacatski", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2020-07-20", "edge_color": "#0080ff", "edge_type": "collab", "from": "George Knapp", "relationship": "collaborated_with", "relationship_list": ["collaborated_with"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Jeremy Corbell", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#0080ff", "edge_type": "nan", "from": "George Knapp", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Matthew Brown", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#0080ff", "edge_type": "nan", "from": "James Lacatski", "relationship": "collaborated_with", "relationship_list": ["collaborated_with"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Hal Puthof", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "James Lacatski", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Jeremy Corbell", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Jeremy Corbell", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Jay Stratton", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#0080ff", "edge_type": "nan", "from": "Jeremy Corbell", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Matthew Brown", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2021-09-15", "edge_color": "#0080ff", "edge_type": "collab", "from": "Jeremy Corbell", "relationship": "collaborated_with", "relationship_list": ["collaborated_with"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Lue Elizondo", "url": NaN, "url title": NaN, "width": 2.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Matthew Brown", "relationship": "mentioned", "relationship_list": ["mentioned"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Lue Elizondo", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#0080ff", "edge_type": "nan", "from": "Hal Puthof", "relationship": "collaborated_with", "relationship_list": ["collaborated_with"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Robert Bigelow", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#ff2c41", "edge_type": "nan", "from": "Hal Puthof", "relationship": "collaborated_with", "relationship_list": ["collaborated_with"], "source type": NaN, "source_color": "#ff2c41", "target type": NaN, "target_color": "#0080ff", "to": "Diana Pasulka", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Harry Reid", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Helene Cooper", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Harry Reid", "relationship": "collaborated_with", "relationship_list": ["collaborated_with"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Kristen Gillibrand", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Helene Cooper", "relationship": "collaborated_with", "relationship_list": ["collaborated_with", "collaborated_with"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#ff5314", "to": "Leslie Kean", "url": NaN, "url title": NaN, "width": 2.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Helene Cooper", "relationship": "collaborated_with", "relationship_list": ["collaborated_with"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Ralph Blumenthal", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#ff2c41", "edge_type": "nan", "from": "Leslie Kean", "relationship": "collaborated_with", "relationship_list": ["collaborated_with"], "source type": NaN, "source_color": "#ff2c41", "target type": NaN, "target_color": "#ff5314", "to": "Diana Pasulka", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#ff5314", "edge_type": "nan", "from": "Leslie Kean", "relationship": "mentioned", "relationship_list": ["mentioned"], "source type": NaN, "source_color": "#ff5314", "target type": NaN, "target_color": "#0080ff", "to": "James Fox", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#ff5314", "edge_type": "nan", "from": "Leslie Kean", "relationship": "mentioned", "relationship_list": ["mentioned"], "source type": NaN, "source_color": "#ff5314", "target type": NaN, "target_color": "#0080ff", "to": "Peter Gumpel", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#ff5314", "edge_type": "nan", "from": "Leslie Kean", "relationship": "collaborated_with", "relationship_list": ["collaborated_with"], "source type": NaN, "source_color": "#ff5314", "target type": NaN, "target_color": "#0080ff", "to": "Ralph Blumenthal", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#ff5314", "edge_type": "nan", "from": "Leslie Kean", "relationship": "mentioned", "relationship_list": ["mentioned"], "source type": NaN, "source_color": "#ff5314", "target type": NaN, "target_color": "#0080ff", "to": "Steven J. Dick", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#ff5314", "edge_type": "nan", "from": "Leslie Kean", "relationship": "mentioned", "relationship_list": ["mentioned"], "source type": NaN, "source_color": "#ff5314", "target type": NaN, "target_color": "#0080ff", "to": "Stewart Alexander", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#ff5314", "edge_type": "nan", "from": "Leslie Kean", "relationship": "mentioned", "relationship_list": ["mentioned"], "source type": NaN, "source_color": "#ff5314", "target type": NaN, "target_color": "#0080ff", "to": "Whitley Strieber", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Jeffrey Nuccetelli", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Ryan Graves", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#0080ff", "edge_type": "nan", "from": "Jesse Michels", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#ff2c41", "to": "Diana Pasulka", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Jesse Michels", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Eric Davis", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#0080ff", "edge_type": "nan", "from": "Jesse Michels", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Karl Nell", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#0080ff", "edge_type": "nan", "from": "Jesse Michels", "relationship": "interviewed", "relationship_list": ["interviewed", "interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Randy Anderson", "url": NaN, "url title": NaN, "width": 2.0}, {"date": "2025-11-08", "edge_color": "#0080ff", "edge_type": "nan", "from": "Diana Pasulka", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#ff2c41", "to": "Shawn Ryan", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#ff2c41", "edge_type": "nan", "from": "Diana Pasulka", "relationship": "mentioned", "relationship_list": ["mentioned"], "source type": NaN, "source_color": "#ff2c41", "target type": NaN, "target_color": "#0080ff", "to": "Carl Jung", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#ff2c41", "edge_type": "nan", "from": "Diana Pasulka", "relationship": "mentioned", "relationship_list": ["mentioned"], "source type": NaN, "source_color": "#ff2c41", "target type": NaN, "target_color": "#0080ff", "to": "Jeffrey Kripal", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#ff2c41", "edge_type": "nan", "from": "Diana Pasulka", "relationship": "mentioned", "relationship_list": ["mentioned"], "source type": NaN, "source_color": "#ff2c41", "target type": NaN, "target_color": "#0080ff", "to": "Joshua Cutchin", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#ff2c41", "edge_type": "nan", "from": "Diana Pasulka", "relationship": "collaborated_with", "relationship_list": ["collaborated_with"], "source type": NaN, "source_color": "#ff2c41", "target type": NaN, "target_color": "#0080ff", "to": "Karl Nell", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#ff2c41", "edge_type": "nan", "from": "Diana Pasulka", "relationship": "mentioned", "relationship_list": ["mentioned"], "source type": NaN, "source_color": "#ff2c41", "target type": NaN, "target_color": "#0080ff", "to": "Philip K. Dick", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#0080ff", "edge_type": "media", "from": "Michael Herrera", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": "podcaster", "source_color": "#0080ff", "target type": "military", "target_color": "#0080ff", "to": "Shawn Ryan", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Robert Salas", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Tim Ventura", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Ryan Graves", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Tim Ventura", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Shawn Ryan", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Tim Burchett", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Shawn Ryan", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "DC Long", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#0080ff", "edge_type": "nan", "from": "Tim Ventura", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "green", "to": "Alien Scientist", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Tim Ventura", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Chris Lehto", "url": NaN, "url title": NaN, "width": 1.0}, {"date": NaN, "edge_color": "#0080ff", "edge_type": "nan", "from": "Tim Ventura", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Eamonn Ansbro", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "#0080ff", "edge_type": "nan", "from": "Tim Ventura", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "#0080ff", "target type": NaN, "target_color": "#0080ff", "to": "Jack Sarfatti", "url": NaN, "url title": NaN, "width": 1.0}, {"date": "2025-11-08", "edge_color": "green", "edge_type": "nan", "from": "Alien Scientist", "relationship": "interviewed", "relationship_list": ["interviewed"], "source type": NaN, "source_color": "green", "target type": NaN, "target_color": "#0080ff", "to": "Jack Sarfatti", "url": NaN, "url title": NaN, "width": 1.0}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+                    network.on("click", neighbourhoodHighlight);
+                  
+
+                  
+                    network.on("selectNode", neighbourhoodHighlight);
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>
