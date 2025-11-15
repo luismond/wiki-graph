@@ -12,6 +12,12 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from pyvis.network import Network
 
+def load_attributes():
+    df = pd.read_csv('node_attributes.csv')
+    df = df.fillna('')
+    df.index = df['node']
+    ad = df.to_dict(orient='index')
+    return ad
 
 def load_edges(path: Path) -> pd.DataFrame:
     df = pd.read_csv(path, dtype=str)
@@ -22,6 +28,9 @@ def load_edges(path: Path) -> pd.DataFrame:
     for col in ["source", "target", "relationship", "edge_type"]:
         if col in df.columns:
             df[col] = df[col].astype(str).str.strip()
+
+    ad = load_attributes()
+    df['source_color'] = df['source'].apply(lambda x: ad.get(x)['color'])
     return df
 
 def build_graph(df: pd.DataFrame) -> nx.Graph:
@@ -33,7 +42,7 @@ def build_graph(df: pd.DataFrame) -> nx.Graph:
         s, t = row["source"], row["target"]
         
         G.add_node(s, color=row.get("source_color", "gray"))
-        G.add_node(t, color=row.get("target_color", "gray"))
+        #G.add_node(t, color=row.get("target_color", "gray"))
 
         attrs = {k: row[k] for k in df.columns if k not in ("source", "target")}
         # Combine parallel edges by accumulating weight
