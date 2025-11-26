@@ -32,12 +32,9 @@ def load_colors():
     return df.to_dict(orient='index')
 
 
-def load_edges(path: Path) -> pd.DataFrame:
+def load_data(path: Path) -> pd.DataFrame:
     df = pd.read_csv(path)
-    #df['source_rank'] = df['source_rank'].astype(int, errors='ignore')
-    #df['target_rank'] = df['target_rank'].astype(int, errors='ignore')
-    df = df.fillna('')
-
+    #df = df.fillna('')
     cd = load_colors()
     def get_color(x):
         try:
@@ -45,34 +42,27 @@ def load_edges(path: Path) -> pd.DataFrame:
         except:
             return 'gray'
     df['source_color'] = df['source_role'].apply(get_color)
+    df['target_color'] = df['target_role'].apply(get_color)
+    df = df[df['source_role'].apply(lambda s: s not in {'documentary', 'podcast'})]
+    df = df[df['target_role'].apply(lambda s: s not in {'documentary', 'podcast'})]
     return df
 
 
-def build_graph(df: pd.DataFrame, year_max: int = 2010) -> nx.Graph:
-    # Choose directed or undirected: toggle here if you need directionality.
-    # For now, we treat the relationships as undirected.
-    #df = df.fillna(2015)
-    #df['year'] = df['year'].apply(lambda s: int(s))
-    #df = df[df['year'] <= year_max]
+def build_graph(df: pd.DataFrame) -> nx.Graph:
+    # Initialize graph
     G = nx.Graph()
-    # Add edges with attributes
+    # Add nodes
     for _, row in df.iterrows():
         s, t = row["source"], row["target"]
-        
         G.add_node(s, color=row.get("source_color", "gray"))
-        G.add_node(s, source_role=row.get("source_role", "tbd"))
-        G.add_node(s, source_rank=row.get("source_rank", 3))
-
-        attrs = {k: row[k] for k in df.columns if k not in ("source", "target")}
-        # Combine parallel edges by accumulating weight
-        # if G.has_edge(s, t):
-        #     G[s][t]["weight"] = G[s][t].get("weight", 1) + float(attrs.get("weight", 1))
-        #     # Optionally track all relationship labels
-        #     rels = G[s][t].get("relationship_list", [])
-        #     rels.append(attrs.get("relationship", ""))
-        #     G[s][t]["relationship_list"] = rels
-        # else:
+        G.add_node(s, role=row.get("source_role", "tbd"))
+        G.add_node(t, color=row.get("target_color", "gray"))
+        G.add_node(t, role=row.get("target_role", "tbd"))
+        # Add edges with attributes
+        attrs = {k: row[k] for k in df.columns if k in ("edge_rank", "year")}
         G.add_edge(s, t, **attrs, relationship_list=[attrs.get("relationship", "")])
+        if G.has_edge(s, t):
+            G[s][t]["title"] = row.get("relationship", "")
     return G
 
 
@@ -81,8 +71,8 @@ def draw_graph_pyvis(G: nx.Graph) -> None:
         height="1400px",
         width="100%",
         notebook=False,
-        neighborhood_highlight=True,
-        select_menu=False,
+        neighborhood_highlight=False,
+        select_menu=True,
         filter_menu=True
         )
     net.from_nx(G)
@@ -91,8 +81,8 @@ def draw_graph_pyvis(G: nx.Graph) -> None:
 
 def main():
     csv_path = Path(sys.argv[1])
-    edges = load_edges(csv_path)
-    G = build_graph(edges)
+    data = load_data(csv_path)
+    G = build_graph(data)
     draw_graph_pyvis(G)
 
 
