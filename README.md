@@ -1,7 +1,8 @@
 # uap-ent
 hobby project to follow the uap topic
 
-![entity-graph](https://github.com/user-attachments/assets/68774c9a-2c38-47d4-be95-c680da6b1492)
+<img width="1059" height="866" alt="network_graph" src="https://github.com/user-attachments/assets/99728dad-8f79-4fed-a133-1bb37e84d2ae" />
+
 
 ## Goals
 
