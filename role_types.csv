@@ -1,0 +1,15 @@
+role,type
+astronaut,person
+author,person
+civ org,org
+documentary,media
+entrepreneur,person
+government,org
+lawyer,person
+military,person
+place,place
+podcast,media
+producer,person
+scientist,person
+tbd,tbd
+whistleblower,person

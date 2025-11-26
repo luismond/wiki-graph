@@ -6,3 +6,4 @@ share
 pyvenv.cfg
 dev.ipynb
 *png
+data/*

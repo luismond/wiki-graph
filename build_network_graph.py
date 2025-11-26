@@ -1,9 +1,22 @@
 # build_network_graph.py
 #
 # Usage:
-#   python build_network_graph.py relationship_graph_template.csv
+#   python build_network_graph.py relationships.csv
 # Produces:
-#   - network_graph.png           (basic visualization)
+#   - network_graph.html
+
+# Spreadsheet structure and formulas:
+#
+# relationship_graph.sheets
+#   relationships
+#       source, source_role, relationship, target, target_role, year, url_title, url, source_rank
+#   node_attrs
+#       node, role, rank
+#   role_colors
+#       role, color
+#
+# =vlookup(A2, node_attrs!A:B, 2, FALSE)
+
 
 import sys
 import pandas as pd
@@ -12,58 +25,64 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from pyvis.network import Network
 
-def load_attributes():
-    df = pd.read_csv('node_attributes.csv')
-    df = df.fillna('')
-    df.index = df['node']
-    ad = df.to_dict(orient='index')
-    return ad
+
+def load_colors():
+    df = pd.read_csv('role_colors.csv')
+    df.index = df['role']
+    return df.to_dict(orient='index')
+
 
 def load_edges(path: Path) -> pd.DataFrame:
-    df = pd.read_csv(path, dtype=str)
-    # Coerce numeric columns if present
-    if "weight" in df.columns:
-        df["weight"] = pd.to_numeric(df["weight"], errors="coerce").fillna(1).astype(float)
-    # Normalize whitespace
-    for col in ["source", "target", "relationship", "edge_type"]:
-        if col in df.columns:
-            df[col] = df[col].astype(str).str.strip()
+    df = pd.read_csv(path)
+    #df['source_rank'] = df['source_rank'].astype(int, errors='ignore')
+    #df['target_rank'] = df['target_rank'].astype(int, errors='ignore')
+    df = df.fillna('')
 
-    ad = load_attributes()
-    df['source_color'] = df['source'].apply(lambda x: ad.get(x)['color'])
+    cd = load_colors()
+    def get_color(x):
+        try:
+            return cd.get(x)['color']
+        except:
+            return 'gray'
+    df['source_color'] = df['source_role'].apply(get_color)
     return df
 
-def build_graph(df: pd.DataFrame) -> nx.Graph:
+
+def build_graph(df: pd.DataFrame, year_max: int = 2010) -> nx.Graph:
     # Choose directed or undirected: toggle here if you need directionality.
     # For now, we treat the relationships as undirected.
+    #df = df.fillna(2015)
+    #df['year'] = df['year'].apply(lambda s: int(s))
+    #df = df[df['year'] <= year_max]
     G = nx.Graph()
     # Add edges with attributes
     for _, row in df.iterrows():
         s, t = row["source"], row["target"]
         
         G.add_node(s, color=row.get("source_color", "gray"))
-        #G.add_node(t, color=row.get("target_color", "gray"))
+        G.add_node(s, source_role=row.get("source_role", "tbd"))
+        G.add_node(s, source_rank=row.get("source_rank", 3))
 
         attrs = {k: row[k] for k in df.columns if k not in ("source", "target")}
         # Combine parallel edges by accumulating weight
-        if G.has_edge(s, t):
-            G[s][t]["weight"] = G[s][t].get("weight", 1) + float(attrs.get("weight", 1))
-            # Optionally track all relationship labels
-            rels = G[s][t].get("relationship_list", [])
-            rels.append(attrs.get("relationship", ""))
-            G[s][t]["relationship_list"] = rels
-        else:
-            G.add_edge(s, t, **attrs, relationship_list=[attrs.get("relationship", "")])
+        # if G.has_edge(s, t):
+        #     G[s][t]["weight"] = G[s][t].get("weight", 1) + float(attrs.get("weight", 1))
+        #     # Optionally track all relationship labels
+        #     rels = G[s][t].get("relationship_list", [])
+        #     rels.append(attrs.get("relationship", ""))
+        #     G[s][t]["relationship_list"] = rels
+        # else:
+        G.add_edge(s, t, **attrs, relationship_list=[attrs.get("relationship", "")])
     return G
 
 
 def draw_graph_pyvis(G: nx.Graph) -> None:
     net = Network(
-        height="1200px",
+        height="1400px",
         width="100%",
         notebook=False,
         neighborhood_highlight=True,
-        select_menu=True,
+        select_menu=False,
         filter_menu=True
         )
     net.from_nx(G)
