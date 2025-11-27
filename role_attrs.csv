@@ -1,0 +1,17 @@
+role,color,type
+astronaut,#bfe1f6,person
+author,#ffcfc9,person
+book,#3d3d3d,media
+civ org,#c6dbe1,org
+document,#3d3d3d,media
+documentary,#0a53a8,media
+entrepreneur,#d4edbc,person
+government,#ffc8aa,org
+lawyer,#753800,person
+military,#11734b,person
+place,#5a3286,place
+podcast,#3d3d3d,media
+producer,#e6e6e6,person
+scientist,#ffe5a0,person
+tbd,#ffffff,tbd
+whistleblower,#e6cff2,person
