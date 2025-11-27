@@ -51,18 +51,25 @@ def load_data(path: Path) -> pd.DataFrame:
 def build_graph(df: pd.DataFrame) -> nx.Graph:
     # Initialize graph
     G = nx.Graph()
-    # Add nodes
+    
+    # Add nodes with attributes
     for _, row in df.iterrows():
-        s, t = row["source"], row["target"]
-        G.add_node(s, color=row.get("source_color", "gray"))
-        G.add_node(s, role=row.get("source_role", "tbd"))
-        G.add_node(t, color=row.get("target_color", "gray"))
-        G.add_node(t, role=row.get("target_role", "tbd"))
+        source, target = row["source"], row["target"]
+        source_color = row.get("source_color", "gray")
+        source_role = row.get("source_role", "tbd")
+        G.add_node(source, color=source_color)
+        G.add_node(source, role=source_role, title=source_role)
+
+        target_color = row.get("target_color", "gray")
+        target_role = row.get("target_role", "tbd")
+        G.add_node(target, color=target_color)
+        G.add_node(target, role=target_role, title=target_role)
+
         # Add edges with attributes
         attrs = {k: row[k] for k in df.columns if k in ("edge_rank", "year")}
-        G.add_edge(s, t, **attrs, relationship_list=[attrs.get("relationship", "")])
-        if G.has_edge(s, t):
-            G[s][t]["title"] = row.get("relationship", "")
+        G.add_edge(source, target, **attrs, relationship_list=[attrs.get("relationship", "")])
+        if G.has_edge(source, target):
+            G[source][target]["title"] = row.get("relationship", "")
     return G
 
 
@@ -76,7 +83,8 @@ def draw_graph_pyvis(G: nx.Graph) -> None:
         filter_menu=True
         )
     net.from_nx(G)
-    net.show("network_graph.html", notebook=False)
+    #net.show("network_graph.html", notebook=False)
+    net.write_html("network_graph.html", open_browser=False)
 
 
 def main():
