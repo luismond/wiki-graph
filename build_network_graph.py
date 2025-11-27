@@ -26,25 +26,25 @@ from pathlib import Path
 from pyvis.network import Network
 
 
-def load_colors():
-    df = pd.read_csv('role_colors.csv')
-    df.index = df['role']
-    return df.to_dict(orient='index')
+def load_role_attrs():
+    df = pd.read_csv('role_attrs.csv')
+    return df
 
 
 def load_data(path: Path) -> pd.DataFrame:
     df = pd.read_csv(path)
-    #df = df.fillna('')
-    cd = load_colors()
-    def get_color(x):
-        try:
-            return cd.get(x)['color']
-        except:
-            return 'gray'
-    df['source_color'] = df['source_role'].apply(get_color)
-    df['target_color'] = df['target_role'].apply(get_color)
-    df = df[df['source_role'].apply(lambda s: s not in {'documentary', 'podcast'})]
-    df = df[df['target_role'].apply(lambda s: s not in {'documentary', 'podcast'})]
+    df = df.fillna('')
+    rd = load_role_attrs()
+    role_colors = dict(zip(rd['role'], rd['color']))
+    role_types = dict(zip(rd['role'], rd['type']))
+  
+    df['source_color'] = df['source_role'].apply(role_colors.get)
+    df['target_color'] = df['target_role'].apply(role_colors.get)
+    df['source_type'] = df['source_role'].apply(role_types.get)
+    df['target_type'] = df['target_role'].apply(role_types.get)
+
+    df = df[df['source_type'].apply(lambda s: s not in {'media'})]
+    df = df[df['target_type'].apply(lambda s: s not in {'media'})]
     return df
 
 
@@ -83,8 +83,30 @@ def draw_graph_pyvis(G: nx.Graph) -> None:
         filter_menu=True
         )
     net.from_nx(G)
-    #net.show("network_graph.html", notebook=False)
     net.write_html("network_graph.html", open_browser=False)
+
+
+def compute_metrics(G: nx.Graph) -> pd.DataFrame:
+    deg = dict(G.degree())
+    btwn = nx.betweenness_centrality(G) if len(G) > 2 else {n: 0 for n in G.nodes()}
+    # Community detection (greedy modularity)
+    try:
+        from networkx.algorithms.community import greedy_modularity_communities
+        comms = list(greedy_modularity_communities(G)) if len(G) > 0 else []
+        node_to_comm = {}
+        for cid, comm in enumerate(comms):
+            for n in comm:
+                node_to_comm[n] = cid
+    except Exception:
+        node_to_comm = {n: -1 for n in G.nodes()}
+
+    df = pd.DataFrame({
+        "node": list(G.nodes()),
+        "degree": [deg[n] for n in G.nodes()],
+        "betweenness": [btwn[n] for n in G.nodes()],
+        "community": [node_to_comm.get(n, -1) for n in G.nodes()]
+    }).sort_values(["community", "degree"], ascending=[True, False])
+    return df
 
 
 def main():
@@ -98,49 +120,3 @@ if __name__ == "__main__":
     main()
 
 
-
-# def compute_metrics(G: nx.Graph) -> pd.DataFrame:
-#     deg = dict(G.degree())
-#     btwn = nx.betweenness_centrality(G) if len(G) > 2 else {n: 0 for n in G.nodes()}
-#     # Community detection (greedy modularity)
-#     try:
-#         from networkx.algorithms.community import greedy_modularity_communities
-#         comms = list(greedy_modularity_communities(G)) if len(G) > 0 else []
-#         node_to_comm = {}
-#         for cid, comm in enumerate(comms):
-#             for n in comm:
-#                 node_to_comm[n] = cid
-#     except Exception:
-#         node_to_comm = {n: -1 for n in G.nodes()}
-
-#     df = pd.DataFrame({
-#         "node": list(G.nodes()),
-#         "degree": [deg[n] for n in G.nodes()],
-#         "betweenness": [btwn[n] for n in G.nodes()],
-#         "community": [node_to_comm.get(n, -1) for n in G.nodes()]
-#     }).sort_values(["community", "degree"], ascending=[True, False])
-#     return df
-
-
-# def draw_graph(G: nx.Graph) -> None:
-#     # Simple force-directed layout
-#     pos = nx.spring_layout(G, seed=42, k=None, scale=2, method='energy')
-
-#     # Node sizes scaled by degree
-#     degrees = dict(G.degree())
-#     sizes = [350 + 150 * degrees[n] for n in G.nodes()]
-#     colors = [G.nodes[n].get("color", "gray") for n in G.nodes()]
-
-#     nx.draw_networkx_nodes(G, pos, node_size=sizes, node_color=colors, alpha=0.9)
-
-#     edge_colors = [G[u][v].get("edge_color", "gray") for u, v in G.edges()]
-#     edge_widths = [G[u][v].get("weight", 1) for u, v in G.edges()]
-#     nx.draw_networkx_edges(G, pos, edge_color=edge_colors, width=edge_widths, alpha=0.5)
-
-#     nx.draw_networkx_labels(G, pos, font_size=12)
-
-#     plt.figure(figsize=(26, 14), facecolor='#D3D3D3')
-#     plt.axis("off")
-#     plt.tight_layout()
-#     plt.savefig("network_graph.png", dpi=450)
-#     plt.close()
