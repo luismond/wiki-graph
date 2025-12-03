@@ -42,10 +42,10 @@ HEADERS = {'Authorization': f'Bearer {ACCESS_TOKEN}', 'User-Agent': f'{APP_NAME}
 
 
 # DATA
-with open('data/exclude.txt', 'r') as fr:
+with open('data/txt/exclude.txt', 'r') as fr:
     exclude = [n.strip() for n in fr.readlines()]
 
-with open('seed_names.txt', 'r') as fr:
+with open('data/txt/seed_names.txt', 'r') as fr:
     seed_names = [n.strip() for n in fr.readlines()]
 
 
@@ -88,27 +88,32 @@ def get_short_desc(soup):
 
 
 def mine_rels():
+    """
+    Extract relationships between seed Wikipedia page names and other pages they link to in their main content
+    paragraphs. Produces a CSV file ('wiki_rels.csv') containing (source, target, relationship, target frequency).
+    """
     rows = []
-    for page_name in seed_names:
+    for page_name in seed_names[:5]:
         sleep(.25)
-        print('\n')
         print(page_name)
         html_url = f'https://api.wikimedia.org/core/v1/wikipedia/en/page/{page_name}/html'
         soup = get_html_soup(html_url)
-        new_page_names = sorted(get_paragraphs_text(soup))
+        new_page_names = sorted(get_paraphraphs_refs(soup))
         for new_page_name in new_page_names:
             rows.append((page_name, new_page_name))
 
     df = pd.DataFrame(rows)
     df.columns = ['source', 'target']
     df['relationship'] = 'co_occurs_with'
+    df['source_role'] = 'source_role'
+    df['target_role'] = 'target_role'
     df['target_freq'] = df['target'].map(df['target'].value_counts())
     df = df.drop_duplicates(subset=['source', 'target', 'relationship'])
-    df.to_csv('wiki_rels.csv', index=False, sep=',')
+    df.to_csv('data/csv/wiki_rels.csv', index=False, sep=',')
 
 
 def get_wiki_names_descriptions():
-    df = pd.read_csv('wiki_rels.csv')
+    df = pd.read_csv('data/csv/wiki_rels.csv')
     df = df[df['target_freq'] > 2]
     tfd = dict(zip(df['target'], df['target_freq']))
     names = set(df['source'].tolist() + df['target'].tolist()) 
@@ -126,12 +131,18 @@ def get_wiki_names_descriptions():
     df = pd.DataFrame(rows)
     df.columns = ['name', 'shortdesc']
     df['page_freq'] = df['name'].apply(lambda s: tfd.get(s, 0))
-    df.to_csv('wiki_names_descs.csv', index=False, sep=',')
+    df.to_csv('data/csv/wiki_names_descs.csv', index=False, sep=',')
 
 
 def main():
+    """
+    - start with 50 bookmarked wiki pages
+    - mine 150 more related pages
+    - build a dataset with page name, shortdesc, paragraphs, embeddings
+    - run queries
+    """
     mine_rels()
-    get_wiki_names_descriptions()
+    #get_wiki_names_descriptions()
 
 if __name__ == "__main__":
     main()
