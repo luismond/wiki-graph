@@ -24,27 +24,30 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from pathlib import Path
 from pyvis.network import Network
-
+import random
 
 def load_role_attrs():
-    df = pd.read_csv('role_attrs.csv')
+    df = pd.read_csv('data/csv/role_attrs.csv')
     return df
 
 
 def load_data(path: Path) -> pd.DataFrame:
     df = pd.read_csv(path)
     df = df.fillna('')
+
+    df = df[df['target_freq'] > 1]
+
     rd = load_role_attrs()
     role_colors = dict(zip(rd['role'], rd['color']))
     role_types = dict(zip(rd['role'], rd['type']))
   
-    df['source_color'] = df['source_role'].apply(role_colors.get)
-    df['target_color'] = df['target_role'].apply(role_colors.get)
-    df['source_type'] = df['source_role'].apply(role_types.get)
-    df['target_type'] = df['target_role'].apply(role_types.get)
+    #df['source_color'] = df['source_role'].apply(role_colors.get)
+    #df['target_color'] = df['target_role'].apply(role_colors.get)
+    #df['source_type'] = df['source_role'].apply(role_types.get)
+    #df['target_type'] = df['target_role'].apply(role_types.get)
 
-    df = df[df['source_type'].apply(lambda s: s not in {'media'})]
-    df = df[df['target_type'].apply(lambda s: s not in {'media'})]
+    #df = df[df['source_type'].apply(lambda s: s not in {'media'})]
+    #df = df[df['target_type'].apply(lambda s: s not in {'media'})]
     return df
 
 
@@ -55,15 +58,35 @@ def build_graph(df: pd.DataFrame) -> nx.Graph:
     # Add nodes with attributes
     for _, row in df.iterrows():
         source, target = row["source"], row["target"]
-        source_color = row.get("source_color", "gray")
-        source_role = row.get("source_role", "tbd")
-        G.add_node(source, color=source_color)
-        G.add_node(source, role=source_role, title=source_role)
 
-        target_color = row.get("target_color", "gray")
-        target_role = row.get("target_role", "tbd")
-        G.add_node(target, color=target_color)
-        G.add_node(target, role=target_role, title=target_role)
+        color_options = [
+            "#FFB6C1",  # LightPink
+            "#E6E6FA",  # Lavender
+            "#FFFACD",  # LemonChiffon
+            "#D1EEEE",  # LightCyan2
+            "#E0FFFF",  # LightCyan
+            "#F0FFF0",  # Honeydew
+            "#F5FFFA",  # MintCream
+            "#F0FFFF",  # Azure
+            "#F5F5DC",  # Beige
+            "#FAFAD2",  # LightGoldenrodYellow
+            "#FFE4E1",  # MistyRose
+            "#FDF5E6",  # OldLace
+            "#FFF0F5",  # LavenderBlush
+            "#FFF5EE",  # Seashell
+            "#F8F8FF"   # GhostWhite
+        ]
+
+        source_color = random.choice(color_options)
+        #source_color = row.get("source_color", "gray")
+        #source_role = row.get("source_role", "tbd")
+        G.add_node(source, color=source_color)
+        #G.add_node(source, role=source_role, title=source_role)
+
+        #target_color = row.get("target_color", "gray")
+        #target_role = row.get("target_role", "tbd")
+        #G.add_node(target, color=target_color)
+        #G.add_node(target, role=target_role, title=target_role)
 
         # Add edges with attributes
         attrs = {k: row[k] for k in df.columns if k in ("edge_rank", "year")}
@@ -83,6 +106,7 @@ def draw_graph_pyvis(G: nx.Graph) -> None:
         filter_menu=True
         )
     net.from_nx(G)
+    net.repulsion()
     net.write_html("network_graph.html", open_browser=False)
 
 

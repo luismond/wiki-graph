@@ -6,6 +6,5 @@ share
 pyvenv.cfg
 dev.ipynb
 *png
-data/*
 .env
-.html
+*html
