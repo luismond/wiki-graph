@@ -14,8 +14,8 @@ from random import shuffle
 with open('data/txt/exclude.txt', 'r') as fr:
     exclude = [n.strip() for n in fr.readlines()]
 
-#with open('data/txt/seed_names.txt', 'r') as fr:
-#    seed_names = [n.strip() for n in fr.readlines()]
+with open('data/txt/seed_names.txt', 'r') as fr:
+    seed_names = [n.strip() for n in fr.readlines()]
 
 
 dirs = ['data/soups', 'data/embs', 'data/paragraphs']
@@ -155,7 +155,6 @@ def get_wiki_names_descriptions():
 
     rows = []
     for name in names:
-        sleep(.125)
         print(name)
         html_url = f'https://api.wikimedia.org/core/v1/wikipedia/en/page/{name}/html'
         soup = get_html_soup(html_url)
@@ -179,7 +178,6 @@ def get_wiki_names_paragraphs():
     #'UFO', 'Flying_saucer', 'Extraterrestrial_hypothesis']
     rows = []
     for name in list(names):
-        sleep(.125)
         print(name)
         html_url = f'https://api.wikimedia.org/core/v1/wikipedia/en/page/{name}/html'
         soup = get_html_soup(html_url)
