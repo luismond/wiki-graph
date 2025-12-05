@@ -31,11 +31,13 @@ def load_role_attrs():
     return df
 
 
-def load_data(path: Path) -> pd.DataFrame:
+def load_data(path: Path, max_edges) -> pd.DataFrame:
     df = pd.read_csv(path)
     df = df.fillna('')
-
-    df = df[df['target_freq'] > 1]
+    print(len(df))
+    df = df.sort_values(by='target_freq', ascending=False)
+    df = df[:max_edges]#df[df['target_freq'] > 15]
+    print(len(df))
 
     rd = load_role_attrs()
     role_colors = dict(zip(rd['role'], rd['color']))
@@ -51,33 +53,39 @@ def load_data(path: Path) -> pd.DataFrame:
     return df
 
 
-def build_graph(df: pd.DataFrame) -> nx.Graph:
+def build_graph(csv_path, max_edges) -> nx.Graph:
     # Initialize graph
+    df = load_data(csv_path, max_edges)
     G = nx.Graph()
     
     # Add nodes with attributes
     for _, row in df.iterrows():
         source, target = row["source"], row["target"]
 
-        color_options = [
-            "#FFB6C1",  # LightPink
-            "#E6E6FA",  # Lavender
-            "#FFFACD",  # LemonChiffon
-            "#D1EEEE",  # LightCyan2
-            "#E0FFFF",  # LightCyan
-            "#F0FFF0",  # Honeydew
-            "#F5FFFA",  # MintCream
-            "#F0FFFF",  # Azure
-            "#F5F5DC",  # Beige
-            "#FAFAD2",  # LightGoldenrodYellow
-            "#FFE4E1",  # MistyRose
-            "#FDF5E6",  # OldLace
-            "#FFF0F5",  # LavenderBlush
-            "#FFF5EE",  # Seashell
-            "#F8F8FF"   # GhostWhite
+        random_html_colors = [
+            "#FF5733",  # Orange Red
+            "#33FF57",  # Spring Green
+            "#3357FF",  # Royal Blue
+            "#FF33A1",  # Pink
+            "#A133FF",  # Purple
+            "#33FFF6",  # Aqua
+            "#FFD433",  # Gold
+            "#FF8333",  # Pumpkin
+            "#33FF83",  # Mint
+            "#A1FF33",  # Lime
+            "#FF3333",  # Red
+            "#33A1FF",  # Sky Blue
+            "#D433FF",  # Orchid
+            "#FF33D4",  # Hot Pink
+            "#33FFD4",  # Turquoise
+            "#87FF33",  # Light Green
+            "#FF3387",  # Rose
+            "#33D4FF",  # Baby Blue
+            "#F6FF33",  # Light Yellow
+            "#3387FF",  # Dodger Blue
         ]
 
-        source_color = random.choice(color_options)
+        source_color = random.choice(random_html_colors)
         #source_color = row.get("source_color", "gray")
         #source_role = row.get("source_role", "tbd")
         G.add_node(source, color=source_color)
@@ -96,18 +104,20 @@ def build_graph(df: pd.DataFrame) -> nx.Graph:
     return G
 
 
-def draw_graph_pyvis(G: nx.Graph) -> None:
+def draw_graph_pyvis(max_edges=200) -> None:
     net = Network(
         height="1400px",
         width="100%",
         notebook=False,
-        neighborhood_highlight=False,
-        select_menu=True,
-        filter_menu=True
+        neighborhood_highlight=True,
+        select_menu=False,
+        filter_menu=False
         )
+    G = build_graph('data/csv/wiki_rels.csv', max_edges)
     net.from_nx(G)
-    net.repulsion()
+    net.repulsion(node_distance=200)
     net.write_html("network_graph.html", open_browser=False)
+    print('graph completed')
 
 
 def compute_metrics(G: nx.Graph) -> pd.DataFrame:
@@ -134,10 +144,9 @@ def compute_metrics(G: nx.Graph) -> pd.DataFrame:
 
 
 def main():
-    csv_path = Path(sys.argv[1])
-    data = load_data(csv_path)
-    G = build_graph(data)
-    draw_graph_pyvis(G)
+    #csv_path = Path(sys.argv[1])
+    #G = build_graph(csv_path, max_edges=900)
+    draw_graph_pyvis()
 
 
 if __name__ == "__main__":
