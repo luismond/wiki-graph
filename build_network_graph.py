@@ -104,7 +104,7 @@ def build_graph(csv_path, max_edges) -> nx.Graph:
     return G
 
 
-def draw_graph_pyvis(max_edges=200) -> None:
+def draw_graph_pyvis(max_edges=700) -> None:
     net = Network(
         height="1400px",
         width="100%",

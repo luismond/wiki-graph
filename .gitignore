@@ -8,6 +8,6 @@ dev.ipynb
 *png
 .env
 *html
-data/
+data/*
 *__pycache__
 include/
