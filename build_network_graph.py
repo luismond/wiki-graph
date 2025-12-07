@@ -34,6 +34,7 @@ def load_role_attrs():
 def load_data(path: Path, max_edges) -> pd.DataFrame:
     df = pd.read_csv(path)
     df = df.fillna('')
+    df['relationship'] = 'co_occurs_with'
     print(len(df))
     df = df.sort_values(by='target_freq', ascending=False)
     df = df[:max_edges]#df[df['target_freq'] > 15]

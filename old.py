@@ -20,8 +20,6 @@
 # #         return new_page_name
 
 
-# def get_html_url(href):
-#     return f'https://api.wikimedia.org/core/v1/wikipedia/{LANG}/page/{href}/html'
 
 
 # def get_short_desc(soup):
@@ -93,3 +91,8 @@
 #     df = df[df['paragraph'].apply(lambda s: len(str(s).strip().split()) > 2)]
 #     df.to_csv('data/csv/wiki_related_names_paragraphs.csv', index=False, sep='\t')
 #     print('paragraphs completed!')
+
+
+# def get_seed_names():
+#     with open('data/txt/seed_names.txt', 'r') as fr:
+#         return [n.strip() for n in fr.readlines()]
