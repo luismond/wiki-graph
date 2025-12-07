@@ -16,34 +16,36 @@ from sbert_utils import get_page_similarity_score
 from dotenv import load_dotenv
 load_dotenv()
 
-# from build_network_graph import draw_graph_pyvis
-
-
 # FILES
 page_names_file = 'data/txt/page_names.txt'
 page_names_unrelated_file = 'data/txt/page_names_unrelated.txt'
 page_relationships_file = 'data/csv/page_relationships.csv'
 
 
-# DATA
-def get_page_names():
+def get_page_names(shuffled=True) -> list:
+    "Get the list of page names, randomized by default."
     with open(page_names_file, 'r') as fr:
         page_names = [p.strip() for p in fr.read().split('\n')]
-        #_, page_names = zip(*sorted(enumerate(page_names), reverse=True))
-    shuffle(page_names)  
+    if shuffled:
+        shuffle(page_names)  
     return page_names
 
 
-def get_page_names_unrelated():
+def get_page_names_unrelated() -> list:
+    "Get the list of unrelated page names."
     with open(page_names_unrelated_file, 'r') as fr:
         page_names_unrelated = [p.strip() for p in fr.read().split('\n')]
     return page_names_unrelated
 
-def append_new_page_name(page_name):
+
+def append_new_page_name(page_name: str):
+    "When a page has been validated and saved, add the page name to this file."
     with open(page_names_file, 'a') as fa:
         fa.write(page_name+'\n')
 
-def append_new_unrelated_page_name(page_name):
+
+def append_new_unrelated_page_name(page_name: str):
+    "When a page is considered irrelevant, add the page name to this file."
     with open(page_names_unrelated_file, 'a') as fa:
         fa.write(page_name+'\n')
 
@@ -58,7 +60,7 @@ def crawl(sim_threshold: float=0.5):
     6. If the similarity is below, the page name is saved in the "unrelated pages" file.
     """
     page_names = get_page_names()
-    page_names_unrelated = get_page_names_unrelated()[:2]
+    page_names_unrelated = get_page_names_unrelated()
     visited = set()
     for page_name in page_names:
         new_page_names = get_internal_page_names(get_soup(page_name))
@@ -71,7 +73,7 @@ def crawl(sim_threshold: float=0.5):
                 paragraphs = get_paragraphs_text(soup)
                 sim_score = get_page_similarity_score(paragraphs)
                 if sim_score >= sim_threshold:
-                    save_soup(soup, new_page_name)
+                    save_soup(new_page_name, soup)
                     save_paragraphs(new_page_name, paragraphs)
                     append_new_page_name(new_page_name)
                 else:
@@ -102,5 +104,5 @@ def get_page_relationships():
     df.columns = ['source', 'target']
     df['target_freq'] = df['target'].map(df['target'].value_counts())
     df.to_csv(page_relationships_file, index=False, sep=',')
-    print(f'{len(df)} relationships found and saved')
+    print(f'{len(df)} relationships found and saved to {page_relationships_file}')
 
