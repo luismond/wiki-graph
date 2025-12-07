@@ -35,6 +35,7 @@ def download_soup(page_name: str) -> bs4.BeautifulSoup:
 
 def get_soup(page_name: str) -> bs4.BeautifulSoup:
     "Given a page name, either load the saved soup or download the soup."
+    print(page_name)
     if f'{page_name}.pkl' in os.listdir('data/soups'):
         with open(f"data/soups/{page_name}.pkl", "rb") as f:
             soup = pickle.load(f)

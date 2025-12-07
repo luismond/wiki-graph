@@ -1,9 +1,7 @@
-from sentence_transformers import SentenceTransformer
-import pandas as pd
-import torch
-import os
 
-model = SentenceTransformer('distiluse-base-multilingual-cased-v1')
+from sbert_utils import get_df_sim
+import pandas as pd
+import os
 
 
 def get_corpus()-> pd.DataFrame:
@@ -27,34 +25,10 @@ def get_query_from_corpus(df_corpus: pd.DataFrame, query_names: list) -> str:
     return query
 
 
-def get_df_sim(df_corpus: pd.DataFrame, query: str) -> pd.DataFrame:
-    "pass a query and retrieve similar rows from the corpus"
-    
-    # embeddings
-    corpus_embeddings = model.encode_document(df_corpus['paragraph'].tolist())
-    query_embedding = model.encode_query(query)
-
-    # similarity scores
-    similarity_scores = model.similarity(query_embedding, corpus_embeddings)[0]
-    top_k = min(500, len(df_corpus))
-    scores, indices = torch.topk(similarity_scores, k=top_k)
-
-    # similar rows
-    rows = []
-    for score, idx in zip(scores, indices):
-        row = df_corpus.iloc[int(idx)]
-        row['score'] = float(score)
-        rows.append(row)
-
-    # dataframe
-    df_sim = pd.DataFrame(rows)
-    df_sim = df_sim.sort_values(by='score', ascending=False)
-    df_sim.to_csv('data/csv/wiki_names_paragraphs_query_results.csv', index=False, sep='\t')
-    return df_sim
-
-
-def get_top_pages(df_sim, top_n=20):
+def get_top_pages(df_sim, top_n=20) -> pd.DataFrame:
     "group similarity df by page name and calculate paragraph similarity average"
+    # todo: deduplicate page names
+    df_sim = df_sim.drop(columns=['paragraph'])
     df_sim_grouped = df_sim.groupby('page_name', as_index=False)['score'].mean()
     df_sim_grouped = df_sim.sort_values(by='score', ascending=False)
     return df_sim_grouped[:top_n]
