@@ -6,6 +6,7 @@ import torch
 import numpy as np
 from datetime import datetime
 from sentence_transformers import SentenceTransformer
+from data_utils import csv_path, embs_path
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -17,7 +18,8 @@ def get_seed_embedding():
     Take the paragraphs of an initial set of pages and encode them.
     This seed embedding will be used to determine the similarity of the new crawled pages.
     """
-    df = pd.read_csv('data/csv/wiki_query_names_paragraphs.csv', sep='\t')
+    fn = os.path.join(csv_path, 'wiki_query_names_paragraphs.csv')
+    df = pd.read_csv(fn, sep='\t')
     seed_embedding = MODEL.encode_document(' '.join(df['paragraphs'].tolist()))
     print('loaded seed embedding')
     return seed_embedding
@@ -28,14 +30,16 @@ seed_corpus_embedding = get_seed_embedding()
 
 def save_page_embedding(page_name, paragraphs_embedding):
     """Save the paragraphs embedding with the page name."""
-    np.save(f"data/embs/{page_name}.npy", paragraphs_embedding)
+    fn = os.path.join(embs_path, f'{page_name}.npy')
+    np.save(fn, paragraphs_embedding)
 
 
 def save_corpus_embedding(corpus_embeddings):
     """Save the corpus embedding with the datetime."""
     current_datetime_str = datetime.now().strftime('%Y-%m-%d')
     corpus_fn = f"corpus_{current_datetime_str}.npy"
-    np.save(f"data/embs/{corpus_fn}", corpus_embeddings)
+    corpus_fp = os.path.join(embs_path, corpus_fn)
+    np.save(corpus_fp, corpus_embeddings)
     print(f'saved {corpus_fn} with shape {corpus_embeddings.shape}')
 
 
@@ -52,8 +56,9 @@ def load_corpus_embedding(corpus):
     """
     current_datetime_str = datetime.now().strftime('%Y-%m-%d')
     corpus_fn = f"corpus_{current_datetime_str}.npy"
-    if corpus_fn in os.listdir('data/embs'):
-        corpus_embeddings = np.load(f'data/embs/{corpus_fn}')
+    corpus_fp = os.path.join(embs_path, corpus_fn)
+    if corpus_fn in os.listdir(embs_path):
+        corpus_embeddings = np.load(corpus_fp)
         print(f'loaded {corpus_fn} with shape {corpus_embeddings.shape}')
     else:
         print(f'encoding {corpus_fn}...')
@@ -96,5 +101,6 @@ def get_df_sim(df_corpus: pd.DataFrame, query: str, top_k_min: int=500) -> pd.Da
     # dataframe
     df_sim = pd.DataFrame(rows)
     df_sim = df_sim.sort_values(by='score', ascending=False)
-    df_sim.to_csv('data/csv/wiki_names_paragraphs_query_results.tsv', index=False, sep='\t')
+    fn = os.path.join(csv_path, 'wiki_names_paragraphs_query_results.csv')
+    df_sim.to_csv(fn, index=False, sep='\t')
     return df_sim

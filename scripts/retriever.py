@@ -4,14 +4,15 @@ import os
 from datetime import datetime
 from sbert_utils import get_df_sim
 import pandas as pd
+from data_utils import csv_path, txt_path, paragraphs_path
 
 
 def build_corpus()-> pd.DataFrame:
     "Read the page files from the paragraphs directory to build a paragraph corpus."
     print(f'building corpus...')
     rows = []
-    for fn in os.listdir('data/paragraphs'):
-        with open(f'data/paragraphs/{fn}', 'r') as f:
+    for fn in os.listdir(paragraphs_path):
+        with open(os.path.join(paragraphs_path, fn), 'r') as f:
             c = f.read().split('\n')
         lines = [l for l in c if len(l.strip()) > 5]
         for line in lines:
@@ -33,12 +34,12 @@ def load_corpus():
     """
     current_datetime_str = datetime.now().strftime('%Y-%m-%d')
     corpus_fn = f"corpus_{current_datetime_str}.tsv"
-    if corpus_fn in os.listdir('data/csv'):
-        corpus = pd.read_csv(f'data/csv/{corpus_fn}', sep='\t')
+    if corpus_fn in os.listdir(csv_path):
+        corpus = pd.read_csv(os.path.join(csv_path, corpus_fn), sep='\t')
         print(f'loaded {corpus_fn} with shape {corpus.shape}')
     else:
         corpus = build_corpus()
-        corpus.to_csv(f'data/csv/{corpus_fn}', sep='\t')
+        corpus.to_csv(os.path.join(csv_path, corpus_fn), sep='\t')
         print(f'saved corpus to {corpus_fn} with shape {corpus.shape}')
     return corpus
 

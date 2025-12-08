@@ -1,10 +1,17 @@
 
+import os
 from random import shuffle
 
+BASE = os.path.dirname(__file__) 
+data_path = os.path.join(BASE, "..", "data")
 
-page_names_file = 'data/txt/page_names.txt'
-page_names_unrelated_file = 'data/txt/page_names_unrelated.txt'
+csv_path = os.path.join(data_path, "csv")
+txt_path = os.path.join(data_path, "txt")
+embs_path = os.path.join(data_path, "embs")
+paragraphs_path = os.path.join(data_path, "paragraphs")
 
+page_names_file = os.path.join(txt_path, 'page_names.txt')
+page_names_unrelated_file = os.path.join(txt_path, 'page_names_unrelated.txt')
 
 
 def get_page_names(shuffled=True) -> list:
