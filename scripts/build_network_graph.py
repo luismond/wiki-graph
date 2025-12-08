@@ -18,7 +18,6 @@
 # =vlookup(A2, node_attrs!A:B, 2, FALSE)
 
 
-import sys
 import pandas as pd
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -26,17 +25,23 @@ from pathlib import Path
 from pyvis.network import Network
 import random
 
+
 def load_role_attrs():
     df = pd.read_csv('data/csv/role_attrs.csv')
     return df
 
 
 def load_data(path: Path, max_edges) -> pd.DataFrame:
+
     df = pd.read_csv(path)
     df = df.fillna('')
     df['relationship'] = 'co_occurs_with'
-    print(len(df))
     df = df.sort_values(by='target_freq', ascending=False)
+    #df = df[df['target_freq'] >= 2]
+    print(len(df))
+    df = pd.concat([b[:20] for (_, b) in df.groupby('source')])
+    print(df.head())
+   
     df = df[:max_edges]#df[df['target_freq'] > 15]
     print(len(df))
 
@@ -54,43 +59,46 @@ def load_data(path: Path, max_edges) -> pd.DataFrame:
     return df
 
 
+def get_random_html_colors():
+    return [
+        "#FF5733",  # Orange Red
+        "#33FF57",  # Spring Green
+        "#3357FF",  # Royal Blue
+        "#FF33A1",  # Pink
+        "#A133FF",  # Purple
+        "#33FFF6",  # Aqua
+        "#FFD433",  # Gold
+        "#FF8333",  # Pumpkin
+        "#33FF83",  # Mint
+        "#A1FF33",  # Lime
+        "#FF3333",  # Red
+        "#33A1FF",  # Sky Blue
+        "#D433FF",  # Orchid
+        "#FF33D4",  # Hot Pink
+        "#33FFD4",  # Turquoise
+        "#87FF33",  # Light Green
+        "#FF3387",  # Rose
+        "#33D4FF",  # Baby Blue
+        "#F6FF33",  # Light Yellow
+        "#3387FF",  # Dodger Blue
+    ]
+
+
 def build_graph(csv_path, max_edges) -> nx.Graph:
     # Initialize graph
     df = load_data(csv_path, max_edges)
     G = nx.Graph()
     
+    random_html_colors = get_random_html_colors()
+
     # Add nodes with attributes
     for _, row in df.iterrows():
         source, target = row["source"], row["target"]
-
-        random_html_colors = [
-            "#FF5733",  # Orange Red
-            "#33FF57",  # Spring Green
-            "#3357FF",  # Royal Blue
-            "#FF33A1",  # Pink
-            "#A133FF",  # Purple
-            "#33FFF6",  # Aqua
-            "#FFD433",  # Gold
-            "#FF8333",  # Pumpkin
-            "#33FF83",  # Mint
-            "#A1FF33",  # Lime
-            "#FF3333",  # Red
-            "#33A1FF",  # Sky Blue
-            "#D433FF",  # Orchid
-            "#FF33D4",  # Hot Pink
-            "#33FFD4",  # Turquoise
-            "#87FF33",  # Light Green
-            "#FF3387",  # Rose
-            "#33D4FF",  # Baby Blue
-            "#F6FF33",  # Light Yellow
-            "#3387FF",  # Dodger Blue
-        ]
-
         source_color = random.choice(random_html_colors)
         #source_color = row.get("source_color", "gray")
         #source_role = row.get("source_role", "tbd")
         G.add_node(source, color=source_color)
-        #G.add_node(source, role=source_role, title=source_role)
+        G.add_node(target, bin=row.get("target_freq", "1"))
 
         #target_color = row.get("target_color", "gray")
         #target_role = row.get("target_role", "tbd")
@@ -105,43 +113,20 @@ def build_graph(csv_path, max_edges) -> nx.Graph:
     return G
 
 
-def draw_graph_pyvis(max_edges=700) -> None:
+def draw_graph_pyvis(max_edges=1000) -> None:
     net = Network(
         height="1400px",
         width="100%",
         notebook=False,
         neighborhood_highlight=True,
         select_menu=False,
-        filter_menu=False
+        filter_menu=True
         )
-    G = build_graph('data/csv/wiki_rels.csv', max_edges)
+    G = build_graph('data/csv/page_relationships.csv', max_edges)
     net.from_nx(G)
     net.repulsion(node_distance=200)
     net.write_html("network_graph.html", open_browser=False)
     print('graph completed')
-
-
-def compute_metrics(G: nx.Graph) -> pd.DataFrame:
-    deg = dict(G.degree())
-    btwn = nx.betweenness_centrality(G) if len(G) > 2 else {n: 0 for n in G.nodes()}
-    # Community detection (greedy modularity)
-    try:
-        from networkx.algorithms.community import greedy_modularity_communities
-        comms = list(greedy_modularity_communities(G)) if len(G) > 0 else []
-        node_to_comm = {}
-        for cid, comm in enumerate(comms):
-            for n in comm:
-                node_to_comm[n] = cid
-    except Exception:
-        node_to_comm = {n: -1 for n in G.nodes()}
-
-    df = pd.DataFrame({
-        "node": list(G.nodes()),
-        "degree": [deg[n] for n in G.nodes()],
-        "betweenness": [btwn[n] for n in G.nodes()],
-        "community": [node_to_comm.get(n, -1) for n in G.nodes()]
-    }).sort_values(["community", "degree"], ascending=[True, False])
-    return df
 
 
 def main():

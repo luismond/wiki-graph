@@ -1,4 +1,4 @@
-"NLP utils using sentence models. Encoding, similarity, etc."
+"NLP utils using language model. Encoding, similarity, etc."
 
 import os
 import pandas as pd
@@ -6,6 +6,8 @@ import torch
 import numpy as np
 from datetime import datetime
 from sentence_transformers import SentenceTransformer
+import warnings
+warnings.filterwarnings('ignore')
 
 MODEL = SentenceTransformer('distiluse-base-multilingual-cased-v1')
 
@@ -31,28 +33,31 @@ def save_page_embedding(page_name, paragraphs_embedding):
 
 def save_corpus_embedding(corpus_embeddings):
     """Save the corpus embedding with the datetime."""
-    current_datetime_str = datetime.now().strftime('%Y-%m-%d %H')
+    current_datetime_str = datetime.now().strftime('%Y-%m-%d')
     corpus_fn = f"corpus_{current_datetime_str}.npy"
     np.save(f"data/embs/{corpus_fn}", corpus_embeddings)
-    print(f'saved {corpus_fn}')
+    print(f'saved {corpus_fn} with shape {corpus_embeddings.shape}')
 
 
 def load_corpus_embedding(corpus):
     """
-    To avoid encoding the whole corpus each time, this function will:
+    To avoid encoding the whole corpus each run, this function will:
     - Check the current date
     - If a corpus embedding exists with this date name, load it
     - If not, encode the corpus and save it with the current date name
     - Return the corpus embedding
+    # bug fix: the saved corpus embedding and the text corpus loose alignment.
+    # the text corpus should need to be saved likewise
+
     """
-    current_datetime_str = datetime.now().strftime('%Y-%m-%d %H')
+    current_datetime_str = datetime.now().strftime('%Y-%m-%d')
     corpus_fn = f"corpus_{current_datetime_str}.npy"
     if corpus_fn in os.listdir('data/embs'):
         corpus_embeddings = np.load(f'data/embs/{corpus_fn}')
-        print(f'loaded {corpus_fn}')
+        print(f'loaded {corpus_fn} with shape {corpus_embeddings.shape}')
     else:
+        print(f'encoding {corpus_fn}...')
         corpus_embeddings = MODEL.encode_document(corpus)
-        print(f'encoded {corpus_fn}')
         save_corpus_embedding(corpus_embeddings)
     return corpus_embeddings
 
@@ -72,6 +77,7 @@ def get_df_sim(df_corpus: pd.DataFrame, query: str, top_k_min: int=500) -> pd.Da
     
     # embeddings
     corpus = df_corpus['paragraph'].tolist()
+    #corpus_embeddings = MODEL.encode_document(corpus)
     corpus_embeddings = load_corpus_embedding(corpus)
     query_embedding = MODEL.encode_query(query)
 
