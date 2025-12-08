@@ -1,4 +1,4 @@
-"""Utils for wiki api client."""
+"""Utils to build page relationships."""
 
 # import warnings
 # warnings.filterwarnings('ignore')
@@ -7,6 +7,7 @@
 import pandas as pd
 from soup_utils import get_soup, get_internal_page_names
 from data_utils import get_page_names
+
 
 def get_page_relationships():
     """
@@ -35,4 +36,14 @@ def get_page_relationships():
     df['target_freq'] = df['target'].map(df['target'].value_counts())
     df.to_csv(page_relationships_file, index=False, sep=',')
     print(f'{len(df)} relationships found and saved to {page_relationships_file}')
+    return df
 
+
+def load_data(df, max_edges) -> pd.DataFrame:
+    df = df.fillna('')
+    df['relationship'] = 'co_occurs_with'
+    df = df.sort_values(by='target_freq', ascending=False)
+    #df = df[df['target_freq'] >= 2]
+    df = pd.concat([b[:20] for (_, b) in df.groupby('source')])
+    #
+    return df[:max_edges]

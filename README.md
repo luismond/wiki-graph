@@ -29,3 +29,36 @@ https://api.wikimedia.org/wiki/Core_REST_API
 
 Wikitext
 https://en.wikipedia.org/wiki/Help:Wikitext
+
+
+## Network graph
+
+- build_network_graph.py
+
+- Usage:
+  - python build_network_graph.py relationships.csv
+
+- Produces:
+  - network_graph.html
+  
+- Spreadsheet structure and formulas:
+- relationship_graph.sheets
+- relationships
+    - source, source_role, relationship, target, target_role, year, url_title, url, source_rank
+- node_attrs
+    - node, role, rank
+- role_colors
+    - role, color
+
+=vlookup(A2, node_attrs!A:B, 2, FALSE)
+
+
+## Scripts structure
+
+|_ soup_utils
+|_ sbert_utils
+|_ data_utils
+|_ network_utils
+  |_ crawler 
+  |_ retriever
+  |_ rel_linker
