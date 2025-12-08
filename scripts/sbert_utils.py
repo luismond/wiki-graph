@@ -82,7 +82,6 @@ def get_df_sim(df_corpus: pd.DataFrame, query: str, top_k_min: int=500) -> pd.Da
     
     # embeddings
     corpus = df_corpus['paragraph'].tolist()
-    #corpus_embeddings = MODEL.encode_document(corpus)
     corpus_embeddings = load_corpus_embedding(corpus)
     query_embedding = MODEL.encode_query(query)
 
