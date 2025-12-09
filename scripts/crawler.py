@@ -7,7 +7,6 @@ from sbert_utils import get_page_similarity_score
 from data_utils import get_page_names, get_page_names_unrelated, append_new_page_name, append_new_unrelated_page_name
 
 
-
 def crawl(sim_threshold: float=0.5):
     """
     1. Given a list of page names, iterate over them and find their internal page links.
@@ -37,3 +36,11 @@ def crawl(sim_threshold: float=0.5):
                 else:
                     append_new_unrelated_page_name(new_page_name)
                 visited.add(new_page_name)
+
+
+def main():
+    for n in range(5):
+        crawl()
+
+if __name__ == "__main__":
+    main()

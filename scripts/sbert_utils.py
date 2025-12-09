@@ -13,14 +13,15 @@ warnings.filterwarnings('ignore')
 MODEL = SentenceTransformer('distiluse-base-multilingual-cased-v1')
 
 
-def get_seed_embedding():
+def get_seed_embedding() -> np.ndarray:
     """
     Take the paragraphs of an initial set of pages and encode them.
     This seed embedding will be used to determine the similarity of the new crawled pages.
     """
-    fn = os.path.join(csv_path, 'wiki_query_names_paragraphs.csv')
+    fn = os.path.join(csv_path, 'seed_paragraphs.csv')
     df = pd.read_csv(fn, sep='\t')
-    seed_embedding = MODEL.encode_document(' '.join(df['paragraphs'].tolist()))
+    paragraphs = df['paragraphs'].tolist()
+    seed_embedding = MODEL.encode_document(' '.join(paragraphs))
     print('loaded seed embedding')
     return seed_embedding
 
@@ -28,22 +29,22 @@ def get_seed_embedding():
 seed_corpus_embedding = get_seed_embedding()
 
 
-def save_page_embedding(page_name, paragraphs_embedding):
+def save_page_embedding(page_name: str, paragraphs_embedding: np.ndarray):
     """Save the paragraphs embedding with the page name."""
     fn = os.path.join(embs_path, f'{page_name}.npy')
     np.save(fn, paragraphs_embedding)
 
 
-def save_corpus_embedding(corpus_embeddings):
+def save_corpus_embedding(corpus_embeddings: np.ndarray):
     """Save the corpus embedding with the datetime."""
     current_datetime_str = datetime.now().strftime('%Y-%m-%d')
-    corpus_fn = f"corpus_{current_datetime_str}.npy"
-    corpus_fp = os.path.join(embs_path, corpus_fn)
-    np.save(corpus_fp, corpus_embeddings)
-    print(f'saved {corpus_fn} with shape {corpus_embeddings.shape}')
+    fn = f"corpus_{current_datetime_str}.npy"
+    fp = os.path.join(embs_path, fn)
+    np.save(fp, corpus_embeddings)
+    print(f'saved {fn} with shape {corpus_embeddings.shape}')
 
 
-def load_corpus_embedding(corpus):
+def load_corpus_embedding(corpus: list[str]) -> np.ndarray:
     """
     To avoid encoding the whole corpus each run, this function will:
     - Check the current date
@@ -81,7 +82,7 @@ def get_df_sim(df_corpus: pd.DataFrame, query: str, top_k_min: int=500) -> pd.Da
     """
     
     # embeddings
-    corpus = df_corpus['paragraph'].tolist()
+    corpus = df_corpus['paragraphs'].tolist()
     corpus_embeddings = load_corpus_embedding(corpus)
     query_embedding = MODEL.encode_query(query)
 
@@ -99,7 +100,10 @@ def get_df_sim(df_corpus: pd.DataFrame, query: str, top_k_min: int=500) -> pd.Da
 
     # dataframe
     df_sim = pd.DataFrame(rows)
+    df_sim = df_sim.reset_index(drop=True)
     df_sim = df_sim.sort_values(by='score', ascending=False)
-    fn = os.path.join(csv_path, 'wiki_names_paragraphs_query_results.csv')
-    df_sim.to_csv(fn, index=False, sep='\t')
+    fn = f'{query[:15]}..._query_results.csv'
+    fp = os.path.join(csv_path, fn)
+    df_sim.to_csv(fp, index=False, sep='\t')
+    print(f'saved query results to {fn} with shape {df_sim.shape}')
     return df_sim

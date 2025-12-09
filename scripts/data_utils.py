@@ -9,9 +9,11 @@ csv_path = os.path.join(data_path, "csv")
 txt_path = os.path.join(data_path, "txt")
 embs_path = os.path.join(data_path, "embs")
 paragraphs_path = os.path.join(data_path, "paragraphs")
+soups_path = os.path.join(data_path, "soups")
 
 page_names_file = os.path.join(txt_path, 'page_names.txt')
 page_names_unrelated_file = os.path.join(txt_path, 'page_names_unrelated.txt')
+page_relationships_file = os.path.join(csv_path, 'page_relationships.csv')
 
 
 def get_page_names(shuffled=True) -> list:

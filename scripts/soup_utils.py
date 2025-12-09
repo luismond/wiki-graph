@@ -8,6 +8,7 @@ import os
 import requests
 import pickle
 import bs4
+from data_utils import soups_path, paragraphs_path
 
 
 def get_html_url(page_name: str, lang: str='en') -> str:
@@ -35,9 +36,9 @@ def download_soup(page_name: str) -> bs4.BeautifulSoup:
 
 def get_soup(page_name: str) -> bs4.BeautifulSoup:
     "Given a page name, either load the saved soup or download the soup."
-    print(page_name)
-    if f'{page_name}.pkl' in os.listdir('data/soups'):
-        with open(f"data/soups/{page_name}.pkl", "rb") as f:
+    fn = f'{page_name}.pkl'
+    if fn in os.listdir(soups_path):
+        with open(os.path.join(soups_path, fn), "rb") as f:
             soup = pickle.load(f)
     else:
         soup = download_soup(page_name)
@@ -46,7 +47,8 @@ def get_soup(page_name: str) -> bs4.BeautifulSoup:
 
 def save_soup(page_name: str, soup: bs4.BeautifulSoup) -> None:
     "Given a page name and a soup, pickle and save the soup."
-    with open(f"data/soups/{page_name}.pkl", "wb") as f:
+    fn = f'{page_name}.pkl'
+    with open(os.path.join(soups_path, fn), "wb") as f:
         pickle.dump(soup, f)
 
 
@@ -63,7 +65,8 @@ def get_paragraphs_text(soup: bs4.BeautifulSoup) -> list:
 
 def save_paragraphs(page_name: str, paragraphs: list) -> None:
     "Given a page name and a list of paragraphs, save them to a text file."
-    with open(f"data/paragraphs/{page_name}.txt", "w") as f:
+    fn = f'{page_name}.txt'
+    with open(os.path.join(paragraphs_path, fn), "w") as f:
         f.write('\n'.join(paragraphs))
 
 

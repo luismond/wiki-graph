@@ -6,7 +6,8 @@
 
 import pandas as pd
 from soup_utils import get_soup, get_internal_page_names
-from data_utils import get_page_names
+from data_utils import get_page_names, page_relationships_file
+from datetime import datetime
 
 
 def get_page_relationships():
@@ -20,8 +21,6 @@ def get_page_relationships():
     """
     
     print('Getting related links from all pages...')
-
-    page_relationships_file = 'data/csv/page_relationships.csv'
 
     page_names = get_page_names()
 
@@ -37,6 +36,11 @@ def get_page_relationships():
     df.to_csv(page_relationships_file, index=False, sep=',')
     print(f'{len(df)} relationships found and saved to {page_relationships_file}')
     return df
+
+
+# def read_page_relationships():
+#     current_datetime_str = datetime.now().strftime('%Y-%m-%d')
+#     fn = f"corpus_{current_datetime_str}.tsv"
 
 
 def load_data(df, max_edges) -> pd.DataFrame:

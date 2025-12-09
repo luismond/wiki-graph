@@ -55,10 +55,12 @@ https://en.wikipedia.org/wiki/Help:Wikitext
 
 ## Scripts structure
 
-|_ soup_utils
-|_ sbert_utils
+
 |_ data_utils
-|_ network_utils
-  |_ crawler 
-  |_ retriever
-  |_ rel_linker
+  |_ network_utils
+  |_ sbert_utils
+  |_ soup_utils
+  |_ corpus_utils
+    |_ crawler 
+    |_ rel_linker
+      |_ dev.ipynb
