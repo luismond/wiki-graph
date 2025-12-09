@@ -30,6 +30,7 @@ def crawl(sim_threshold: float=0.5):
                 paragraphs = get_paragraphs_text(soup)
                 sim_score = get_page_similarity_score(paragraphs)
                 if sim_score >= sim_threshold:
+                    print(f'saving {new_page_name}...')
                     save_soup(new_page_name, soup)
                     save_paragraphs(new_page_name, paragraphs)
                     append_new_page_name(new_page_name)
@@ -38,10 +39,10 @@ def crawl(sim_threshold: float=0.5):
                 visited.add(new_page_name)
 
 
-def main(sim_threshold=0.4):
+def main():
     for n in range(5):
         print(f'crawling... ({n})')
-        crawl()
+        crawl(sim_threshold=.4)
 
 if __name__ == "__main__":
     main()

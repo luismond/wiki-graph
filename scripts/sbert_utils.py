@@ -18,13 +18,10 @@ def get_seed_embedding() -> np.ndarray:
     Take the paragraphs of an initial set of pages and encode them.
     This seed embedding will be used to determine the similarity of the new crawled pages.
     """
-    # fn = os.path.join(csv_path, 'seed_paragraphs.csv')
-    # df = pd.read_csv(fn, sep='\t')
-    # paragraphs = df['paragraphs'].tolist()
-    query = ['unidentified flying object', 'flying saucer',
-    'unidentified anomalous phenomena', 'aliens', 'extraterrestrials',
-    'ufology', 'UFO', 'UAP']
-    seed_embedding = MODEL.encode_document(' '.join(query))
+    fn = os.path.join(csv_path, 'seed_paragraphs.csv')
+    df = pd.read_csv(fn, sep='\t')
+    paragraphs = df['paragraphs'].tolist()
+    seed_embedding = MODEL.encode(' '.join(paragraphs))
     print('loaded seed embedding')
     return seed_embedding
 
@@ -40,7 +37,7 @@ def save_page_embedding(page_name: str, paragraphs_embedding: np.ndarray):
 
 def save_corpus_embedding(corpus_embeddings: np.ndarray):
     """Save the corpus embedding with the datetime."""
-    current_datetime_str = datetime.now().strftime('%Y-%m-%d')
+    current_datetime_str = datetime.now().strftime('%Y-%m-%d-%H')
     fn = f"corpus_{current_datetime_str}.npy"
     fp = os.path.join(embs_path, fn)
     np.save(fp, corpus_embeddings)
@@ -58,7 +55,7 @@ def load_corpus_embedding(corpus: list[str]) -> np.ndarray:
     # the text corpus should need to be saved likewise
 
     """
-    current_datetime_str = datetime.now().strftime('%Y-%m-%d')
+    current_datetime_str = datetime.now().strftime('%Y-%m-%d-%H')
     corpus_fn = f"corpus_{current_datetime_str}.npy"
     corpus_fp = os.path.join(embs_path, corpus_fn)
     if corpus_fn in os.listdir(embs_path):

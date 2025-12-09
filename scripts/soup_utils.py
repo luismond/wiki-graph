@@ -69,7 +69,8 @@ def get_paragraphs_text(soup: bs4.BeautifulSoup) -> list:
 def save_paragraphs(page_name: str, paragraphs: list) -> None:
     "Given a page name and a list of paragraphs, save them to a text file."
     fn = f'{page_name}.txt'
-    with open(os.path.join(paragraphs_path, fn), "w") as f:
+    fn_path = os.path.join(paragraphs_path, fn)
+    with open(fn_path, "w") as f:
         f.write('\n'.join(paragraphs))
 
 
