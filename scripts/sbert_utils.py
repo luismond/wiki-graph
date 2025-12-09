@@ -18,10 +18,13 @@ def get_seed_embedding() -> np.ndarray:
     Take the paragraphs of an initial set of pages and encode them.
     This seed embedding will be used to determine the similarity of the new crawled pages.
     """
-    fn = os.path.join(csv_path, 'seed_paragraphs.csv')
-    df = pd.read_csv(fn, sep='\t')
-    paragraphs = df['paragraphs'].tolist()
-    seed_embedding = MODEL.encode_document(' '.join(paragraphs))
+    # fn = os.path.join(csv_path, 'seed_paragraphs.csv')
+    # df = pd.read_csv(fn, sep='\t')
+    # paragraphs = df['paragraphs'].tolist()
+    query = ['unidentified flying object', 'flying saucer',
+    'unidentified anomalous phenomena', 'aliens', 'extraterrestrials',
+    'ufology', 'UFO', 'UAP']
+    seed_embedding = MODEL.encode_document(' '.join(query))
     print('loaded seed embedding')
     return seed_embedding
 

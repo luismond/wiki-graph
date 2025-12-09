@@ -38,8 +38,9 @@ def crawl(sim_threshold: float=0.5):
                 visited.add(new_page_name)
 
 
-def main():
+def main(sim_threshold=0.4):
     for n in range(5):
+        print(f'crawling... ({n})')
         crawl()
 
 if __name__ == "__main__":
