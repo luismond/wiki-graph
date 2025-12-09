@@ -9,6 +9,9 @@ import requests
 import pickle
 import bs4
 from data_utils import soups_path, paragraphs_path
+from dotenv import load_dotenv
+
+load_dotenv('../.env')
 
 
 def get_html_url(page_name: str, lang: str='en') -> str:
@@ -29,7 +32,7 @@ def download_soup(page_name: str) -> bs4.BeautifulSoup:
     "Given a page name, request a wikipedia url and return the parsed html page as a bs4 soup."
     HEADERS = get_headers()
     html_url = get_html_url(page_name)
-    response = requests.get(html_url, headers=HEADERS, timeout=60)
+    response = requests.get(html_url, headers=HEADERS)
     soup = bs4.BeautifulSoup(response.text, features="html.parser")
     return soup
 
