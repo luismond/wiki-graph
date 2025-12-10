@@ -60,11 +60,12 @@ def build_graph(df) -> nx.Graph:
         #source_color = row.get("source_color", "gray")
         #source_role = row.get("source_role", "tbd")
         G.add_node(source, color=source_color)
-        G.add_node(target, bin=row.get("target_freq", "1"))
+        #G.add_node(target, bin=row.get("bin", 10))
+        #G.add_node(source, bin=row.get("bin", 10))
 
-        #target_color = row.get("target_color", "gray")
+        target_color = random.choice(random_html_colors)
         #target_role = row.get("target_role", "tbd")
-        #G.add_node(target, color=target_color)
+        G.add_node(target, color=target_color)
         #G.add_node(target, role=target_role, title=target_role)
 
         # Add edges with attributes
@@ -72,21 +73,22 @@ def build_graph(df) -> nx.Graph:
         G.add_edge(source, target, **attrs, relationship_list=[attrs.get("relationship", "")])
         if G.has_edge(source, target):
             G[source][target]["title"] = row.get("relationship", "")
+            # G[source][target]["bin"] = row.get("bin", 10)
     return G
 
 
 def draw_graph_pyvis(df) -> None:
     net = Network(
-        height="1400px",
+        height="1800px",
         width="100%",
         notebook=False,
-        neighborhood_highlight=True,
+        neighborhood_highlight=False,
         select_menu=False,
         filter_menu=True
         )
 
     G = build_graph(df)
     net.from_nx(G)
-    net.repulsion(node_distance=200)
+    net.repulsion(node_distance=150)
     net.write_html("network_graph.html", open_browser=False)
     print('graph completed')

@@ -8,11 +8,8 @@ dev.ipynb
 *png
 .env
 *html
+*csv
 *__pycache__
 include/
-data/paragraphs/
-data/soups/
-data/txt/
-data/embs/
-data/csv/
+data/
 corpus*

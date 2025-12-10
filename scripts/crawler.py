@@ -42,7 +42,7 @@ def crawl(sim_threshold: float=0.5):
 def main():
     for n in range(5):
         print(f'crawling... ({n})')
-        crawl(sim_threshold=.4)
+        crawl()
 
 if __name__ == "__main__":
     main()
