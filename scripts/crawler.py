@@ -1,8 +1,5 @@
 
-from soup_utils import (
-    save_soup, get_soup, get_internal_page_names, download_soup,
-    get_paragraphs_text, save_paragraphs
-)
+from soup_utils import WikiPage
 from sbert_utils import get_page_similarity_score
 from data_utils import get_page_names, get_page_names_unrelated, append_new_page_name, append_new_unrelated_page_name
 
@@ -17,22 +14,23 @@ def crawl(sim_threshold: float=0.5):
     6. If the similarity is below, the page name is saved in the "unrelated pages" file.
     """
     page_names = get_page_names()
-    page_names_unrelated = get_page_names_unrelated()
+    page_names_unrelated = get_page_names_unrelated()[:5]
     visited = set()
     for page_name in page_names:
-        new_page_names = get_internal_page_names(get_soup(page_name))
+        wp = WikiPage(page_name)
+        new_page_names = wp.get_internal_page_names()
         for new_page_name in new_page_names:
             exc = set(page_names + list(visited) + page_names_unrelated)
             if new_page_name in exc:
                 continue
             else:
-                soup = download_soup(new_page_name)
-                paragraphs = get_paragraphs_text(soup)
+                wp_new = WikiPage(new_page_name)
+                paragraphs = wp_new.paragraphs
                 sim_score = get_page_similarity_score(paragraphs)
                 if sim_score >= sim_threshold:
                     print(f'saving {new_page_name}...')
-                    save_soup(new_page_name, soup)
-                    save_paragraphs(new_page_name, paragraphs)
+                    wp_new.save_soup()
+                    wp_new.save_paragraphs()
                     append_new_page_name(new_page_name)
                 else:
                     append_new_unrelated_page_name(new_page_name)
@@ -40,9 +38,12 @@ def crawl(sim_threshold: float=0.5):
 
 
 def main():
+    sim_threshold = .5
     for n in range(5):
         print(f'crawling... ({n})')
-        crawl()
+        crawl(sim_threshold)
+        sim_threshold *= .9
+        print(sim_threshold)
 
 if __name__ == "__main__":
     main()
