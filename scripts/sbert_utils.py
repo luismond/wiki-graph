@@ -19,7 +19,7 @@ def get_seed_embedding() -> np.ndarray:
     This seed embedding will be used to determine the similarity of the new crawled pages.
     """
     fn = os.path.join(csv_path, 'seed_paragraphs.csv')
-    df = pd.read_csv(fn, sep='\t')
+    df = pd.read_csv(fn)
     paragraphs = df['paragraphs'].tolist()
     seed_embedding = MODEL.encode(' '.join(paragraphs))
     print('loaded seed embedding')
@@ -107,3 +107,5 @@ def get_df_sim(df_corpus: pd.DataFrame, query: str, top_k_min: int=500) -> pd.Da
     df_sim.to_csv(fp, index=False, sep='\t')
     print(f'saved query results to {fn} with shape {df_sim.shape}')
     return df_sim
+
+
