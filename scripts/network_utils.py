@@ -92,3 +92,26 @@ def draw_graph_pyvis(df) -> None:
     net.repulsion(node_distance=150)
     net.write_html("network_graph.html", open_browser=False)
     print('graph completed')
+
+
+def compute_metrics(G: nx.Graph) -> pd.DataFrame:
+    deg = dict(G.degree())
+    btwn = nx.betweenness_centrality(G) if len(G) > 2 else {n: 0 for n in G.nodes()}
+    # Community detection (greedy modularity)
+    try:
+        from networkx.algorithms.community import greedy_modularity_communities
+        comms = list(greedy_modularity_communities(G)) if len(G) > 0 else []
+        node_to_comm = {}
+        for cid, comm in enumerate(comms):
+            for n in comm:
+                node_to_comm[n] = cid
+    except Exception:
+        node_to_comm = {n: -1 for n in G.nodes()}
+
+    df = pd.DataFrame({
+        "node": list(G.nodes()),
+        "degree": [deg[n] for n in G.nodes()],
+        "betweenness": [btwn[n] for n in G.nodes()],
+        "community": [node_to_comm.get(n, -1) for n in G.nodes()]
+    }).sort_values(["community", "degree"], ascending=[True, False])
+    return df

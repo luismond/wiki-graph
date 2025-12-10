@@ -19,6 +19,14 @@ def get_html_url(page_name: str, lang: str='en') -> str:
     return f'https://api.wikimedia.org/core/v1/wikipedia/{lang}/page/{page_name}/html'
 
 
+def get_short_desc(soup):
+    try:
+        shortdesc = soup.find('div', class_='shortdescription').text
+    except:
+        shortdesc = 'no_shortdesc'
+    return shortdesc
+
+
 def get_headers() -> dict:
     "load the env variables containing the wikipedia API keys"
     ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
