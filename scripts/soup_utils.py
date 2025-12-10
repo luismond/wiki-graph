@@ -32,7 +32,7 @@ def download_soup(page_name: str) -> bs4.BeautifulSoup:
     "Given a page name, request a wikipedia url and return the parsed html page as a bs4 soup."
     HEADERS = get_headers()
     html_url = get_html_url(page_name)
-    response = requests.get(html_url, headers=HEADERS)
+    response = requests.get(html_url, headers=HEADERS, timeout=60)
     soup = bs4.BeautifulSoup(response.text, features="html.parser")
     return soup
 
