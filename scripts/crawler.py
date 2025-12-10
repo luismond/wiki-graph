@@ -1,5 +1,5 @@
 
-from soup_utils import WikiPage
+from wiki_page import WikiPage
 from sbert_utils import get_page_similarity_score
 from data_utils import get_page_names, get_page_names_unrelated, append_new_page_name, append_new_unrelated_page_name
 
