@@ -12,3 +12,5 @@ dev.ipynb
 *__pycache__
 include/
 data/
+.pytest_cache
+etc/
