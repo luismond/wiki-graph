@@ -1,16 +1,18 @@
 """Utils to build page relationships."""
 
-# import warnings
-# warnings.filterwarnings('ignore')
-# from rich import print
-
+import os
 import pandas as pd
-from soup_utils import get_soup, get_internal_page_names
-from data_utils import get_page_names, page_relationships_file
 from datetime import datetime
+from soup_utils import get_soup, get_internal_page_names
+from data_utils import get_page_names, csv_path
 
 
-def get_page_relationships():
+current_datetime_str = datetime.now().strftime('%Y-%m-%d-%H')
+fn = f'page_relationships_{current_datetime_str}.csv'
+fp = os.path.join(csv_path, fn)
+
+
+def build_page_relationships():
     """
     Get the list of all saved page names, read them and find all their internal linked pages.
     
@@ -19,35 +21,36 @@ def get_page_relationships():
         - "target" -> str: the linked pages from each page name
         - "target_freq" -> int: the overall frequency value of the targets
     """
-    
-    print('Getting related links from all pages...')
-
     page_names = get_page_names()
-
+    print(f'Building relationships from {len(page_names)} pages...')
+    
     rows = []
     for page_name in page_names:
         new_page_names = get_internal_page_names(get_soup(page_name))
         for new_page_name in new_page_names:     
             rows.append((page_name, new_page_name))
     df = pd.DataFrame(rows)
-
     df.columns = ['source', 'target']
     df['target_freq'] = df['target'].map(df['target'].value_counts())
-    df.to_csv(page_relationships_file, index=False, sep=',')
-    print(f'{len(df)} relationships found and saved to {page_relationships_file}')
+    print(f'Built {len(df)} relationships')
+    save_page_relationships(df)
     return df
 
 
-# def read_page_relationships():
-#     current_datetime_str = datetime.now().strftime('%Y-%m-%d')
-#     fn = f"corpus_{current_datetime_str}.tsv"
+def save_page_relationships(df):
+    df.to_csv(fp, index=False, sep=',')
+    print(f'{len(df)} relationships saved to {fp}')
 
 
-def load_data(df, max_edges) -> pd.DataFrame:
-    df = df.fillna('')
-    df['relationship'] = 'co_occurs_with'
-    df = df.sort_values(by='target_freq', ascending=False)
-    #df = df[df['target_freq'] >= 2]
-    df = pd.concat([b[:20] for (_, b) in df.groupby('source')])
-    #
-    return df[:max_edges]
+def read_page_relationships():
+    df = pd.read_csv(fp)
+    print(f'{len(df)} relationships read from {fp}')
+    return df
+
+
+def get_page_relationships():
+    if fn in os.listdir(csv_path):
+        df = read_page_relationships()
+    else:
+        df = build_page_relationships()
+    return df
