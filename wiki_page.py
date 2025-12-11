@@ -10,8 +10,7 @@ import requests
 import pickle
 import bs4
 from dotenv import load_dotenv
-from __init__ import DATA_PATH
-
+from __init__ import DATA_PATH, PARAGRAPHS_PATH, SOUPS_PATH
 
 load_dotenv()
 
@@ -19,9 +18,6 @@ ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
 APP_NAME = os.getenv("APP_NAME")
 EMAIL = os.getenv("EMAIL")
 HEADERS = {'Authorization': f'Bearer {ACCESS_TOKEN}', 'User-Agent': f'{APP_NAME} ({EMAIL})'}
-
-paragraphs_path = os.path.join(DATA_PATH, "paragraphs")
-soups_path = os.path.join(DATA_PATH, "soups")
 
 
 class WikiPage:
@@ -41,14 +37,19 @@ class WikiPage:
         self.paragraphs = self.get_paragraphs_text()
         self.shortdescription = self.get_shortdescription()
 
+    def save(self):
+        print(f'saving {self.page_name}...')
+        self.save_soup()
+        self.save_paragraphs()
+
     def __repr__(self):
         return f"<WikiPage {self.page_name}>"
 
     def get_soup(self) -> bs4.BeautifulSoup:
         "Given a page name, either load the saved soup or download the soup."
         fn = f'{self.page_name}.pkl'
-        if fn in os.listdir(soups_path):
-            with open(os.path.join(soups_path, fn), "rb") as f:
+        if fn in os.listdir(SOUPS_PATH):
+            with open(os.path.join(SOUPS_PATH, fn), "rb") as f:
                 soup = pickle.load(f)
         else:
             soup = self.download_soup()
@@ -64,7 +65,7 @@ class WikiPage:
     def save_soup(self) -> None:
         "Save the soup as a binary file."
         fn = f'{self.page_name}.pkl'
-        with open(os.path.join(soups_path, fn), "wb") as f:
+        with open(os.path.join(SOUPS_PATH, fn), "wb") as f:
             pickle.dump(self.soup, f)
 
     def get_shortdescription(self) -> str:
@@ -87,7 +88,7 @@ class WikiPage:
     def save_paragraphs(self) -> None:
         "Save the list of paragraphs in a text file."
         fn = f'{self.page_name}.txt'
-        fn_path = os.path.join(paragraphs_path, fn)
+        fn_path = os.path.join(PARAGRAPHS_PATH, fn)
         with open(fn_path, "w") as f:
             f.write('\n'.join(self.paragraphs))
 

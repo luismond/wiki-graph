@@ -5,7 +5,8 @@ import pandas as pd
 import torch
 import numpy as np
 from datetime import datetime
-from sentence_transformers import SentenceTransformer, community_detection
+from sentence_transformers import SentenceTransformer
+from sentence_transformers.util import community_detection
 from gliner import GLiNER
 from __init__ import CSV_PATH, EMBS_PATH
 import warnings
