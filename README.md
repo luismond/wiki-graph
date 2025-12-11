@@ -61,8 +61,22 @@ https://en.wikipedia.org/wiki/Help:Wikitext
   -- finds relationships within the corpus contents and graphs them
   -- utilizes sbert utils to arbitrate page downloads and to query the corpus
 
+### Crawler
+- Discovers new pages by following links
+- Validates pages against similarity thresholds
+- Saves individual pages (soup and paragraphs)
+- Updates tracking files
+- Focused on data collection/discovery
+
+### CorpusManager
+- Manages the corpus: loads, builds, and saves
+- Works with already-collected data (paragraphs)
+- Focused on data management/retrieval
+
+
 |_ sbert_utils
   |_ wiki_page
   |_ corpus_manager
   |_ relationship_graph
     |_ dev.ipynb
+    |_ crawler.py
