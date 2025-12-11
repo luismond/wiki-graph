@@ -3,13 +3,14 @@
 import os
 import pandas as pd
 from datetime import datetime
-from soup_utils import get_soup, get_internal_page_names, find_page_years, find_page_persons
-from data_utils import get_page_names, csv_path
+#from soup_utils import get_soup, get_internal_page_names, find_page_years, find_page_persons
+#from data_utils import get_page_names, csv_path
 import pandas as pd
 import networkx as nx
 from pyvis.network import Network
 import random
 
+current_datetime_str = datetime.now().strftime('%Y-%m-%d-%H')
 
 def get_random_html_colors():
     return [
@@ -123,8 +124,6 @@ def compute_metrics(G: nx.Graph) -> pd.DataFrame:
     return df
 
 
-
-current_datetime_str = datetime.now().strftime('%Y-%m-%d-%H')
 
 
 def build_page_relationships(target='year'):

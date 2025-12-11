@@ -9,22 +9,21 @@ import re
 import requests
 import pickle
 import bs4
-from data_utils import data_path
 from dotenv import load_dotenv
 from gliner import GLiNER
-
+from __init__ import DATA_PATH
 # # Initialize GLiNER with the base model
 # model = GLiNER.from_pretrained("urchade/gliner_medium-v2.1")
 
-load_dotenv('../.env')
+load_dotenv()
 
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
 APP_NAME = os.getenv("APP_NAME")
 EMAIL = os.getenv("EMAIL")
 HEADERS = {'Authorization': f'Bearer {ACCESS_TOKEN}', 'User-Agent': f'{APP_NAME} ({EMAIL})'}
 
-paragraphs_path = os.path.join(data_path, "paragraphs")
-soups_path = os.path.join(data_path, "soups")
+paragraphs_path = os.path.join(DATA_PATH, "paragraphs")
+soups_path = os.path.join(DATA_PATH, "soups")
 
 
 class WikiPage:

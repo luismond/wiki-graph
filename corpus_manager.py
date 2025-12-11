@@ -1,5 +1,6 @@
 """
-Handles the collection of pages, tracks processed/unrelated pages, and provides access to the full dataset.
+Handles the collection of pages, tracks processed/unrelated pages,
+and provides access to the full dataset.
 """
 
 import os
@@ -8,17 +9,14 @@ import pandas as pd
 from random import shuffle
 from wiki_page import WikiPage
 from sbert_utils import get_page_similarity_score
+from __init__ import DATA_PATH
 
 
-
-BASE = os.path.dirname(__file__) 
-data_path = os.path.join(BASE, "..", "data")
-
-csv_path = os.path.join(data_path, "csv")
-txt_path = os.path.join(data_path, "txt")
-embs_path = os.path.join(data_path, "embs")
-paragraphs_path = os.path.join(data_path, "paragraphs")
-soups_path = os.path.join(data_path, "soups")
+csv_path = os.path.join(DATA_PATH, "csv")
+txt_path = os.path.join(DATA_PATH, "txt")
+embs_path = os.path.join(DATA_PATH, "embs")
+paragraphs_path = os.path.join(DATA_PATH, "paragraphs")
+soups_path = os.path.join(DATA_PATH, "soups")
 
 page_names_file = os.path.join(txt_path, 'page_names.txt')
 page_names_unrelated_file = os.path.join(txt_path, 'page_names_unrelated.txt')

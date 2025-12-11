@@ -53,10 +53,16 @@ https://en.wikipedia.org/wiki/Help:Wikitext
 =vlookup(A2, node_attrs!A:B, 2, FALSE)
 
 
-## Scripts structure
+## Project structure
+
+- The project
+  -- processes wikipedia pages
+  -- aggregates them into a corpus of page contents
+  -- finds relationships within the corpus contents and graphs them
+  -- utilizes sbert utils to arbitrate page downloads and to query the corpus
 
 |_ sbert_utils
-|_ wiki_page
-|_ corpus_manager
-|_ relationship_graph
-  |_ dev.ipynb
+  |_ wiki_page
+  |_ corpus_manager
+  |_ relationship_graph
+    |_ dev.ipynb
