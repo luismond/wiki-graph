@@ -63,7 +63,7 @@ def crawl(sim_threshold: float=0.5):
                 wp_new = WikiPage(new_page_name)
                 sim_score = get_page_similarity_score(wp_new.paragraphs)
                 if sim_score >= sim_threshold:
-                    wp_new.save()
+                    wp_new.save_soup()
                     append_new_page_name(new_page_name)
                 else:
                     append_new_unrelated_page_name(new_page_name)

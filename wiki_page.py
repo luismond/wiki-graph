@@ -9,7 +9,7 @@ import requests
 import pickle
 import bs4
 from dotenv import load_dotenv
-from __init__ import PARAGRAPHS_PATH, SOUPS_PATH
+from __init__ import SOUPS_PATH
 
 load_dotenv()
 
@@ -35,11 +35,6 @@ class WikiPage:
         self.soup = self.get_soup()
         self.paragraphs = self.get_paragraphs_text()
         self.shortdescription = self.get_shortdescription()
-
-    def save(self):
-        print(f'saving {self.page_name}...')
-        self.save_soup()
-        self.save_paragraphs()
 
     def __repr__(self):
         return f"<WikiPage {self.page_name}>"
@@ -83,13 +78,6 @@ class WikiPage:
         except Exception as e:
             print(str(e))
         return paragraphs
-
-    def save_paragraphs(self) -> None:
-        "Save the list of paragraphs in a text file."
-        fn = f'{self.page_name}.txt'
-        fn_path = os.path.join(PARAGRAPHS_PATH, fn)
-        with open(fn_path, "w") as f:
-            f.write('\n'.join(self.paragraphs))
 
     def get_internal_page_names(self) -> list:
         """
