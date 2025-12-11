@@ -4,13 +4,10 @@ import os
 import pandas as pd
 import torch
 import numpy as np
-from datetime import datetime
 from sentence_transformers import SentenceTransformer
 from sentence_transformers.util import community_detection
 from gliner import GLiNER
-from __init__ import CSV_PATH, EMBS_PATH
-import warnings
-warnings.filterwarnings('ignore')
+from __init__ import CSV_PATH
 
 MODEL = SentenceTransformer('distiluse-base-multilingual-cased-v1')
 # # Initialize GLiNER with the base model
@@ -25,7 +22,7 @@ def get_seed_embedding() -> np.ndarray:
     df = pd.read_csv(fn)
     paragraphs = df['paragraphs'].tolist()
     seed_embedding = MODEL.encode(' '.join(paragraphs))
-    print('loaded seed embedding')
+    # print('loaded seed embedding')
     return seed_embedding
 
 
@@ -44,10 +41,12 @@ def get_df_sim(df_corpus: pd.DataFrame, query: str, top_k_min: int=500) -> pd.Da
     Given a query and a corpus, retrieve corpus rows that resemble the query.
     Return the results in a dataframe, sorted by descending similarity, and save it as tsv.
     """
-    
-    # embeddings
-    corpus = df_corpus['paragraphs'].tolist()
-    corpus_embeddings = load_corpus_embedding(corpus)
+    from corpus_manager import CorpusManager
+
+    cm = CorpusManager()
+    corpus = cm.corpus
+    corpus_embeddings = cm.corpus_embedding
+
     query_embedding = MODEL.encode_query(query)
 
     # similarity scores

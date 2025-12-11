@@ -9,7 +9,8 @@ import pandas as pd
 from wiki_page import WikiPage
 import numpy as np
 from __init__ import CSV_PATH, SOUPS_PATH, EMBS_PATH
-from nlp_utils import MODEL
+from sentence_transformers import SentenceTransformer
+MODEL = SentenceTransformer('distiluse-base-multilingual-cased-v1')
 
 
 def get_alpha_ratio(string: str) -> float:
@@ -26,6 +27,7 @@ class CorpusManager:
         self.current_datetime_str = datetime.now().strftime('%Y-%m-%d-%H')
         self.file_name = f"corpus_{self.current_datetime_str}.tsv"
         self.load()
+        self.load_corpus_embedding()
     
     def load(self) -> pd.DataFrame:
         """
@@ -67,8 +69,8 @@ class CorpusManager:
 
     def load_corpus_embedding(self):
         ce = CorpusEmbedding(self.corpus, self.current_datetime_str)
+        ce.load()
         self.corpus_embedding = ce.corpus_embedding
-        return ce.corpus_embedding
 
 
 class CorpusEmbedding:
@@ -78,10 +80,8 @@ class CorpusEmbedding:
         self.corpus_embedding = None
         self.file_name = f"corpus_{self.current_datetime_str}.npy"
         self.file_path = os.path.join(EMBS_PATH, self.file_name)
-        self.load()
 
-
-    def load(self) -> np.ndarray:
+    def load(self):
         """
         To avoid encoding the whole corpus each run, this function will:
         - Use the corpus date name
@@ -93,22 +93,21 @@ class CorpusEmbedding:
 
         """
         if self.file_name in os.listdir(EMBS_PATH):
-            corpus_embeddings = self._read()
+            self.corpus_embedding = self._read()
         else:
-            corpus_embeddings = self._build()
+            self.corpus_embedding = self._build()
             self._save()
-        return corpus_embeddings
 
     def _read(self):
-        corpus_embeddings = np.load(self.file_path)
-        print(f'read {self.file_path} with shape {corpus_embeddings.shape}')
-        return corpus_embeddings
+        corpus_embedding = np.load(self.file_path)
+        print(f'read {self.file_path} with shape {corpus_embedding.shape}')
+        return corpus_embedding
 
     def _build(self):
         print(f'encoding corpus...')
-        corpus_embeddings = MODEL.encode_document(self.corpus['paragraphs'])
-        return corpus_embeddings
+        corpus_embedding = MODEL.encode_document(self.corpus['paragraphs'])
+        return corpus_embedding
 
     def _save(self):
-        np.save(self.file_path, self.corpus_embeddings)
-        print(f'saved {self.file_name} with shape {self.corpus_embeddings.shape}')
+        np.save(self.file_path, self.corpus_embedding)
+        print(f'saved {self.file_name} with shape {self.corpus_embedding.shape}')

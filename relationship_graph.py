@@ -3,12 +3,13 @@
 import os
 import pandas as pd
 from datetime import datetime
-#from soup_utils import get_soup, get_internal_page_names, find_page_years, find_page_persons
-#from data_utils import get_page_names, csv_path
 import pandas as pd
 import networkx as nx
 from pyvis.network import Network
 import random
+from __init__ import CSV_PATH
+import re
+
 
 current_datetime_str = datetime.now().strftime('%Y-%m-%d-%H')
 
@@ -124,6 +125,39 @@ def compute_metrics(G: nx.Graph) -> pd.DataFrame:
     return df
 
 
+def find_page_years(page_name: str) -> list:
+    soup = get_soup(page_name)
+    years = []
+    try:
+        for p in soup.find_all('p'):
+            p_text = p.text
+            # Find all 4 digit numbers in the text, filter to years between 1900 and 2025
+            matches = re.findall(r'\b(19[0-9]{2}|20[0-2][0-9]|2025)\b', p_text)
+            years.extend(matches)
+    except Exception as e:
+        print(str(e))
+    return years
+
+
+def find_page_persons(page_name: str) -> list:
+    labels = ["Person"]
+    soup = get_soup(page_name)
+    persons = []
+    try:
+        for p in soup.find_all('p'):
+            p_text = p.text
+            entities = model.predict_entities(p_text, labels, threshold=0.5)
+            for entity in entities:
+                persons.append(entity["text"])
+    except Exception as e:
+        print(str(e))
+    return persons
+
+
+
+class RelationshipGraph:
+    def __init__(self):
+        pass
 
 
 def build_page_relationships(target='year'):
@@ -170,14 +204,14 @@ def build_page_relationships(target='year'):
 
 def save_page_relationships(df, target):
     fn = f'page_relationships_{target}_{current_datetime_str}.csv'
-    fp = os.path.join(csv_path, fn)
+    fp = os.path.join(CSV_PATH, fn)
     df.to_csv(fp, index=False, sep=',')
     print(f'{len(df)} relationships saved to {fp}')
 
 
 def read_page_relationships(target):
     fn = f'page_relationships_{target}_{current_datetime_str}.csv'
-    fp = os.path.join(csv_path, fn)
+    fp = os.path.join(CSV_PATH, fn)
     df = pd.read_csv(fp)
     print(f'{len(df)} relationships read from {fp}')
     return df
@@ -185,7 +219,7 @@ def read_page_relationships(target):
 
 def get_page_relationships(target):
     fn = f'page_relationships_{target}_{current_datetime_str}.csv'
-    if fn in os.listdir(csv_path):
+    if fn in os.listdir(CSV_PATH):
         df = read_page_relationships(target)
     else:
         df = build_page_relationships(target)

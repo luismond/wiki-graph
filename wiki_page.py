@@ -5,12 +5,11 @@ Also, utils to extract paragraph text and links from a soup.
 """
 
 import os
-import re
 import requests
 import pickle
 import bs4
 from dotenv import load_dotenv
-from __init__ import DATA_PATH, PARAGRAPHS_PATH, SOUPS_PATH
+from __init__ import PARAGRAPHS_PATH, SOUPS_PATH
 
 load_dotenv()
 
@@ -110,33 +109,5 @@ class WikiPage:
                     continue
         return list(hrefs)
 
-
-# def find_page_years(page_name: str) -> list:
-#     soup = get_soup(page_name)
-#     years = []
-#     try:
-#         for p in soup.find_all('p'):
-#             p_text = p.text
-#             # Find all 4 digit numbers in the text, filter to years between 1900 and 2025
-#             matches = re.findall(r'\b(19[0-9]{2}|20[0-2][0-9]|2025)\b', p_text)
-#             years.extend(matches)
-#     except Exception as e:
-#         print(str(e))
-#     return years
-
-
-# def find_page_persons(page_name: str) -> list:
-#     labels = ["Person"]
-#     soup = get_soup(page_name)
-#     persons = []
-#     try:
-#         for p in soup.find_all('p'):
-#             p_text = p.text
-#             entities = model.predict_entities(p_text, labels, threshold=0.5)
-#             for entity in entities:
-#                 persons.append(entity["text"])
-#     except Exception as e:
-#         print(str(e))
-#     return persons
 
 
