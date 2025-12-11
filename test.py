@@ -7,6 +7,8 @@ def test_wiki_page():
     """Test the WikiPage class."""
     wiki_page = wp("London")
     assert wiki_page.soup is not None
+    assert wiki_page.get_soup() is not None
+    assert wiki_page.download_soup() is not None
     assert wiki_page.paragraphs is not None
     assert wiki_page.soup.title.string == "London"
     assert wiki_page.shortdescription is not None
