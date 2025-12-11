@@ -10,10 +10,8 @@ import requests
 import pickle
 import bs4
 from dotenv import load_dotenv
-from gliner import GLiNER
 from __init__ import DATA_PATH
-# # Initialize GLiNER with the base model
-# model = GLiNER.from_pretrained("urchade/gliner_medium-v2.1")
+
 
 load_dotenv()
 
