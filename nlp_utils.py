@@ -29,52 +29,13 @@ def get_seed_embedding() -> np.ndarray:
     return seed_embedding
 
 
-seed_corpus_embedding = get_seed_embedding()
-
-
-def save_page_embedding(page_name: str, paragraphs_embedding: np.ndarray):
-    """Save the paragraphs embedding with the page name."""
-    fn = os.path.join(EMBS_PATH, f'{page_name}.npy')
-    np.save(fn, paragraphs_embedding)
-
-
-def save_corpus_embedding(corpus_embeddings: np.ndarray):
-    """Save the corpus embedding with the datetime."""
-    current_datetime_str = datetime.now().strftime('%Y-%m-%d-%H')
-    fn = f"corpus_{current_datetime_str}.npy"
-    fp = os.path.join(EMBS_PATH, fn)
-    np.save(fp, corpus_embeddings)
-    print(f'saved {fn} with shape {corpus_embeddings.shape}')
-
-
-def load_corpus_embedding(corpus: list[str]) -> np.ndarray:
-    """
-    To avoid encoding the whole corpus each run, this function will:
-    - Check the current date
-    - If a corpus embedding exists with this date name, load it
-    - If not, encode the corpus and save it with the current date name
-    - Return the corpus embedding
-    # bug fix: the saved corpus embedding and the text corpus loose alignment.
-    # the text corpus should need to be saved likewise
-
-    """
-    current_datetime_str = datetime.now().strftime('%Y-%m-%d-%H')
-    corpus_fn = f"corpus_{current_datetime_str}.npy"
-    corpus_fp = os.path.join(EMBS_PATH, corpus_fn)
-    if corpus_fn in os.listdir(EMBS_PATH):
-        corpus_embeddings = np.load(corpus_fp)
-        print(f'loaded {corpus_fn} with shape {corpus_embeddings.shape}')
-    else:
-        print(f'encoding {corpus_fn}...')
-        corpus_embeddings = MODEL.encode_document(corpus)
-        save_corpus_embedding(corpus_embeddings)
-    return corpus_embeddings
+seed_embedding = get_seed_embedding()
 
 
 def get_page_similarity_score(paragraphs: list) -> float:
     """Given a list of paragraphs, encode them and calculate their similarity against the seed."""
     paragraphs_embedding = MODEL.encode_document(' '.join(paragraphs))
-    sim_score = float(MODEL.similarity(paragraphs_embedding, seed_corpus_embedding)[0])
+    sim_score = float(MODEL.similarity(paragraphs_embedding, seed_embedding)[0])
     return sim_score
 
 
