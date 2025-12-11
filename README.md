@@ -55,12 +55,8 @@ https://en.wikipedia.org/wiki/Help:Wikitext
 
 ## Scripts structure
 
-
-|_ data_utils
-  |_ network_utils
-  |_ sbert_utils
-  |_ soup_utils
-  |_ corpus_utils
-    |_ crawler 
-    |_ rel_linker
-      |_ dev.ipynb
+|_ sbert_utils
+|_ wiki_page
+|_ corpus_manager
+|_ relationship_graph
+  |_ dev.ipynb
