@@ -55,11 +55,24 @@ https://en.wikipedia.org/wiki/Help:Wikitext
 
 ## Project structure
 
-- The project
-  -- processes wikipedia pages
-  -- aggregates them into a corpus of page contents
-  -- finds relationships within the corpus contents and graphs them
-  -- utilizes sbert utils to arbitrate page downloads and to query the corpus
+|_ sbert_utils
+  |_ wiki_page
+  |_ corpus_manager
+  |_ relationship_graph
+    |_ crawler.py
+    |_ dev.ipynb
+
+
+### WikiPage
+- Represents a Wikipedia page and provides access to its content.
+- Fetches raw HTML, parses, and extracts all paragraphs from the page.
+- Identifies and stores internal links to other Wikipedia pages for graph/network analysis.
+- Supports saving page content to disk and integrating with downstream data pipelines.
+
+### CorpusManager
+- Manages the corpus: loads, builds, and saves wiki pages
+- Works with already-collected data
+- Focused on data management/retrieval
 
 ### Crawler
 - Discovers new pages by following links
@@ -68,15 +81,38 @@ https://en.wikipedia.org/wiki/Help:Wikitext
 - Updates tracking files
 - Focused on data collection/discovery
 
-### CorpusManager
-- Manages the corpus: loads, builds, and saves
-- Works with already-collected data (paragraphs)
-- Focused on data management/retrieval
+
+### Next steps
+
+**File reduction:**
+- ✅ Remove `paragraphs/` directory (redundant - paragraphs already in corpus TSV)
+- ⚠️ Keep subdirs for now (`csv/`, `embs/`, `soups/`) during migration, but plan to eliminate them
+- Consider: `soups/` may be removable if storing raw HTML/text in DB instead
+
+**Database migration:**
+- Main goal: migrate to a proper DB (SQLite for simplicity, PostgreSQL for scale)
+- Benefits: eliminates timestamp-based file naming, proper indexing, data integrity, versioning
+- Migration strategy: incremental (corpus → relationships → embeddings)
+
+**Data normalization:**
+- Avoid redundancy: current issues include paragraphs in both files and TSV, timestamped corpus duplicates
+- Proposed schema:
+  - `pages` (id, name, url, crawled_at)
+  - `paragraphs` (id, page_id, text, position)
+  - `embeddings` (paragraph_id, embedding_vector)
+  - `relationships` (id, source_page_id, target_page_id, relationship_type, metadata)
+
+**Relationship extraction:**
+- Should extend the corpus database as first-class entities
+- Enables queryable relationships without file synchronization issues
+
+### Database properties
+
+**Proposed schema:**
+- `pages`: id (PK), name (unique), url, crawled_at, metadata
+- `paragraphs`: id (PK), page_id (FK), text, position, created_at
+- `embeddings`: paragraph_id (FK), embedding_vector (BLOB/array), model_version
+- `relationships`: id (PK), source_page_id (FK), target_page_id (FK), relationship_type, year, url, metadata
 
 
-|_ sbert_utils
-  |_ wiki_page
-  |_ corpus_manager
-  |_ relationship_graph
-    |_ dev.ipynb
-    |_ crawler.py
+
