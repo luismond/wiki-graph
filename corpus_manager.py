@@ -8,7 +8,7 @@ from datetime import datetime
 import pandas as pd
 from wiki_page import WikiPage
 import numpy as np
-from __init__ import CSV_PATH, SOUPS_PATH, EMBS_PATH
+from __init__ import SOUPS_PATH, DATA_PATH
 from sentence_transformers import SentenceTransformer
 MODEL = SentenceTransformer('distiluse-base-multilingual-cased-v1')
 
@@ -36,14 +36,14 @@ class CorpusManager:
         - This also ensures that the corpus embedding and the text corpus are aligned
 
         """
-        if self.file_name in os.listdir(CSV_PATH):
+        if self.file_name in os.listdir(DATA_PATH):
             self.corpus = self._read()
         else:
             self.corpus = self._build()
             self._save()
 
     def _read(self)-> pd.DataFrame:
-        corpus = pd.read_csv(os.path.join(CSV_PATH, self.file_name), sep='\t')
+        corpus = pd.read_csv(os.path.join(DATA_PATH, self.file_name), sep='\t')
         unique_pages = len(corpus['page_name'].unique())
         print(f'Read {self.file_name} ({corpus.shape} and {unique_pages} pages')
         return corpus
@@ -64,7 +64,7 @@ class CorpusManager:
         return df
 
     def _save(self):
-        self.corpus.to_csv(os.path.join(CSV_PATH, self.file_name), index=False, sep='\t')
+        self.corpus.to_csv(os.path.join(DATA_PATH, self.file_name), index=False, sep='\t')
         print(f'Saved corpus to {self.file_name} with shape {self.corpus.shape}')
 
     def load_corpus_embedding(self):
@@ -79,7 +79,7 @@ class CorpusEmbedding:
         self.current_datetime_str = current_datetime_str
         self.corpus_embedding = None
         self.file_name = f"corpus_{self.current_datetime_str}.npy"
-        self.file_path = os.path.join(EMBS_PATH, self.file_name)
+        self.file_path = os.path.join(DATA_PATH, self.file_name)
 
     def load(self):
         """
@@ -92,7 +92,7 @@ class CorpusEmbedding:
         # the text corpus should need to be saved likewise
 
         """
-        if self.file_name in os.listdir(EMBS_PATH):
+        if self.file_name in os.listdir(DATA_PATH):
             self.corpus_embedding = self._read()
         else:
             self.corpus_embedding = self._build()

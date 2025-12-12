@@ -7,7 +7,7 @@ import pandas as pd
 import networkx as nx
 from pyvis.network import Network
 import random
-from __init__ import CSV_PATH
+from __init__ import DATA_PATH
 import re
 
 
@@ -204,14 +204,14 @@ def build_page_relationships(target='year'):
 
 def save_page_relationships(df, target):
     fn = f'page_relationships_{target}_{current_datetime_str}.csv'
-    fp = os.path.join(CSV_PATH, fn)
+    fp = os.path.join(DATA_PATH, fn)
     df.to_csv(fp, index=False, sep=',')
     print(f'{len(df)} relationships saved to {fp}')
 
 
 def read_page_relationships(target):
     fn = f'page_relationships_{target}_{current_datetime_str}.csv'
-    fp = os.path.join(CSV_PATH, fn)
+    fp = os.path.join(DATA_PATH, fn)
     df = pd.read_csv(fp)
     print(f'{len(df)} relationships read from {fp}')
     return df
@@ -219,7 +219,7 @@ def read_page_relationships(target):
 
 def get_page_relationships(target):
     fn = f'page_relationships_{target}_{current_datetime_str}.csv'
-    if fn in os.listdir(CSV_PATH):
+    if fn in os.listdir(DATA_PATH):
         df = read_page_relationships(target)
     else:
         df = build_page_relationships(target)

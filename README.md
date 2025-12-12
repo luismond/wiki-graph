@@ -48,7 +48,6 @@ Wikipedia entity graph explorer
 ### Next steps
 
 **File reduction:**
-- ✅ Remove `paragraphs/` directory (redundant - paragraphs already in corpus TSV)
 - ⚠️ Keep subdirs for now (`csv/`, `embs/`, `soups/`) during migration, but plan to eliminate them
 - Consider: `soups/` may be removable if storing raw HTML/text in DB instead
 

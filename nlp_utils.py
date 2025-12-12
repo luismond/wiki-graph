@@ -7,7 +7,7 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 from sentence_transformers.util import community_detection
 from gliner import GLiNER
-from __init__ import CSV_PATH
+from __init__ import DATA_PATH
 
 MODEL = SentenceTransformer('distiluse-base-multilingual-cased-v1')
 # # Initialize GLiNER with the base model
@@ -18,7 +18,7 @@ def get_seed_embedding() -> np.ndarray:
     Take the paragraphs of an initial set of pages and encode them.
     This seed embedding will be used to determine the similarity of the new crawled pages.
     """
-    fn = os.path.join(CSV_PATH, 'seed_paragraphs.csv')
+    fn = os.path.join(DATA_PATH, 'seed_paragraphs.csv')
     df = pd.read_csv(fn)
     paragraphs = df['paragraphs'].tolist()
     seed_embedding = MODEL.encode(' '.join(paragraphs))
@@ -66,7 +66,7 @@ def get_df_sim(df_corpus: pd.DataFrame, query: str, top_k_min: int=500) -> pd.Da
     df_sim = df_sim.reset_index(drop=True)
     df_sim = df_sim.sort_values(by='score', ascending=False)
     fn = f'{query[:15]}..._query_results.csv'
-    fp = os.path.join(CSV_PATH, fn)
+    fp = os.path.join(DATA_PATH, fn)
     df_sim.to_csv(fp, index=False, sep='\t')
     print(f'saved query results to {fn} with shape {df_sim.shape}')
     return df_sim
