@@ -1,66 +1,14 @@
 # uap-ent
-hobby project to follow the uap topic
-
-<img width="1059" height="866" alt="network_graph" src="https://github.com/user-attachments/assets/99728dad-8f79-4fed-a133-1bb37e84d2ae" />
+Wikipedia entity graph explorer
 
 
 ## Goals
 
-- Practice NLP concepts. Named entity recognition, graph theory, clustering, text analysis, topic modeling, term recognition.
+- Practice NLP. Named entity recognition, graph theory, clustering, text analysis, topic modeling, term recognition.
 
-- Map entity relationships within the UAP topic and related topics.
+- Practice data analysis. Dataset building, crawling, APIs, database schemas.
 
-# wiki_api_client
-
-A script to fetch and parse the HTML content of a Wikipedia page using the Wikimedia API.
-Retrieves the page's HTML, extracts all paragraphs, and collects their text.
-
-Environment Variables Required:
-- ACCESS_TOKEN: Your Wikimedia API access token.
-- APP_NAME: The name of your application (for User-Agent).
-- EMAIL: Contact email address (for User-Agent).
-
-
-## Wiki API Docs:
-
-Core REST API
-https://api.wikimedia.org/wiki/Core_REST_API
-
-
-Wikitext
-https://en.wikipedia.org/wiki/Help:Wikitext
-
-
-## Network graph
-
-- build_network_graph.py
-
-- Usage:
-  - python build_network_graph.py relationships.csv
-
-- Produces:
-  - network_graph.html
-  
-- Spreadsheet structure and formulas:
-- relationship_graph.sheets
-- relationships
-    - source, source_role, relationship, target, target_role, year, url_title, url, source_rank
-- node_attrs
-    - node, role, rank
-- role_colors
-    - role, color
-
-=vlookup(A2, node_attrs!A:B, 2, FALSE)
-
-
-## Project structure
-
-|_ sbert_utils
-  |_ wiki_page
-  |_ corpus_manager
-  |_ relationship_graph
-    |_ crawler.py
-    |_ dev.ipynb
+- Practice web dev. Graph visualization, product development, design.
 
 
 ### WikiPage
@@ -68,6 +16,10 @@ https://en.wikipedia.org/wiki/Help:Wikitext
 - Fetches raw HTML, parses, and extracts all paragraphs from the page.
 - Identifies and stores internal links to other Wikipedia pages for graph/network analysis.
 - Supports saving page content to disk and integrating with downstream data pipelines.
+- Environment variables required:
+  - `ACCESS_TOKEN`: Your Wikimedia API access token.
+  - `APP_NAME`: The name of your application (for User-Agent).
+  - `EMAIL`: Contact email address (for User-Agent).
 
 ### CorpusManager
 - Manages the corpus: loads, builds, and saves wiki pages
@@ -80,6 +32,17 @@ https://en.wikipedia.org/wiki/Help:Wikitext
 - Saves individual pages (soup and paragraphs)
 - Updates tracking files
 - Focused on data collection/discovery
+
+
+### NetworkGraph
+- Manages the corpus relationships
+  - Page <> page
+  - Page <> year
+  - Page <> person
+  - Person <> person
+
+- Generates a network from these relationships
+- Generates an interactive network graph
 
 
 ### Next steps
@@ -115,4 +78,24 @@ https://en.wikipedia.org/wiki/Help:Wikitext
 - `relationships`: id (PK), source_page_id (FK), target_page_id (FK), relationship_type, year, url, metadata
 
 
+### Todo
 
+Decide what to do with the initially manually collected relationships. This is the metadata:
+- Spreadsheet structure and formulas:
+- relationship_graph.sheets
+- relationships
+    - source, source_role, relationship, target, target_role, year, url_title, url, source_rank
+- node_attrs
+    - node, role, rank
+- role_colors
+    - role, color
+
+=vlookup(A2, node_attrs!A:B, 2, FALSE)
+
+### See also
+
+- Wikipedia Core REST API
+https://api.wikimedia.org/wiki/Core_REST_API
+
+- Wikitext
+https://en.wikipedia.org/wiki/Help:Wikitext
