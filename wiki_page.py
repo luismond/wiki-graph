@@ -8,15 +8,7 @@ import os
 import requests
 import pickle
 import bs4
-from dotenv import load_dotenv
-from __init__ import SOUPS_PATH
-
-load_dotenv()
-
-ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
-APP_NAME = os.getenv("APP_NAME")
-EMAIL = os.getenv("EMAIL")
-HEADERS = {'Authorization': f'Bearer {ACCESS_TOKEN}', 'User-Agent': f'{APP_NAME} ({EMAIL})'}
+from __init__ import SOUPS_PATH, HEADERS
 
 
 class WikiPage:
