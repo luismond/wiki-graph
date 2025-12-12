@@ -1,14 +1,15 @@
 """Utils to build and visualize page relationships."""
 
 import os
-import pandas as pd
+import re
+import random
 from datetime import datetime
 import pandas as pd
 import networkx as nx
 from pyvis.network import Network
-import random
+from corpus_manager import CorpusManager
+from wiki_page import WikiPage
 from __init__ import DATA_PATH
-import re
 
 
 current_datetime_str = datetime.now().strftime('%Y-%m-%d-%H')
@@ -125,39 +126,8 @@ def compute_metrics(G: nx.Graph) -> pd.DataFrame:
     return df
 
 
-def find_page_years(page_name: str) -> list:
-    soup = get_soup(page_name)
-    years = []
-    try:
-        for p in soup.find_all('p'):
-            p_text = p.text
-            # Find all 4 digit numbers in the text, filter to years between 1900 and 2025
-            matches = re.findall(r'\b(19[0-9]{2}|20[0-2][0-9]|2025)\b', p_text)
-            years.extend(matches)
-    except Exception as e:
-        print(str(e))
-    return years
 
 
-def find_page_persons(page_name: str) -> list:
-    labels = ["Person"]
-    soup = get_soup(page_name)
-    persons = []
-    try:
-        for p in soup.find_all('p'):
-            p_text = p.text
-            entities = model.predict_entities(p_text, labels, threshold=0.5)
-            for entity in entities:
-                persons.append(entity["text"])
-    except Exception as e:
-        print(str(e))
-    return persons
-
-
-
-class RelationshipGraph:
-    def __init__(self):
-        pass
 
 
 def build_page_relationships(target='year'):
@@ -174,53 +144,99 @@ def build_page_relationships(target='year'):
         - "target_freq" -> int: the overall frequency value of the targets
     todo: define a database of page relationships
     """
-    page_names = get_page_names()
+    cm = CorpusManager()
+    corpus = cm.corpus
+    
+    page_names = corpus['page_name'].tolist()[:100]
     print(f'Building relationships from {len(page_names)} pages...')
     
     rows = []
     for page_name in page_names:
         if target == 'page':
-            new_page_names = get_internal_page_names(page_name)
+            wp = WikiPage(page_name)
+            new_page_names = wp.get_internal_page_names()
             for new_page_name in new_page_names:
                 rows.append((page_name, new_page_name))
-        if target == 'year':
-            years = find_page_years(page_name)  
-            if len(years) > 0:
-                for year in years:
-                    rows.append((page_name, year))
-        if target == 'person':
-            persons = find_page_persons(page_name)  
-            if len(persons) > 0:
-                for person in persons:
-                    rows.append((page_name, person))
+        # if target == 'year':
+        #     years = find_page_years(page_name)  
+        #     if len(years) > 0:
+        #         for year in years:
+        #             rows.append((page_name, year))
+        # if target == 'person':
+        #     persons = find_page_persons(page_name)  
+        #     if len(persons) > 0:
+        #         for person in persons:
+        #             rows.append((page_name, person))
             
     df = pd.DataFrame(rows)
     df.columns = ['source', 'target']
     df['target_freq'] = df['target'].map(df['target'].value_counts())
     print(f'Built {len(df)} relationships')
-    save_page_relationships(df, target)
+    # save_page_relationships(df, target)
     return df
 
 
-def save_page_relationships(df, target):
-    fn = f'page_relationships_{target}_{current_datetime_str}.csv'
-    fp = os.path.join(DATA_PATH, fn)
-    df.to_csv(fp, index=False, sep=',')
-    print(f'{len(df)} relationships saved to {fp}')
+# def save_page_relationships(df, target):
+#     fn = f'page_relationships_{target}_{current_datetime_str}.csv'
+#     fp = os.path.join(DATA_PATH, fn)
+#     df.to_csv(fp, index=False, sep=',')
+#     print(f'{len(df)} relationships saved to {fp}')
 
 
-def read_page_relationships(target):
-    fn = f'page_relationships_{target}_{current_datetime_str}.csv'
-    fp = os.path.join(DATA_PATH, fn)
-    df = pd.read_csv(fp)
-    print(f'{len(df)} relationships read from {fp}')
-    return df
+# def read_page_relationships(target):
+#     fn = f'page_relationships_{target}_{current_datetime_str}.csv'
+#     fp = os.path.join(DATA_PATH, fn)
+#     df = pd.read_csv(fp)
+#     print(f'{len(df)} relationships read from {fp}')
+#     return df
 
 
-def get_page_relationships(target):
-    fn = f'page_relationships_{target}_{current_datetime_str}.csv'
-    if fn in os.listdir(DATA_PATH):
-        df = read_page_relationships(target)
-    else:
-        df = build_page_relationships(target)
-    return df
+# def get_page_relationships(target):
+#     fn = f'page_relationships_{target}_{current_datetime_str}.csv'
+#     if fn in os.listdir(DATA_PATH):
+#         df = read_page_relationships(target)
+#     else:
+#         df = build_page_relationships(target)
+#     return df
+
+
+# def find_page_years(page_name: str) -> list:
+#     soup = get_soup(page_name)
+#     years = []
+#     try:
+#         for p in soup.find_all('p'):
+#             p_text = p.text
+#             # Find all 4 digit numbers in the text, filter to years between 1900 and 2025
+#             matches = re.findall(r'\b(19[0-9]{2}|20[0-2][0-9]|2025)\b', p_text)
+#             years.extend(matches)
+#     except Exception as e:
+#         print(str(e))
+#     return years
+
+
+# def find_page_persons(page_name: str) -> list:
+#     labels = ["Person"]
+#     soup = get_soup(page_name)
+#     persons = []
+#     try:
+#         for p in soup.find_all('p'):
+#             p_text = p.text
+#             entities = model.predict_entities(p_text, labels, threshold=0.5)
+#             for entity in entities:
+#                 persons.append(entity["text"])
+#     except Exception as e:
+#         print(str(e))
+#     return persons
+
+# def filter_r(df):
+#     #df = df[df['target'].apply(lambda s: s in top_pages)]
+#     # df = df[df['target'].apply(lambda s: s in top_pages)]
+#     max_edges = 750
+#     df['relationship'] = 'co_occurs_with'
+#     df = df.sort_values(by='target_freq', ascending=False)
+#     df = df[df['target_freq'] > 2]
+#     print(df.shape)
+#     df = pd.concat([b[:20] for (_, b) in df.groupby('source')])
+#     df = df[:max_edges]
+#     print(df.shape)
+#     return df
