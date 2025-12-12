@@ -4,11 +4,15 @@ Utils to load, download and save a BeautifulSoup soup containing a wikipedia htm
 Also, utils to extract paragraph text and links from a soup.
 """
 
-import os
 import requests
 import pickle
 import bs4
-from __init__ import SOUPS_PATH, HEADERS
+import sqlite3
+from __init__ import HEADERS, page_id_dict
+
+
+conn = sqlite3.connect('uap_ent.db')
+cur = conn.cursor()
 
 
 class WikiPage:
@@ -42,10 +46,11 @@ class WikiPage:
         
     def get_soup(self) -> bs4.BeautifulSoup:
         "Given a page name, either load the saved soup or download the soup."
-        fn = f'{self.page_name}.pkl'
-        if fn in os.listdir(SOUPS_PATH):
-            with open(os.path.join(SOUPS_PATH, fn), "rb") as f:
-                soup = pickle.load(f)
+        page_id = page_id_dict[self.page_name]
+        cur.execute("SELECT soup_data FROM soups WHERE page_id = ?", (page_id,))
+        row = cur.fetchone()
+        if row:
+            soup = pickle.loads(row[0])
         else:
             soup = self.download_soup()
         return soup
@@ -58,9 +63,9 @@ class WikiPage:
 
     def save_soup(self) -> None:
         "Save the soup as a binary file."
-        fn = f'{self.page_name}.pkl'
-        with open(os.path.join(SOUPS_PATH, fn), "wb") as f:
-            pickle.dump(self.soup, f)
+        page_id = page_id_dict[self.page_name]
+        cur.execute("INSERT INTO soups (page_id, soup_data) VALUES (?, ?)", 
+            (page_id, sqlite3.Binary(self.soup)))
 
     def get_shortdescription(self) -> str:
         try:
