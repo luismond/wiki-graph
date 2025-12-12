@@ -9,6 +9,7 @@ dev.ipynb
 .env
 *html
 *csv
+*db
 *__pycache__
 include/
 data/

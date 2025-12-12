@@ -4,7 +4,7 @@ Wikipedia entity graph explorer
 
 ## Goals
 
-- Practice NLP. Named entity recognition, graph theory, clustering, text analysis, topic modeling, term recognition.
+- Practice NLP. Named entity recognition, graph theory, clustering, text analysis, topic modeling, term recognition, vector search and DBs.
 
 - Practice data analysis. Dataset building, crawling, APIs, database schemas.
 
@@ -54,7 +54,7 @@ Wikipedia entity graph explorer
 **Database migration:**
 - Main goal: migrate to a proper DB (SQLite for simplicity, PostgreSQL for scale)
 - Benefits: eliminates timestamp-based file naming, proper indexing, data integrity, versioning
-- Migration strategy: incremental (pages (ok) → pg corpus (ok) → relationships → embeddings)
+- Migration strategy: incremental (pages (ok) → pg corpus (ok) → relationships (ok) → embeddings)
 
 **Data normalization:**
 - Avoid redundancy: timestamped corpus duplicates
@@ -67,8 +67,8 @@ Wikipedia entity graph explorer
 
 **Proposed schema:**
 - `pages`: id (PK), name (unique), url, crawled_at, sim_score
-- `paragraphs`: id (PK), page_id (FK), text, position, created_at
-- `relationships`: id (PK), source_page_id (FK), target_page_id (FK), relationship_type, year, url, metadata
+- `paragraphs`: id (PK), page_id (FK), text, position
+- `relationships`: id (PK), source_page_id (FK), target (FK), target_type
 - `embeddings`: paragraph_id (FK), embedding_vector (BLOB/array), model_version
 
 ### Classes <> tables
