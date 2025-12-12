@@ -55,7 +55,7 @@ def apply_role_attrs(df):
 def build_graph(df) -> nx.Graph:
 
     #df = apply_role_attrs(df)
-
+    df['relationship'] = 'co_occurs_with'
     G = nx.Graph()
     
     random_html_colors = get_random_html_colors()
@@ -201,6 +201,25 @@ class RelationshipBuilder:
             years.extend(matches)
         return years
 
+    def _filter(
+        self,
+        freq_min=3,
+        groupby_source=True,
+        group_size=20,
+        max_edges=500
+        ):
+        df = self.data
+        df['target_freq'] = df['target'].map(df['target'].value_counts())
+        df = df.sort_values(by='target_freq', ascending=False)
+        df = df[df['target_freq'] > freq_min]
+        if groupby_source:
+            df = pd.concat([b[:group_size] for (_, b) in df.groupby('source')])
+        df = df[:max_edges]
+        filter_params = f'freq_min={freq_min}, groupby_source={groupby_source}, group_size={group_size}, max_edges={max_edges}'
+        print(f'Returned filtered data with shape {df.shape}\nFilter params: {filter_params}')
+        return df
+
+
 # def find_page_persons(page_name: str) -> list:
 #     labels = ["Person"]
 #     soup = get_soup(page_name)
@@ -215,19 +234,8 @@ class RelationshipBuilder:
 #         print(str(e))
 #     return persons
 
-# def filter_r(df):
-# df['target_freq'] = df['target'].map(df['target'].value_counts())
-#     #df = df[df['target'].apply(lambda s: s in top_pages)]
-#     # df = df[df['target'].apply(lambda s: s in top_pages)]
-#     max_edges = 750
-#     df['relationship'] = 'co_occurs_with'
-#     df = df.sort_values(by='target_freq', ascending=False)
-#     df = df[df['target_freq'] > 2]
-#     print(df.shape)
-#     df = pd.concat([b[:20] for (_, b) in df.groupby('source')])
-#     df = df[:max_edges]
-#     print(df.shape)
-#     return df
+
+
 
 # # Chunk target_freq unique values into 5 groups
 # freq_values = np.sort(dfr['target_freq'].unique())
