@@ -158,7 +158,7 @@ class RelationshipBuilder:
 
     def _build(self)-> pd.DataFrame:
         """Given a corpus, use the page names to build the relationship data."""
-        page_names = self.corpus['page_name'].tolist()[:300]
+        page_names = set(self.corpus['page_name'].tolist())
         print(f'Building relationships from {len(page_names)} pages...')
         rows = []
         for page_name in page_names:
@@ -176,6 +176,7 @@ class RelationshipBuilder:
             #         rows.append((page_name, person))
         df = pd.DataFrame(rows)
         df.columns = ['source', 'target', 'rel_type']
+        df = df.drop_duplicates(subset=['source', 'target'])
         print(f'Built data with {len(df)} relationships')
         return df
 
