@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 import warnings
+from datetime import datetime
 
 warnings.filterwarnings('ignore')
 load_dotenv()
@@ -18,3 +19,7 @@ BASE = os.path.dirname(__file__)
 DATA_PATH = os.path.join(BASE, "data")
 TXT_PATH = os.path.join(DATA_PATH, "txt")
 SOUPS_PATH = os.path.join(DATA_PATH, "soups")
+
+current_datetime_str = datetime.now().strftime('%Y-%m-%d-%H')
+
+pages_fp = os.path.join(DATA_PATH, 'pages.tsv')

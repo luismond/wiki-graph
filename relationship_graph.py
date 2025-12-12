@@ -3,16 +3,14 @@
 import os
 import re
 import random
-from datetime import datetime
 import pandas as pd
 import networkx as nx
 from pyvis.network import Network
 from corpus_manager import CorpusManager
 from wiki_page import WikiPage
-from __init__ import DATA_PATH
+from __init__ import DATA_PATH, current_datetime_str
 
 
-current_datetime_str = datetime.now().strftime('%Y-%m-%d-%H')
 
 def get_random_html_colors():
     return [
@@ -126,93 +124,81 @@ def compute_metrics(G: nx.Graph) -> pd.DataFrame:
     return df
 
 
-
-
-
-
-def build_page_relationships(target='page'):
+class RelationshipBuilder:
     """
-    Get the list of all saved page names, read them and find all their internal linked pages.
-    
-    Return a dataframe with these columns:
-        - "source" -> str: the page name
-        - "target" -> str: the relevant data from each page name
-            - targets can be one of these types:
-                - internal link
-                - year
-                - person
-        - "target_freq" -> int: the overall frequency value of the targets
-    todo: define a database of page relationships
+    Reads the stored page objects and
+    builds a dataframe `relationships` with these columns:
+        - id (PK)
+        - source_page_id (FK)
+        - target_id (FK)
+        - relationship_type
+            - internal_link (from WikiPage.get_internal_page_names)
+            - year          (find_page_years)
+            - person        (todo)
     """
-    cm = CorpusManager()
-    corpus = cm.corpus
-    
-    page_names = corpus['page_name'].tolist()[:100]
-    print(f'Building relationships from {len(page_names)} pages...')
-    
-    rows = []
-    for page_name in page_names:
-        if target == 'page':
+    def __init__(self):
+        self.corpus = None
+        self.fn = f'page_relationships_{current_datetime_str}.csv'
+        self.fp = os.path.join(DATA_PATH, self.fn)
+        self.data = None
+        self.load_corpus()
+        self.load()
+
+
+    def load_corpus(self):
+        cm = CorpusManager()
+        self.corpus = cm.corpus
+
+    def load(self):
+        if self.fn in os.listdir(DATA_PATH):
+            self.data = self._read()
+        else:
+            self.data = self._build()
+            self._save()
+
+    def _build(self)-> pd.DataFrame:
+        """Given a corpus, use the page names to build the relationship data."""
+        page_names = self.corpus['page_name'].tolist()[:300]
+        print(f'Building relationships from {len(page_names)} pages...')
+        rows = []
+        for page_name in page_names:
             wp = WikiPage(page_name)
             new_page_names = wp.get_internal_page_names()
             for new_page_name in new_page_names:
-                rows.append((page_name, new_page_name))
-        # if target == 'year':
-        #     years = find_page_years(page_name)  
-        #     if len(years) > 0:
-        #         for year in years:
-        #             rows.append((page_name, year))
-        # if target == 'person':
-        #     persons = find_page_persons(page_name)  
-        #     if len(persons) > 0:
-        #         for person in persons:
-        #             rows.append((page_name, person))
-            
-    df = pd.DataFrame(rows)
-    df.columns = ['source', 'target']
-    df['target_freq'] = df['target'].map(df['target'].value_counts())
-    print(f'Built {len(df)} relationships')
-    # save_page_relationships(df, target)
-    return df
+                rows.append((page_name, new_page_name, 'internal_link'))
+            years = self.find_page_years(page_name)  
+            if len(years) > 0:
+                for year in years:
+                    rows.append((page_name, year, 'year'))
+            # persons = find_page_persons(page_name)  
+            # if len(persons) > 0:
+            #     for person in persons:
+            #         rows.append((page_name, person))
+        df = pd.DataFrame(rows)
+        df.columns = ['source', 'target', 'rel_type']
+        print(f'Built data with {len(df)} relationships')
+        return df
 
+    def _read(self) -> pd.DataFrame:
+        """Read the relationship data."""
+        df = pd.read_csv(self.fp)
+        print(f'Read {len(df)} relationships from {self.fp}')
+        return df
 
-# def save_page_relationships(df, target):
-#     fn = f'page_relationships_{target}_{current_datetime_str}.csv'
-#     fp = os.path.join(DATA_PATH, fn)
-#     df.to_csv(fp, index=False, sep=',')
-#     print(f'{len(df)} relationships saved to {fp}')
+    def _save(self):
+        """Save the relationship data."""
+        self.data.to_csv(self.fp, index=False, sep=',')
+        print(f'Saved {len(self.data)} relationships from {self.fp}')
 
-
-# def read_page_relationships(target):
-#     fn = f'page_relationships_{target}_{current_datetime_str}.csv'
-#     fp = os.path.join(DATA_PATH, fn)
-#     df = pd.read_csv(fp)
-#     print(f'{len(df)} relationships read from {fp}')
-#     return df
-
-
-# def get_page_relationships(target):
-#     fn = f'page_relationships_{target}_{current_datetime_str}.csv'
-#     if fn in os.listdir(DATA_PATH):
-#         df = read_page_relationships(target)
-#     else:
-#         df = build_page_relationships(target)
-#     return df
-
-
-# def find_page_years(page_name: str) -> list:
-#     soup = get_soup(page_name)
-#     years = []
-#     try:
-#         for p in soup.find_all('p'):
-#             p_text = p.text
-#             # Find all 4 digit numbers in the text, filter to years between 1900 and 2025
-#             matches = re.findall(r'\b(19[0-9]{2}|20[0-2][0-9]|2025)\b', p_text)
-#             years.extend(matches)
-#     except Exception as e:
-#         print(str(e))
-#     return years
-
+    @staticmethod
+    def find_page_years(page_name) -> list:
+        """Find all 4 digit numbers in the text, filter to years between 1900 and 2025"""
+        wp = WikiPage(page_name)
+        years = []
+        for p in wp.soup.find_all('p'):
+            matches = re.findall(r'\b(19[0-9]{2}|20[0-2][0-9]|2025)\b', p.text)
+            years.extend(matches)
+        return years
 
 # def find_page_persons(page_name: str) -> list:
 #     labels = ["Person"]
@@ -229,6 +215,7 @@ def build_page_relationships(target='page'):
 #     return persons
 
 # def filter_r(df):
+# df['target_freq'] = df['target'].map(df['target'].value_counts())
 #     #df = df[df['target'].apply(lambda s: s in top_pages)]
 #     # df = df[df['target'].apply(lambda s: s in top_pages)]
 #     max_edges = 750
@@ -240,3 +227,12 @@ def build_page_relationships(target='page'):
 #     df = df[:max_edges]
 #     print(df.shape)
 #     return df
+
+# # Chunk target_freq unique values into 5 groups
+# freq_values = np.sort(dfr['target_freq'].unique())
+# bins = np.array_split(freq_values, 5)
+# bins_dict = defaultdict()
+# for i, b in enumerate(bins):
+#     for freq in b:
+#         bins_dict[int(freq)] = i
+# dfr['bin'] = dfr['target_freq'].map(bins_dict)

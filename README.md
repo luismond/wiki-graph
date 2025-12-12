@@ -54,10 +54,10 @@ Wikipedia entity graph explorer
 **Database migration:**
 - Main goal: migrate to a proper DB (SQLite for simplicity, PostgreSQL for scale)
 - Benefits: eliminates timestamp-based file naming, proper indexing, data integrity, versioning
-- Migration strategy: incremental (pages → pg corpus → relationships → embeddings)
+- Migration strategy: incremental (pages (ok) → pg corpus (ok) → relationships → embeddings)
 
 **Data normalization:**
-- Avoid redundancy: current issues include paragraphs in both files and TSV, timestamped corpus duplicates
+- Avoid redundancy: timestamped corpus duplicates
 
 **Relationship extraction:**
 - Should extend the corpus database as first-class entities
@@ -68,8 +68,16 @@ Wikipedia entity graph explorer
 **Proposed schema:**
 - `pages`: id (PK), name (unique), url, crawled_at, sim_score
 - `paragraphs`: id (PK), page_id (FK), text, position, created_at
-- `embeddings`: paragraph_id (FK), embedding_vector (BLOB/array), model_version
 - `relationships`: id (PK), source_page_id (FK), target_page_id (FK), relationship_type, year, url, metadata
+- `embeddings`: paragraph_id (FK), embedding_vector (BLOB/array), model_version
+
+### Classes <> tables
+
+Each class should produce a table for the DB
+
+- CorpusManager → paragraphs, embeddings
+- Crawler → pages
+- RelationshipBuilder → relationships
 
 
 ### Todo
@@ -83,8 +91,8 @@ Decide what to do with the initially manually collected relationships. This is t
     - node, role, rank
 - role_colors
     - role, color
-
 =vlookup(A2, node_attrs!A:B, 2, FALSE)
+
 
 ### See also
 

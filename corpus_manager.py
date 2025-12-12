@@ -4,11 +4,10 @@ and provides access to the full dataset.
 """
 
 import os
-from datetime import datetime
 import pandas as pd
 from wiki_page import WikiPage
 import numpy as np
-from __init__ import SOUPS_PATH, DATA_PATH
+from __init__ import SOUPS_PATH, DATA_PATH, current_datetime_str
 from sentence_transformers import SentenceTransformer
 MODEL = SentenceTransformer('distiluse-base-multilingual-cased-v1')
 
@@ -24,8 +23,7 @@ class CorpusManager:
     def __init__(self):
         self.corpus = None
         self.corpus_embedding = None
-        self.current_datetime_str = datetime.now().strftime('%Y-%m-%d-%H')
-        self.file_name = f"corpus_{self.current_datetime_str}.tsv"
+        self.file_name = f"corpus_{current_datetime_str}.tsv"
         self.load()
         self.load_corpus_embedding()
     
@@ -68,17 +66,16 @@ class CorpusManager:
         print(f'Saved corpus to {self.file_name} with shape {self.corpus.shape}')
 
     def load_corpus_embedding(self):
-        ce = CorpusEmbedding(self.corpus, self.current_datetime_str)
+        ce = CorpusEmbedding(self.corpus)
         ce.load()
         self.corpus_embedding = ce.corpus_embedding
 
 
 class CorpusEmbedding:
-    def __init__(self, corpus: pd.DataFrame, current_datetime_str: str):
+    def __init__(self, corpus: pd.DataFrame):
         self.corpus = corpus
-        self.current_datetime_str = current_datetime_str
         self.corpus_embedding = None
-        self.file_name = f"corpus_{self.current_datetime_str}.npy"
+        self.file_name = f"corpus_{current_datetime_str}.npy"
         self.file_path = os.path.join(DATA_PATH, self.file_name)
 
     def load(self):
