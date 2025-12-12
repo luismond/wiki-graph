@@ -48,21 +48,16 @@ Wikipedia entity graph explorer
 ### Next steps
 
 **File reduction:**
-- ⚠️ Keep subdirs for now (`csv/`, `embs/`, `soups/`) during migration, but plan to eliminate them
+- ⚠️ Keep subdirs for now (`soups/`) during migration, but plan to eliminate them
 - Consider: `soups/` may be removable if storing raw HTML/text in DB instead
 
 **Database migration:**
 - Main goal: migrate to a proper DB (SQLite for simplicity, PostgreSQL for scale)
 - Benefits: eliminates timestamp-based file naming, proper indexing, data integrity, versioning
-- Migration strategy: incremental (corpus → relationships → embeddings)
+- Migration strategy: incremental (pages → pg corpus → relationships → embeddings)
 
 **Data normalization:**
 - Avoid redundancy: current issues include paragraphs in both files and TSV, timestamped corpus duplicates
-- Proposed schema:
-  - `pages` (id, name, url, crawled_at)
-  - `paragraphs` (id, page_id, text, position)
-  - `embeddings` (paragraph_id, embedding_vector)
-  - `relationships` (id, source_page_id, target_page_id, relationship_type, metadata)
 
 **Relationship extraction:**
 - Should extend the corpus database as first-class entities
@@ -71,7 +66,7 @@ Wikipedia entity graph explorer
 ### Database properties
 
 **Proposed schema:**
-- `pages`: id (PK), name (unique), url, crawled_at, metadata
+- `pages`: id (PK), name (unique), url, crawled_at, sim_score
 - `paragraphs`: id (PK), page_id (FK), text, position, created_at
 - `embeddings`: paragraph_id (FK), embedding_vector (BLOB/array), model_version
 - `relationships`: id (PK), source_page_id (FK), target_page_id (FK), relationship_type, year, url, metadata

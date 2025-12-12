@@ -130,7 +130,7 @@ def compute_metrics(G: nx.Graph) -> pd.DataFrame:
 
 
 
-def build_page_relationships(target='year'):
+def build_page_relationships(target='page'):
     """
     Get the list of all saved page names, read them and find all their internal linked pages.
     

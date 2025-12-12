@@ -13,7 +13,8 @@ from __init__ import SOUPS_PATH, HEADERS
 
 class WikiPage:
     """
-    Represents a single Wikipedia page, including methods to download, parse, and extract links and paragraphs.
+    Represents a single Wikipedia page, including methods to download,
+    parse, and extract links and paragraphs.
     """
     def __init__(self, page_name: str, lang: str = 'en'):
         self.page_name = page_name
@@ -21,9 +22,11 @@ class WikiPage:
         self.soup = None
         self.paragraphs = []
         self.shortdescription = None
+        self.url = None
         self.load()
 
     def load(self):
+        self.url = self.get_html_url()
         self.soup = self.get_soup()
         self.paragraphs = self.get_paragraphs_text()
         self.shortdescription = self.get_shortdescription()
@@ -31,6 +34,12 @@ class WikiPage:
     def __repr__(self):
         return f"<WikiPage {self.page_name}>"
 
+    def get_html_url(self):
+        return (
+            f'https://api.wikimedia.org/core/v1/wikipedia/'
+            f'{self.lang}/page/{self.page_name}/html'
+        )
+        
     def get_soup(self) -> bs4.BeautifulSoup:
         "Given a page name, either load the saved soup or download the soup."
         fn = f'{self.page_name}.pkl'
@@ -43,8 +52,7 @@ class WikiPage:
 
     def download_soup(self) -> bs4.BeautifulSoup:
         "Given a page name, request a wikipedia url and return the parsed html page as a bs4 soup."
-        html_url = f'https://api.wikimedia.org/core/v1/wikipedia/{self.lang}/page/{self.page_name}/html'
-        response = requests.get(html_url, headers=HEADERS, timeout=180)
+        response = requests.get(self.url, headers=HEADERS, timeout=180)
         soup = bs4.BeautifulSoup(response.text, features="html.parser")
         return soup
 

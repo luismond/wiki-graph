@@ -12,3 +12,4 @@ def test_wiki_page():
     assert wiki_page.paragraphs is not None
     assert wiki_page.soup.title.string == "London"
     assert wiki_page.shortdescription is not None
+    assert wiki_page.url is not None
