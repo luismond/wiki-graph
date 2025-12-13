@@ -149,12 +149,13 @@ class RelationshipBuilder:
         conn = sqlite3.connect('uap_ent.db')
         cur = conn.cursor()
         cur.execute("SELECT id, name, sim_score FROM pages")
+        pages = cur.fetchall() 
+        page_id_dict = {name: id_ for id_, name, _ in pages}
 
-        pages = cur.fetchall()
-        cur.execute("SELECT source_page_id FROM relationships")
+        cur.execute("SELECT source_page_id FROM page_links")
         rel_page_ids = cur.fetchall()  # list of page_ids stored in relationships table
         rel_page_ids = set([p[0] for p in rel_page_ids])
-        logger.info(f'{len(rel_page_ids)} page_ids in relationships table')
+        logger.info(f'{len(rel_page_ids)} page_ids in page_links table')
 
         n = 0
         for page_id, page_name, sim_score in pages:
@@ -162,9 +163,10 @@ class RelationshipBuilder:
                 wp = WikiPage(page_name)
                 new_page_names = wp.get_internal_page_names()
                 for new_page_name in new_page_names:
+                    target_page_id = page_id_dict[new_page_name]
                     cur.execute(
-                        "INSERT INTO relationships (source_page_id, target, target_type) VALUES (?, ?, ?)",
-                        (page_id, new_page_name, 'internal_link')
+                        "INSERT INTO page_links (source_page_id, target_page_id) VALUES (?, ?)",
+                        (page_id, target_page_id)
                         )
                     conn.commit()
                     n += 1
@@ -176,12 +178,13 @@ class RelationshipBuilder:
         conn = sqlite3.connect('uap_ent.db')
         cur = conn.cursor()
         cur.execute("""
-            SELECT relationships.source_page_id, pages.name, relationships.target, relationships.target_type
-            FROM relationships
-            LEFT JOIN pages ON relationships.source_page_id = pages.id
+            SELECT page_links.source_page_id, source_pages.name, page_links.target_page_id, target_pages.name
+            FROM page_links
+            LEFT JOIN pages AS source_pages ON page_links.source_page_id = source_pages.id
+            LEFT JOIN pages AS target_pages ON page_links.target_page_id = target_pages.id
         """)
         relationships = cur.fetchall()
-        df = pd.DataFrame(relationships, columns=['source_page_id', 'source', 'target', 'target_type'])
+        df = pd.DataFrame(relationships, columns=['source_page_id', 'source', 'target_page_id', 'target'])
         logger.info(f'Read {len(df)} relationships from relationships table')
         return df
 

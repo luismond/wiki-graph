@@ -27,6 +27,8 @@ row = cur.fetchone()
 if row:
     unpickled_object = pickle.loads(row[0])
 
+# remove a table
+cur.execute('DROP TABLE IF EXISTS table_name')
 """
 
 import os
@@ -64,11 +66,11 @@ def create_tables():
 
     # Create a relationships table
     cur.execute('''
-        CREATE TABLE IF NOT EXISTS relationships (
+        CREATE TABLE IF NOT EXISTS page_links (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            source_page_id INTEGER,
-            target TEXT,
-            target_type TEXT
+            source_page_id INTEGER NOT NULL,
+            target_page_id INTEGER NOT NULL,
+            UNIQUE(source_page_id, target_page_id)
         )
     ''')
 
@@ -80,12 +82,6 @@ def create_tables():
             soup_data BLOB
         )
     ''')
-
-def remove_paragraph_corpus():
-    cur = conn.cursor()
-    cur.execute('DROP TABLE IF EXISTS paragraph_corpus')
-    conn.commit()
-
 
 
 def populate_soups_table():
