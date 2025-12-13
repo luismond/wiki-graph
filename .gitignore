@@ -10,6 +10,8 @@ dev.ipynb
 *html
 *csv
 *db
+*journal
+*log
 *__pycache__
 include/
 data/
