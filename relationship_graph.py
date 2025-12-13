@@ -8,7 +8,8 @@ import networkx as nx
 from pyvis.network import Network
 from corpus_manager import CorpusManager
 from wiki_page import WikiPage
-from __init__ import DATA_PATH, current_datetime_str
+import sqlite3
+from __init__ import current_datetime_str, logger
 
 
 
@@ -137,59 +138,63 @@ class RelationshipBuilder:
             - person        (todo)
     """
     def __init__(self):
-        self.corpus = None
-        self.fn = f'page_relationships_{current_datetime_str}.csv'
-        self.fp = os.path.join(DATA_PATH, self.fn)
         self.data = None
-        self.load_corpus()
         self.load()
 
-
-    def load_corpus(self):
-        cm = CorpusManager()
-        self.corpus = cm.corpus
-
     def load(self):
-        if self.fn in os.listdir(DATA_PATH):
-            self.data = self._read()
-        else:
-            self.data = self._build()
-            self._save()
+        self._build()
+        self.data = self._read()
 
     def _build(self)-> pd.DataFrame:
-        """Given a corpus, use the page names to build the relationship data."""
-        page_names = set(self.corpus['page_name'].tolist())
-        print(f'Building relationships from {len(page_names)} pages...')
-        rows = []
-        for page_name in page_names:
-            wp = WikiPage(page_name)
-            new_page_names = wp.get_internal_page_names()
-            for new_page_name in new_page_names:
-                rows.append((page_name, new_page_name, 'internal_link'))
-            years = self.find_page_years(page_name)  
-            if len(years) > 0:
-                for year in years:
-                    rows.append((page_name, year, 'year'))
-            # persons = find_page_persons(page_name)  
-            # if len(persons) > 0:
-            #     for person in persons:
-            #         rows.append((page_name, person))
-        df = pd.DataFrame(rows)
-        df.columns = ['source', 'target', 'rel_type']
-        df = df.drop_duplicates(subset=['source', 'target'])
-        print(f'Built data with {len(df)} relationships')
-        return df
+        """Use the page names in page table to build the relationship data."""
+        logger.info(f'Building relationship corpus...')
+        conn = sqlite3.connect('uap_ent.db')
+        cur = conn.cursor()
+        cur.execute("SELECT id, name, sim_score FROM pages")
+
+        pages = cur.fetchall()
+        cur.execute("SELECT source_page_id FROM relationships")
+        rel_page_ids = cur.fetchall()  # list of page_ids stored in relationships table
+        rel_page_ids = set([p[0] for p in rel_page_ids])
+        logger.info(f'{len(rel_page_ids)} page_ids in relationships table')
+
+        # issue: if source_page_id exists, how to save subsequent, different relations?
+        n = 0
+        for page_id, page_name, sim_score in pages:
+            if page_id not in rel_page_ids and sim_score >= .4:
+                wp = WikiPage(page_name)
+                new_page_names = wp.get_internal_page_names()
+                for new_page_name in new_page_names:
+                    cur.execute(
+                        "INSERT INTO relationships (source_page_id, target, target_type) VALUES (?, ?, ?)",
+                        (page_id, new_page_name, 'internal_link')
+                        )
+                    conn.commit()
+                    n += 1
+                # years = self.find_page_years(page_name)  
+                # if len(years) > 0:
+                #     for year in years:
+                #         rows.append((page_name, year, 'year'))
+                # persons = find_page_persons(page_name)  
+                # if len(persons) > 0:
+                #     for person in persons:
+                #         rows.append((page_name, person))
+        logger.info(f'Added {n} relationships')
+       
 
     def _read(self) -> pd.DataFrame:
         """Read the relationship data."""
-        df = pd.read_csv(self.fp)
-        print(f'Read {len(df)} relationships from {self.fp}')
+        conn = sqlite3.connect('uap_ent.db')
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT relationships.source_page_id, pages.name, relationships.target, relationships.target_type
+            FROM relationships
+            LEFT JOIN pages ON relationships.source_page_id = pages.id
+        """)
+        relationships = cur.fetchall()
+        df = pd.DataFrame(relationships, columns=['source_page_id', 'source', 'target', 'target_type'])
+        logger.info(f'Read {len(df)} relationships from relationships table')
         return df
-
-    def _save(self):
-        """Save the relationship data."""
-        self.data.to_csv(self.fp, index=False, sep=',')
-        print(f'Saved {len(self.data)} relationships from {self.fp}')
 
     @staticmethod
     def find_page_years(page_name) -> list:
