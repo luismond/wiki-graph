@@ -5,14 +5,11 @@ Also, utils to extract paragraph text and links from a soup.
 """
 
 import requests
+from time import sleep
 import pickle
 import bs4
 import sqlite3
-from __init__ import HEADERS, page_id_dict
-
-
-conn = sqlite3.connect('uap_ent.db')
-cur = conn.cursor()
+from __init__ import HEADERS, logger
 
 
 class WikiPage:
@@ -46,26 +43,40 @@ class WikiPage:
         
     def get_soup(self) -> bs4.BeautifulSoup:
         "Given a page name, either load the saved soup or download the soup."
-        page_id = page_id_dict[self.page_name]
-        cur.execute("SELECT soup_data FROM soups WHERE page_id = ?", (page_id,))
-        row = cur.fetchone()
-        if row:
-            soup = pickle.loads(row[0])
+        conn = sqlite3.connect('uap_ent.db')
+        cur = conn.cursor()
+        cur.execute("SELECT id, name FROM pages")
+        pages = cur.fetchall() 
+        page_id_dict = {name: id_ for id_, name in pages}
+        if self.page_name in page_id_dict.keys():
+            page_id = page_id_dict[self.page_name]
+            conn = sqlite3.connect('uap_ent.db')
+            cur = conn.cursor()
+            cur.execute("SELECT soup_data FROM soups WHERE page_id = ?", (page_id,))
+            row = cur.fetchone()
+            if row:
+                soup = pickle.loads(row[0])
+            else:
+                soup = self.download_soup()
         else:
             soup = self.download_soup()
         return soup
 
     def download_soup(self) -> bs4.BeautifulSoup:
         "Given a page name, request a wikipedia url and return the parsed html page as a bs4 soup."
+        sleep(.125)
         response = requests.get(self.url, headers=HEADERS, timeout=180)
         soup = bs4.BeautifulSoup(response.text, features="html.parser")
         return soup
 
-    def save_soup(self) -> None:
+    def save_soup(self, page_id) -> None:
         "Save the soup as a binary file."
-        page_id = page_id_dict[self.page_name]
+        conn = sqlite3.connect('uap_ent.db')
+        cur = conn.cursor()
         cur.execute("INSERT INTO soups (page_id, soup_data) VALUES (?, ?)", 
-            (page_id, sqlite3.Binary(self.soup)))
+            (page_id, sqlite3.Binary(pickle.dumps(self.soup))))
+        conn.commit()
+        print(f'saved {page_id} soup!!!!!!!')
 
     def get_shortdescription(self) -> str:
         try:
@@ -81,7 +92,7 @@ class WikiPage:
             for p in self.soup.find_all('p'):
                 paragraphs.append(p.text)
         except Exception as e:
-            print(str(e))
+            logger.error(str(e))
         return paragraphs
 
     def get_internal_page_names(self) -> list:
