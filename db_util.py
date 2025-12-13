@@ -1,13 +1,33 @@
+"""
+Use this file to create the database and populate the tables.
+
+sqlite 101:
+
+# Insert a row of data
+cur.execute("INSERT INTO users (name, age) VALUES (?, ?)", ("Alice", 30)
+
+# Commit the transaction
+conn.commit(
+
+# Query data
+cur.execute("SELECT * FROM users")
+rows = cur.fetchall()
+print(rows)  # Output: [(1, 'Alice', 30)
+
+# Close the connection
+conn.close()
+
+"""
+
 import os
 import sqlite3
-import pickle
+import pandas as pd
 
 conn = sqlite3.connect('uap_ent.db')
 
-def main():
+def create_tables():
     # Create a connection to a database file (will create if it doesn't exist)
     
-
     # Create a cursor object to execute SQL commands
     cur = conn.cursor()
 
@@ -51,7 +71,13 @@ def main():
         )
     ''')
 
-  
+def remove_paragraph_corpus():
+    cur = conn.cursor()
+    cur.execute('DROP TABLE IF EXISTS paragraph_corpus')
+    conn.commit()
+
+
+
 def populate_soups_table():
     # Read all pages from the pages table
     cur = conn.cursor()
@@ -67,6 +93,25 @@ def populate_soups_table():
                     pickled_data = f.read()
                 cur.execute("INSERT INTO soups (page_id, soup_data) VALUES (?, ?)", 
                             (page_id, sqlite3.Binary(pickled_data)))
+    conn.commit()
+
+
+def build_page_table():
+    df = pd.read_csv('data/pages.tsv', sep='\t')
+    df.shape
+    df.sample(10).head()
+
+    # `pages`: id (PK), name (unique), url, crawled_at, sim_score
+    # Create a connection to a database file (will create if it doesn't exist)
+    conn = sqlite3.connect('uap_ent.db')
+
+    # Create a cursor object to execute SQL commands
+    cur = conn.cursor()
+    for _, row in df.iterrows():
+        cur.execute(
+            "INSERT INTO pages (name, url, crawled_at, sim_score) VALUES (?, ?, ?, ?)",
+            (row['name'], row['url'], row['crawled_at'], row['sim_score'])
+            )
     conn.commit()
 
 
