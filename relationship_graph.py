@@ -10,7 +10,6 @@ from wiki_page import WikiPage
 from __init__ import logger
 
 
-
 def get_random_html_colors():
     return [
         "#FF5733",  # Orange Red
@@ -125,15 +124,10 @@ def compute_metrics(G: nx.Graph) -> pd.DataFrame:
 
 class RelationshipBuilder:
     """
-    Reads the stored page objects and
-    builds a dataframe `relationships` with these columns:
+    Reads the stored page objects and builds a dataframe `relationships` with these columns:
         - id (PK)
         - source_page_id (FK)
-        - target_id (FK)
-        - relationship_type
-            - internal_link (from WikiPage.get_internal_page_names)
-            - year          (find_page_years)
-            - person        (todo)
+        - target_page_id (FK)
     """
     def __init__(self):
         self.data = None
@@ -142,6 +136,7 @@ class RelationshipBuilder:
     def load(self):
         self._build()
         self.data = self._read()
+    
 
     def _build(self)-> pd.DataFrame:
         """Use the page names in page table to build the relationship data."""
@@ -178,44 +173,65 @@ class RelationshipBuilder:
         conn = sqlite3.connect('uap_ent.db')
         cur = conn.cursor()
         cur.execute("""
-            SELECT page_links.source_page_id, source_pages.name, page_links.target_page_id, target_pages.name
+            SELECT page_links.source_page_id, source_pages.name, 
+            page_links.target_page_id, target_pages.name, target_pages.sim_score
             FROM page_links
             LEFT JOIN pages AS source_pages ON page_links.source_page_id = source_pages.id
             LEFT JOIN pages AS target_pages ON page_links.target_page_id = target_pages.id
         """)
         relationships = cur.fetchall()
-        df = pd.DataFrame(relationships, columns=['source_page_id', 'source', 'target_page_id', 'target'])
+        df = pd.DataFrame(
+            relationships, columns=['source_page_id', 'source',
+            'target_page_id', 'target', 'sim_score']
+            )
         logger.info(f'Read {len(df)} relationships from relationships table')
         return df
-
-    @staticmethod
-    def find_page_years(page_name) -> list:
-        """Find all 4 digit numbers in the text, filter to years between 1900 and 2025"""
-        wp = WikiPage(page_name)
-        years = []
-        for p in wp.soup.find_all('p'):
-            matches = re.findall(r'\b(19[0-9]{2}|20[0-2][0-9]|2025)\b', p.text)
-            years.extend(matches)
-        return years
 
     def _filter(
         self,
         freq_min=3,
         groupby_source=True,
         group_size=20,
-        max_edges=500
+        max_edges=500,
+        min_sim_score=.5
         ):
+        """
+        Filter the relationship dataframe according to several parameters.
+
+        Args:
+            freq_min (int): Minimum number of times a target must appear to be kept.
+            groupby_source (bool): Whether to group results by source node.
+            group_size (int): Number of edges to keep per source group if groupby_source is True.
+            max_edges (int): Maximum number of edges to return after filtering.
+            min_sim_score (float): Minimum similarity score threshold for included relationships.
+
+        Returns:
+            pd.DataFrame: Filtered relationship dataframe.
+        """
         df = self.data
         df['target_freq'] = df['target'].map(df['target'].value_counts())
         df = df.sort_values(by='target_freq', ascending=False)
         df = df[df['target_freq'] > freq_min]
         if groupby_source:
             df = pd.concat([b[:group_size] for (_, b) in df.groupby('source')])
+        df = df[df['sim_score'] >= min_sim_score]
         df = df[:max_edges]
         filter_params = f'freq_min={freq_min}, groupby_source={groupby_source}, group_size={group_size}, max_edges={max_edges}'
         print(f'Returned filtered data with shape {df.shape}\nFilter params: {filter_params}')
         return df
 
+
+# TODO:
+
+# @staticmethod
+# def find_page_years(page_name) -> list:
+#     """Find all 4 digit numbers in the text, filter to years between 1900 and 2025"""
+#     wp = WikiPage(page_name)
+#     years = []
+#     for p in wp.soup.find_all('p'):
+#         matches = re.findall(r'\b(19[0-9]{2}|20[0-2][0-9]|2025)\b', p.text)
+#         years.extend(matches)
+#     return years
 
 # def find_page_persons(page_name: str) -> list:
 #     labels = ["Person"]
@@ -230,12 +246,3 @@ class RelationshipBuilder:
 #     except Exception as e:
 #         print(str(e))
 #     return persons
-
-# # Chunk target_freq unique values into 5 groups
-# freq_values = np.sort(dfr['target_freq'].unique())
-# bins = np.array_split(freq_values, 5)
-# bins_dict = defaultdict()
-# for i, b in enumerate(bins):
-#     for freq in b:
-#         bins_dict[int(freq)] = i
-# dfr['bin'] = dfr['target_freq'].map(bins_dict)
