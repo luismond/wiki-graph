@@ -44,6 +44,11 @@ Wikipedia entity graph explorer
 - Generates a network from these relationships
 - Generates an interactive network graph
 
+- issue: if source_page_id exists, how to save subsequent, different relations?
+- simplify the _build method and only collect get_internal_page_names
+- rethink the NER extraction (years, names, orgs, places)
+- maybe in the same table or in separate tables
+
 
 ### Next steps
 

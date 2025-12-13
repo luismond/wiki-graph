@@ -1,15 +1,13 @@
 """Utils to build and visualize page relationships."""
 
-import os
 import re
 import random
 import pandas as pd
 import networkx as nx
 from pyvis.network import Network
-from corpus_manager import CorpusManager
-from wiki_page import WikiPage
 import sqlite3
-from __init__ import current_datetime_str, logger
+from wiki_page import WikiPage
+from __init__ import logger
 
 
 
@@ -158,7 +156,6 @@ class RelationshipBuilder:
         rel_page_ids = set([p[0] for p in rel_page_ids])
         logger.info(f'{len(rel_page_ids)} page_ids in relationships table')
 
-        # issue: if source_page_id exists, how to save subsequent, different relations?
         n = 0
         for page_id, page_name, sim_score in pages:
             if page_id not in rel_page_ids and sim_score >= .4:
@@ -171,14 +168,6 @@ class RelationshipBuilder:
                         )
                     conn.commit()
                     n += 1
-                # years = self.find_page_years(page_name)  
-                # if len(years) > 0:
-                #     for year in years:
-                #         rows.append((page_name, year, 'year'))
-                # persons = find_page_persons(page_name)  
-                # if len(persons) > 0:
-                #     for person in persons:
-                #         rows.append((page_name, person))
         logger.info(f'Added {n} relationships')
        
 
@@ -238,9 +227,6 @@ class RelationshipBuilder:
 #     except Exception as e:
 #         print(str(e))
 #     return persons
-
-
-
 
 # # Chunk target_freq unique values into 5 groups
 # freq_values = np.sort(dfr['target_freq'].unique())
