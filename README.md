@@ -47,14 +47,11 @@ Wikipedia entity graph explorer
 
 ### Next steps
 
-**File reduction:**
-- ⚠️ Keep subdirs for now (`soups/`) during migration, but plan to eliminate them
-- Consider: `soups/` may be removable if storing raw HTML/text in DB instead
 
 **Database migration:**
 - Main goal: migrate to a proper DB (SQLite for simplicity, PostgreSQL for scale)
 - Benefits: eliminates timestamp-based file naming, proper indexing, data integrity, versioning
-- Migration strategy: incremental (pages (ok) → pg corpus (ok) → relationships (ok) → embeddings)
+- Migration strategy: incremental (pages (ok) → pg corpus (ok) → relationships → embeddings)
 
 **Data normalization:**
 - Avoid redundancy: timestamped corpus duplicates
@@ -65,7 +62,7 @@ Wikipedia entity graph explorer
 
 ### Database properties
 
-**Proposed schema:**
+**Schema:**
 - `pages`: id (PK), name (unique), url, crawled_at, sim_score
 - `paragraphs`: id (PK), page_id (FK), text, position
 - `relationships`: id (PK), source_page_id (FK), target (FK), target_type
@@ -76,7 +73,7 @@ Wikipedia entity graph explorer
 Each class should produce a table for the DB
 
 - CorpusManager → paragraphs, embeddings
-- Crawler → pages
+- Crawler → pages, soups
 - RelationshipBuilder → relationships
 
 
