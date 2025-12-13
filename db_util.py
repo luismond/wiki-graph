@@ -6,6 +6,10 @@ sqlite 101:
 # Insert a row of data
 cur.execute("INSERT INTO users (name, age) VALUES (?, ?)", ("Alice", 30)
 
+# Insert binary data
+cur.execute("INSERT INTO soups (page_id, soup_data) VALUES (?, ?)", 
+            (page_id, sqlite3.Binary(pickled_data)))
+
 # Commit the transaction
 conn.commit(
 
@@ -16,6 +20,12 @@ print(rows)  # Output: [(1, 'Alice', 30)
 
 # Close the connection
 conn.close()
+
+# Query one data item
+cur.execute("SELECT soup_data FROM soups WHERE page_id = ?", (page_id,))
+row = cur.fetchone()
+if row:
+    unpickled_object = pickle.loads(row[0])
 
 """
 
