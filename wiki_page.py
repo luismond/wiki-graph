@@ -5,7 +5,6 @@ Also, utils to extract paragraph text and links from a soup.
 """
 
 import requests
-from time import sleep
 import pickle
 import bs4
 import sqlite3
@@ -64,7 +63,6 @@ class WikiPage:
 
     def download_soup(self) -> bs4.BeautifulSoup:
         "Given a page name, request a wikipedia url and return the parsed html page as a bs4 soup."
-        sleep(.125)
         response = requests.get(self.url, headers=HEADERS, timeout=180)
         soup = bs4.BeautifulSoup(response.text, features="html.parser")
         return soup
