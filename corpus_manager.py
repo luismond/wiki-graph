@@ -22,11 +22,12 @@ def get_alpha_ratio(string: str) -> float:
 
 
 class CorpusManager:
-    def __init__(self):
+    def __init__(self, sim_threshold: float = .45):
         self.corpus = None
         self.corpus_embedding = None
+        self.sim_threshold = sim_threshold
         self.load()
-    
+        
     def load(self) -> pd.DataFrame:
         self._build()
         self.corpus = self._read()
@@ -57,7 +58,7 @@ class CorpusManager:
 
         n = 0
         for page_id, page_name, sim_score in pages:
-            if page_id not in pc_page_ids and sim_score >= .45:
+            if page_id not in pc_page_ids and sim_score >= self.sim_threshold:
                 wp = WikiPage(page_name)
                 paragraphs = [
                     p for p in wp.paragraphs if len(p.split()) > 5 \
