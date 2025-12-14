@@ -88,7 +88,9 @@ class WikiPage:
         paragraphs = []
         try:
             for p in self.soup.find_all('p'):
-                paragraphs.append(p.text)
+                p_text = p.text
+                if len(p_text.split()) > 5 and get_alpha_ratio(p_text) > .75:
+                    paragraphs.append(p_text)
         except Exception as e:
             logger.error(str(e))
         return paragraphs
@@ -112,4 +114,9 @@ class WikiPage:
         return list(hrefs)
 
 
+def get_alpha_ratio(string: str) -> float:
+    """Calculate the ratio of alphabetic characters in a string."""
+    alpha_n = [ch for ch in string if ch.isalpha()]
+    alpha_ratio = len(alpha_n) / len(string)
+    return alpha_ratio 
 
