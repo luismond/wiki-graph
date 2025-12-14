@@ -7,7 +7,7 @@ from nlp_utils import get_page_similarity_score
 from __init__ import current_datetime_str, logger
 
 
-def process_new_page_name(new_page_name, sim_threshold):
+def process_new_page_name(new_page_name, sim_score, sim_threshold):
     """
     Process a new Wikipedia page name: fetch the page, compute similarity score,
     save its metadata to the database, and store its soup if the score meets the threshold.
@@ -67,7 +67,7 @@ def crawl(sim_threshold: float=0.5):
                 if new_page_name in page_names:
                     continue
                 else:
-                    process_new_page_name(new_page_name, sim_threshold)
+                    process_new_page_name(new_page_name, sim_score, sim_threshold)
                     n += 1
     logger.info(f'Processed {n} new pages')
     conn.close()
