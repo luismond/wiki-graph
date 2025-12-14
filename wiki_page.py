@@ -71,7 +71,7 @@ class WikiPage:
         "Save the soup as a binary file."
         conn = sqlite3.connect('uap_ent.db')
         cur = conn.cursor()
-        cur.execute("INSERT INTO soups (page_id, soup_data) VALUES (?, ?)", 
+        cur.execute("INSERT OR REPLACE INTO soups (page_id, soup_data) VALUES (?, ?)", 
             (page_id, sqlite3.Binary(pickle.dumps(self.soup))))
         conn.commit()
         print(f'saved {page_id} soup!!!!!!!')
