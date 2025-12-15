@@ -95,6 +95,18 @@ class WikiPage:
             logger.error(str(e))
         return paragraphs
 
+    def save_paragraphs(self, page_id):
+        conn = sqlite3.connect('uap_ent.db')
+        cur = conn.cursor()
+        if len(self.paragraphs) > 0:
+            for pos, pg in enumerate(self.paragraphs):
+                cur.execute(
+                    "INSERT OR REPLACE INTO paragraph_corpus "
+                    "(page_id, text, position) VALUES (?, ?, ?)",
+                    (page_id, pg, pos)
+                )
+                conn.commit()
+
     def get_internal_page_names(self) -> list:
         """
         Extract all unique links from the page's content.

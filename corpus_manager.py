@@ -40,35 +40,48 @@ class CorpusManager:
         logger.info(f'Read paragraph_corpus with {len(corpus)} rows')
         return corpus
 
-    def _build(self):
-        """
-        Build the paragraph corpus from WikiPage objects 
-        and insert into the database if not present.
-        """
-        logger.info(f'Building corpus...')
+    def _get_pages_table(self):
         conn = sqlite3.connect('uap_ent.db')
         cur = conn.cursor()
-        cur.execute("SELECT id, name, sim_score FROM pages")
+        cur.execute("""
+        SELECT id, name, sim_score FROM pages
+        WHERE sim_score >= ?
+        """, (self.sim_threshold,))
         pages = cur.fetchall()
+        logger.info(f'{len(pages)} page_ids in pages table with sim_score > {self.sim_threshold}')
+        if len(pages) == 0:
+            raise ValueError(f'No pages found with sim_score > {self.sim_threshold}')
+        conn.close()
+        return pages
 
-        cur.execute("SELECT page_id FROM paragraph_corpus")
-        pc_page_ids = cur.fetchall()  # list of page_ids stored in paragraph_corpus table
+    def get_corpus_page_ids(self):
+        conn = sqlite3.connect('uap_ent.db')
+        cur = conn.cursor()
+        cur.execute("""SELECT page_id FROM paragraph_corpus""")
+        pc_page_ids = cur.fetchall()
         pc_page_ids = set([p[0] for p in pc_page_ids])
         logger.info(f'{len(pc_page_ids)} page_ids in paragraph_corpus table')
+        return pc_page_ids
+
+    def _build(self):
+        """
+        From the pages table, get the pages with sim_score >= self.sim_threshold
+        and the pages not in the paragraph_corpus table.
+        For each page, create a WikiPage object and save the paragraphs to the database.
+        """
+        logger.info(f'Building corpus...')
+        pages = self._get_pages_table()
+        pc_page_ids = self.get_corpus_page_ids()
+
+        u_pages = [p for p in pages if p[0] not in pc_page_ids]
+        logger.info(f'{len(u_pages)} pages to add to corpus')
 
         n = 0
-        for page_id, page_name, sim_score in pages:
-            if page_id not in pc_page_ids and sim_score >= self.sim_threshold:
+        for page_id, page_name, _ in pages:
+            if page_id not in pc_page_ids:
                 wp = WikiPage(page_name)
-                paragraphs = [
-                    p for p in wp.paragraphs if len(p.split()) > 5 \
-                        and get_alpha_ratio(p) > .75]
-                for pos, pg in enumerate(paragraphs):
-                    cur.execute(
-                        "INSERT INTO paragraph_corpus (page_id, text, position) VALUES (?, ?, ?)",
-                        (page_id, pg, pos)
-                        )
-                    conn.commit()
+                if len(wp.paragraphs) > 0:
+                    wp.save_paragraphs(page_id)
                     n += 1
         logger.info(f'Added {n} pages to corpus')
     
@@ -117,6 +130,7 @@ class CorpusEmbedding:
 
     def _build(self):
         logger.info(f'encoding corpus...')
+        from __init__ import MODEL
         corpus_embedding = MODEL.encode_document(self.corpus['text'])
         return corpus_embedding
 
