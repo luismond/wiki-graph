@@ -130,7 +130,7 @@ class CorpusEmbedding:
 
     def _build(self):
         logger.info(f'encoding corpus...')
-        from __init__ import MODEL
+        from nlp_utils import MODEL
         corpus_embedding = MODEL.encode_document(self.corpus['text'])
         return corpus_embedding
 
