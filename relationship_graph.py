@@ -129,7 +129,8 @@ class RelationshipBuilder:
         - source_page_id (FK)
         - target_page_id (FK)
     """
-    def __init__(self):
+    def __init__(self, sim_threshold: float = .45):
+        self.sim_threshold = sim_threshold
         self.data = None
         self.load()
 
@@ -139,8 +140,8 @@ class RelationshipBuilder:
     
 
     def _build(self)-> pd.DataFrame:
-        """Use the page names in page table to build the relationship data."""
-        logger.info(f'Building relationship corpus...')
+        """Use the page names in page table to build the page_links data."""
+        logger.info(f'Building page_links corpus...')
         conn = sqlite3.connect('uap_ent.db')
         cur = conn.cursor()
         cur.execute("SELECT id, name, sim_score FROM pages")
@@ -154,10 +155,12 @@ class RelationshipBuilder:
 
         n = 0
         for page_id, page_name, sim_score in pages:
-            if page_id not in rel_page_ids and sim_score >= .4:
+            if page_id not in rel_page_ids and sim_score >= self.sim_threshold:
                 wp = WikiPage(page_name)
                 new_page_names = wp.get_internal_page_names()
                 for new_page_name in new_page_names:
+                    if new_page_name not in page_id_dict:
+                        continue
                     target_page_id = page_id_dict[new_page_name]
                     cur.execute(
                         "INSERT INTO page_links (source_page_id, target_page_id) VALUES (?, ?)",
@@ -165,7 +168,7 @@ class RelationshipBuilder:
                         )
                     conn.commit()
                     n += 1
-        logger.info(f'Added {n} relationships')
+        logger.info(f'Added {n} page_links')
        
 
     def _read(self) -> pd.DataFrame:
@@ -184,7 +187,7 @@ class RelationshipBuilder:
             relationships, columns=['source_page_id', 'source',
             'target_page_id', 'target', 'sim_score']
             )
-        logger.info(f'Read {len(df)} relationships from relationships table')
+        logger.info(f'Read {len(df)} page_links from page_links table')
         return df
 
     def _filter(
