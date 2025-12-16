@@ -1,7 +1,5 @@
 """Wiki pages crawler."""
 
-import os
-import pandas as pd
 import numpy as np
 from random import shuffle
 import sqlite3
@@ -9,20 +7,24 @@ from wiki_page import WikiPage
 from nlp_utils import MODEL
 from __init__ import current_datetime_str, logger
 
+
 class Crawler:
-    def __init__(self, sim_threshold: float, seed_page: str):
+    def __init__(self, sim_threshold: float, seed_page_name: str):
         self.sim_threshold = sim_threshold
-        self.seed_page = seed_page
+        self.seed_page_name = seed_page_name
         self.seed_paragraphs = None
         self.seed_embedding = None
+        self.load()
         
     def load(self):
         self.seed_paragraphs = self.get_seed_paragraphs()
         self.seed_embedding = self.get_seed_embedding()
 
     def get_seed_paragraphs(self):
-        seed_page_wp = WikiPage(self.seed_page)
-        return seed_page_wp.paragraphs
+        seed_page_wp = WikiPage(self.seed_page_name)
+        paragraphs = seed_page_wp.paragraphs
+        logger.info(f'Loaded seed paragraphs from {self.seed_page_name}')
+        return paragraphs
 
     def get_seed_embedding(self) -> np.ndarray:
         """
@@ -30,7 +32,6 @@ class Crawler:
         This seed embedding will be used to determine the similarity of the new crawled pages.
         """
         seed_embedding = MODEL.encode(' '.join(self.seed_paragraphs))
-        logger.info('loaded seed embedding')
         return seed_embedding
 
     def get_page_similarity_score(self, paragraphs: list) -> float:
