@@ -31,15 +31,13 @@ if row:
 cur.execute('DROP TABLE IF EXISTS table_name')
 """
 
-import os
 import sqlite3
-import pandas as pd
 
-conn = sqlite3.connect('uap_ent.db')
 
 def create_tables():
     # Create a connection to a database file (will create if it doesn't exist)
-    
+    conn = sqlite3.connect('wiki_ent.db')
+
     # Create a cursor object to execute SQL commands
     cur = conn.cursor()
 
@@ -56,7 +54,7 @@ def create_tables():
 
     # Create a paragraph_corpus table
     cur.execute('''
-        CREATE TABLE IF NOT EXISTS paragraph_corpus (
+        CREATE TABLE IF NOT EXISTS paragraphs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             page_id INTEGER,
             text TEXT,
@@ -74,52 +72,23 @@ def create_tables():
         )
     ''')
 
-   # Create a soups table
+    # Create a soups table
     cur.execute('''
         CREATE TABLE IF NOT EXISTS soups (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             page_id INTEGER,
             soup_data BLOB
-        )
+        ) 
     ''')
 
-
-def populate_soups_table():
-    # Read all pages from the pages table
-    cur = conn.cursor()
-    cur.execute("SELECT id, name FROM pages")
-    pages = cur.fetchall()  # list of (id, name)
-
-    soups_path = 'data/soups'
-    for page_id, page_name in pages:
-        if page_name:
-            soup_file = os.path.join(soups_path, page_name + '.pkl')
-            if os.path.exists(soup_file):
-                with open(soup_file, 'rb') as f:
-                    pickled_data = f.read()
-                cur.execute("INSERT INTO soups (page_id, soup_data) VALUES (?, ?)", 
-                            (page_id, sqlite3.Binary(pickled_data)))
+    # Create a paragraph embeddings table
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS paragraph_embeddings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            paragraph_id INTEGER REFERENCES paragraph_corpus(id),
+            page_id INTEGER REFERENCES pages(id),
+            embedding BLOB
+        )
+    ''')
     conn.commit()
-
-
-def build_page_table():
-    df = pd.read_csv('data/pages.tsv', sep='\t')
-    df.shape
-    df.sample(10).head()
-
-    # `pages`: id (PK), name (unique), url, crawled_at, sim_score
-    # Create a connection to a database file (will create if it doesn't exist)
-    conn = sqlite3.connect('uap_ent.db')
-
-    # Create a cursor object to execute SQL commands
-    cur = conn.cursor()
-    for _, row in df.iterrows():
-        cur.execute(
-            "INSERT INTO pages (name, url, crawled_at, sim_score) VALUES (?, ?, ?, ?)",
-            (row['name'], row['url'], row['crawled_at'], row['sim_score'])
-            )
-    conn.commit()
-
-
-if __name__ == "__main__":
-    main()
+    conn.close()
