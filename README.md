@@ -82,20 +82,6 @@ Each class should produce a table for the DB
 - RelationshipBuilder → relationships
 
 
-### Todo
-
-Decide what to do with the initially manually collected relationships. This is the metadata:
-- Spreadsheet structure and formulas:
-- relationship_graph.sheets
-- relationships
-    - source, source_role, relationship, target, target_role, year, url_title, url, source_rank
-- node_attrs
-    - node, role, rank
-- role_colors
-    - role, color
-=vlookup(A2, node_attrs!A:B, 2, FALSE)
-
-
 ### See also
 
 - Wikipedia Core REST API
