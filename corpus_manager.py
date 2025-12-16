@@ -6,6 +6,7 @@ import os
 import pandas as pd
 import numpy as np
 import sqlite3
+import torch
 from sentence_transformers import SentenceTransformer
 
 from __init__ import DATA_PATH, current_datetime_str, logger
@@ -23,14 +24,17 @@ def get_alpha_ratio(string: str) -> float:
 
 class CorpusManager:
     def __init__(self, sim_threshold: float = .45):
+        self.sim_threshold = sim_threshold
         self.corpus = None
         self.corpus_embedding = None
-        self.sim_threshold = sim_threshold
+        self.df = None
         self.load()
         
     def load(self) -> pd.DataFrame:
         self._build()
         self.corpus = self._read()
+        self.corpus_embedding = self.load_corpus_embedding()
+        self.df = self.to_df()
 
     def _read(self)-> pd.DataFrame:
         conn = sqlite3.connect('uap_ent.db')
@@ -97,6 +101,32 @@ class CorpusManager:
         ce.load()
         self.corpus_embedding = ce.corpus_embedding
          
+    def similarity_search(self, query: str, top_k_min: int=500) -> pd.DataFrame:
+        """
+        Given a query, retrieve corpus rows that resemble the query.
+        Return the results in a dataframe, sorted by descending similarity.
+        """
+        
+        corpus_embeddings = self.corpus_embedding
+        query_embedding = MODEL.encode_query(query)
+
+        # similarity scores
+        similarity_scores = MODEL.similarity(query_embedding, corpus_embeddings)[0]
+        top_k = min(top_k_min, len(self.df))
+        scores, indices = torch.topk(similarity_scores, k=top_k)
+
+        # similar rows
+        rows = []
+        for score, idx in zip(scores, indices):
+            row = self.df.iloc[int(idx)]
+            row['score'] = float(score)
+            rows.append(row)
+
+        # dataframe
+        df = pd.DataFrame(rows).reset_index(drop=True)
+        df = df.sort_values(by='score', ascending=False)
+        logger.info(f'returned query results with shape {df.shape}')
+        return df
 
 
 class CorpusEmbedding:
