@@ -125,6 +125,26 @@ class WikiPage:
                     continue
         return list(hrefs)
 
+    def get_languages(self) -> list:
+        """
+        Get a list of dictionaries containing the code, name, key, and title of the page languages.
+
+        Returns:
+            A list of dictionaries. For example:
+            [{'code': 'sv', 'name': 'svenska', 'key': 'Flygande_tefat', 'title': 'Flygande tefat'},
+             {'code': 'th', 'name': 'ไทย', 'key': 'จานบิน', 'title': 'จานบิน'}]
+        
+        Refer to: https://api.wikimedia.org/wiki/Core_REST_API/Reference/Pages/Get_languages
+        """
+        url = (
+            f'https://api.wikimedia.org/core/v1/wikipedia/{self.lang}'
+            f'/page/{self.page_name}/links/language'
+        )
+        response = requests.get(url, headers=HEADERS, timeout=180)
+        languages = response.json()
+        return languages
+
+
 
 def get_alpha_ratio(string: str) -> float:
     """Calculate the ratio of alphabetic characters in a string."""
