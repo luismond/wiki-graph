@@ -18,15 +18,22 @@ class RelationshipBuilder:
         self.sim_threshold = sim_threshold
         self.data = None
 
-    def build_page_links(self)-> pd.DataFrame:
-        """Use the page names in page table to build the page_links data."""
-        logger.info(f'Building page_links corpus...')
+    def get_pages(self):
         conn = sqlite3.connect('uap_ent.db')
         cur = conn.cursor()
         cur.execute("SELECT id, name, sim_score FROM pages")
-        pages = cur.fetchall() 
+        pages = cur.fetchall()
+        logger.info(f'{len(pages)} page_ids in pages table')
+        return pages
+
+    def build_page_links(self)-> pd.DataFrame:
+        """Use the page names in page table to build the page_links data."""
+        logger.info(f'Building page_links corpus...')
+        pages = self.get_pages()
         page_id_dict = {name: id_ for id_, name, _ in pages}
 
+        conn = sqlite3.connect('uap_ent.db')
+        cur = conn.cursor()
         cur.execute("SELECT source_page_id FROM page_links")
         links_page_ids = cur.fetchall()
         links_page_ids = set([p[0] for p in links_page_ids])
@@ -53,12 +60,10 @@ class RelationshipBuilder:
     def build_page_langs(self)-> pd.DataFrame:
         """Use the page names in page table to populate the page_langs table."""
         logger.info(f'Building page_langs corpus...')
+        pages = self.get_pages()
+
         conn = sqlite3.connect('uap_ent.db')
         cur = conn.cursor()
-        cur.execute("SELECT id, name, sim_score FROM pages")
-        pages = cur.fetchall()
-        logger.info(f'{len(pages)} page_ids in pages table')
-
         cur.execute("SELECT page_id FROM page_langs")
         langs_page_ids = cur.fetchall()
         langs_page_ids = set([p[0] for p in langs_page_ids])
@@ -79,10 +84,9 @@ class RelationshipBuilder:
                 conn.commit()
                 n += 1
         logger.info(f'Added {n} page_langs')
-       
 
-    def _read(self) -> pd.DataFrame:
-        """Read the relationship data."""
+    def read_page_links(self) -> pd.DataFrame:
+        """Read the page_links data."""
         conn = sqlite3.connect('uap_ent.db')
         cur = conn.cursor()
         cur.execute("""
@@ -92,15 +96,13 @@ class RelationshipBuilder:
             LEFT JOIN pages AS source_pages ON page_links.source_page_id = source_pages.id
             LEFT JOIN pages AS target_pages ON page_links.target_page_id = target_pages.id
         """)
-        relationships = cur.fetchall()
-        df = pd.DataFrame(
-            relationships, columns=['source_page_id', 'source',
-            'target_page_id', 'target', 'sim_score']
-            )
+        page_links = cur.fetchall()
+        columns = ['source_page_id', 'source', 'target_page_id', 'target', 'sim_score']
+        df = pd.DataFrame(page_links, columns=columns)
         logger.info(f'Read {len(df)} page_links from page_links table')
         return df
 
-    def _filter(
+    def filter(
         self,
         freq_min=3,
         groupby_source=True,
