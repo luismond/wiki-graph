@@ -57,6 +57,7 @@ class WikiPage:
             if row:
                 soup = pickle.loads(row[0])
             else:
+                # Fix this. It shouldn't be necessary to 're-download'
                 soup = self.download_soup()
         else:
             soup = self.download_soup()
@@ -69,15 +70,13 @@ class WikiPage:
         return soup
 
     def save_soup(self) -> None:
-        "Save the soup as a binary file."
-        page_id = self.page_id
-        assert page_id is not None
+        "Save the soup as a binary data."
+        assert self.page_id is not None
         conn = sqlite3.connect(DB_NAME)
         cur = conn.cursor()
         cur.execute("INSERT OR REPLACE INTO soups (page_id, soup_data) VALUES (?, ?)", 
-            (page_id, sqlite3.Binary(pickle.dumps(self.soup))))
+            (self.page_id, sqlite3.Binary(pickle.dumps(self.soup))))
         conn.commit()
-        print(f'saved {page_id} soup!!!!!!!')
 
     def save_page_name(self, sim_score):
         conn = sqlite3.connect(DB_NAME)
