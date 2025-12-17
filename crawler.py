@@ -59,14 +59,9 @@ class Crawler:
         """
         wp_new = WikiPage(new_page_name, lang=self.lang_code)
         sim_score = self.get_page_similarity_score(wp_new.paragraphs)
-
-        # save new_page_name in pages table
         wp_new.save_page_name(sim_score)
         if sim_score >= self.sim_threshold:
-            try:
-                wp_new.save_soup()
-            except sqlite3.OperationalError as e:
-                logger.error(f'Error saving soup for {new_page_name}: {e}')
+            wp_new.save_soup()
 
     def crawl(self):
         """
@@ -84,21 +79,26 @@ class Crawler:
         logger.info(f'Crawling pages with similarity threshold {self.sim_threshold}')
         conn = sqlite3.connect(DB_NAME)
         cur = conn.cursor()
-        cur.execute("SELECT id, name, sim_score FROM pages")
+        cur.execute("""
+        SELECT id, name, sim_score FROM pages
+        WHERE sim_score >= ?
+        """, (self.sim_threshold,))
         pages = cur.fetchall()
         page_names = [name for _, name, _ in pages]
         shuffle(page_names)
+
+        visited = set()
         n = 0
         for _, name, sim_score in pages:
-            if sim_score > self.sim_threshold:
-                wp = WikiPage(name)
-                new_page_names = wp.get_internal_page_names()
-                for new_page_name in new_page_names:
-                    if new_page_name in page_names:
-                        continue
-                    else:
-                        self.process_new_page_name(new_page_name, sim_score)
-                        n += 1
+            wp = WikiPage(name)
+            new_page_names = wp.get_internal_page_names()
+            for new_page_name in new_page_names:
+                if new_page_name in page_names + list(visited):
+                    continue
+                else:
+                    self.process_new_page_name(new_page_name, sim_score)
+                    n += 1
+                    visited.add(new_page_name)
         logger.info(f'Processed {n} new pages')
         conn.close()
 
