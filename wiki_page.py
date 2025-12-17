@@ -82,7 +82,7 @@ class WikiPage:
         conn = sqlite3.connect(DB_NAME)
         cur = conn.cursor()
         cur.execute(
-        "INSERT INTO pages (name, lang_code, url, crawled_at, sim_score) VALUES (?, ?, ?, ?, ?)",
+        "INSERT OR REPLACE INTO pages (name, lang_code, url, crawled_at, sim_score) VALUES (?, ?, ?, ?, ?)",
         (self.page_name, self.lang, self.url, current_datetime_str, sim_score)
         )
         conn.commit()
@@ -113,7 +113,7 @@ class WikiPage:
         if len(self.paragraphs) > 0:
             for pos, pg in enumerate(self.paragraphs):
                 cur.execute(
-                    "INSERT OR REPLACE INTO paragraph_corpus "
+                    "INSERT OR REPLACE INTO paragraphs "
                     "(page_id, text, position) VALUES (?, ?, ?)",
                     (page_id, pg, pos)
                 )
