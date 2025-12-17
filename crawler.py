@@ -113,10 +113,9 @@ class Crawler:
 
 def main():
     logger.info(f'Starting main...')
-    sim_threshold = .38
+    sim_threshold = .48
     for _ in range(20):
-        crawler = Crawler(sim_threshold=sim_threshold, seed_page='Unidentified_flying_object')
-        crawler.crawl()
+        crawler = Crawler(sim_threshold=sim_threshold, seed_page_name='Unidentified_flying_object')
         sim_threshold *= .97
     logger.info(f'Finished main')
 

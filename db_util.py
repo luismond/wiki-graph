@@ -36,7 +36,7 @@ import sqlite3
 
 def create_tables():
     # Create a connection to a database file (will create if it doesn't exist)
-    conn = sqlite3.connect('wiki_ent.db')
+    conn = sqlite3.connect('uap_ent.db')
 
     # Create a cursor object to execute SQL commands
     cur = conn.cursor()
@@ -72,6 +72,14 @@ def create_tables():
         )
     ''')
 
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS page_langs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            page_id INTEGER NOT NULL REFERENCES pages(id),
+            langs TEXT
+        )
+    ''')
+
     # Create a soups table
     cur.execute('''
         CREATE TABLE IF NOT EXISTS soups (
@@ -92,3 +100,15 @@ def create_tables():
     ''')
     conn.commit()
     conn.close()
+
+# # Create a better pages table
+# cur.execute('''
+#     CREATE TABLE IF NOT EXISTS pages (
+#         id INTEGER PRIMARY KEY AUTOINCREMENT,
+#         name TEXT,
+#         language TEXT,
+#         url TEXT,
+#         crawled_at TEXT,
+#         sim_score REAL
+#         UNIQUE(id, name, language)
+#     )
