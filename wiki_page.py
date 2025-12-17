@@ -8,7 +8,7 @@ import requests
 import pickle
 import bs4
 import sqlite3
-from __init__ import HEADERS, logger
+from __init__ import HEADERS, logger, DB_NAME, current_datetime_str
 
 
 class WikiPage:
@@ -42,14 +42,14 @@ class WikiPage:
         
     def get_soup(self) -> bs4.BeautifulSoup:
         "Given a page name, either load the saved soup or download the soup."
-        conn = sqlite3.connect('uap_ent.db')
+        conn = sqlite3.connect(DB_NAME)
         cur = conn.cursor()
         cur.execute("SELECT id, name FROM pages")
         pages = cur.fetchall() 
         page_id_dict = {name: id_ for id_, name in pages}
         if self.page_name in page_id_dict.keys():
             page_id = page_id_dict[self.page_name]
-            conn = sqlite3.connect('uap_ent.db')
+            conn = sqlite3.connect(DB_NAME)
             cur = conn.cursor()
             cur.execute("SELECT soup_data FROM soups WHERE page_id = ?", (page_id,))
             row = cur.fetchone()
@@ -69,12 +69,23 @@ class WikiPage:
 
     def save_soup(self, page_id) -> None:
         "Save the soup as a binary file."
-        conn = sqlite3.connect('uap_ent.db')
+        conn = sqlite3.connect(DB_NAME)
         cur = conn.cursor()
         cur.execute("INSERT OR REPLACE INTO soups (page_id, soup_data) VALUES (?, ?)", 
             (page_id, sqlite3.Binary(pickle.dumps(self.soup))))
         conn.commit()
         print(f'saved {page_id} soup!!!!!!!')
+
+    def save_page_name(self, sim_score):
+        conn = sqlite3.connect(DB_NAME)
+        cur = conn.cursor()
+        cur.execute(
+        "INSERT INTO pages (name, lang_code, url, crawled_at, sim_score) VALUES (?, ?, ?, ?, ?)",
+        (self.page_name, self.lang, self.url, current_datetime_str, sim_score)
+        )
+        conn.commit()
+        page_id = cur.lastrowid
+        return page_id
 
     def get_shortdescription(self) -> str:
         try:
@@ -96,7 +107,7 @@ class WikiPage:
         return paragraphs
 
     def save_paragraphs(self, page_id):
-        conn = sqlite3.connect('uap_ent.db')
+        conn = sqlite3.connect(DB_NAME)
         cur = conn.cursor()
         if len(self.paragraphs) > 0:
             for pos, pg in enumerate(self.paragraphs):

@@ -5,13 +5,14 @@ from random import shuffle
 import sqlite3
 from wiki_page import WikiPage
 from nlp_utils import MODEL
-from __init__ import current_datetime_str, logger
+from __init__ import current_datetime_str, logger, DB_NAME
 
 
 class Crawler:
-    def __init__(self, sim_threshold: float, seed_page_name: str):
+    def __init__(self, sim_threshold: float, seed_page_name: str, lang_code: str = 'en'):
         self.sim_threshold = sim_threshold
         self.seed_page_name = seed_page_name
+        self.lang_code = lang_code
         self.seed_paragraphs = None
         self.seed_embedding = None
         self.load()
@@ -22,6 +23,7 @@ class Crawler:
 
     def get_seed_paragraphs(self):
         seed_page_wp = WikiPage(self.seed_page_name)
+        seed_page_wp.save_page_name(sim_score=1.0)
         paragraphs = seed_page_wp.paragraphs
         logger.info(f'Loaded seed paragraphs from {self.seed_page_name}')
         return paragraphs
@@ -55,22 +57,12 @@ class Crawler:
             new_page_name (str): The name of the new Wikipedia page to process.
             sim_score (float): The similarity score between the paragraphs and the seed embedding.
         """
-        wp_new = WikiPage(new_page_name)
+        wp_new = WikiPage(new_page_name, lang=self.lang_code)
         sim_score = self.get_page_similarity_score(wp_new.paragraphs)
 
         # save new_page_name in pages table
-        conn = sqlite3.connect('uap_ent.db')
-        cur = conn.cursor()
-        cur.execute(
-        "INSERT INTO pages (name, url, crawled_at, sim_score) VALUES (?, ?, ?, ?)",
-        (new_page_name, wp_new.url, current_datetime_str, sim_score)
-        )
-        conn.commit()
-
+        new_page_id = wp_new.save_page_name(sim_score)
         if sim_score >= self.sim_threshold:
-            # get new_page_name id
-            cur.execute("SELECT id FROM pages WHERE name = ?", (new_page_name,))
-            new_page_id = cur.fetchone()[0]
             try:
                 wp_new.save_soup(new_page_id)
             except sqlite3.OperationalError as e:
@@ -90,7 +82,7 @@ class Crawler:
             sim_threshold (float): The similarity threshold above which a page's soup is saved.
         """
         logger.info(f'Crawling pages with similarity threshold {self.sim_threshold}')
-        conn = sqlite3.connect('uap_ent.db')
+        conn = sqlite3.connect(DB_NAME)
         cur = conn.cursor()
         cur.execute("SELECT id, name, sim_score FROM pages")
         pages = cur.fetchall()
@@ -113,9 +105,13 @@ class Crawler:
 
 def main():
     logger.info(f'Starting main...')
-    sim_threshold = .48
+    sim_threshold = .45
     for _ in range(20):
-        crawler = Crawler(sim_threshold=sim_threshold, seed_page_name='Unidentified_flying_object')
+        crawler = Crawler(
+            sim_threshold=sim_threshold,
+            seed_page_name='Association_football'
+            )
+        crawler.crawl()
         sim_threshold *= .97
     logger.info(f'Finished main')
 
