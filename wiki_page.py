@@ -23,7 +23,7 @@ class WikiPage:
         self.paragraphs = []
         self.shortdescription = None
         self.url = None
-        self.id = None
+        self.page_id = None
         self.load()
 
     def load(self):
