@@ -22,6 +22,8 @@ logger = get_logger()
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
 APP_NAME = os.getenv("APP_NAME")
 EMAIL = os.getenv("EMAIL")
+DB_NAME = os.getenv("DB_NAME")
+
 HEADERS = {
     'Authorization': f'Bearer {ACCESS_TOKEN}',
     'User-Agent': f'{APP_NAME} ({EMAIL})'

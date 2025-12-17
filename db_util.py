@@ -32,11 +32,12 @@ cur.execute('DROP TABLE IF EXISTS table_name')
 """
 
 import sqlite3
-
+from __init__ import DB_NAME, logger
 
 def create_tables():
     # Create a connection to a database file (will create if it doesn't exist)
-    conn = sqlite3.connect('uap_ent.db')
+    conn = sqlite3.connect(DB_NAME)
+    logger.info(f'Connected to {DB_NAME}')
 
     # Create a cursor object to execute SQL commands
     cur = conn.cursor()
@@ -46,11 +47,14 @@ def create_tables():
         CREATE TABLE IF NOT EXISTS pages (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT,
+            lang_code TEXT,
             url TEXT,
             crawled_at TEXT,
             sim_score REAL
+            UNIQUE(id, name, lang_code)
         )
-    ''')
+        '''
+    )
 
     # Create a paragraph_corpus table
     cur.execute('''
@@ -84,7 +88,7 @@ def create_tables():
     cur.execute('''
         CREATE TABLE IF NOT EXISTS soups (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            page_id INTEGER,
+            page_id INTEGER REFERENCES pages(id),
             soup_data BLOB
         ) 
     ''')
@@ -101,14 +105,3 @@ def create_tables():
     conn.commit()
     conn.close()
 
-# # Create a better pages table
-# cur.execute('''
-#     CREATE TABLE IF NOT EXISTS pages (
-#         id INTEGER PRIMARY KEY AUTOINCREMENT,
-#         name TEXT,
-#         language TEXT,
-#         url TEXT,
-#         crawled_at TEXT,
-#         sim_score REAL
-#         UNIQUE(id, name, language)
-#     )
