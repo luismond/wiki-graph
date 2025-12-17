@@ -9,7 +9,7 @@ import sqlite3
 import torch
 from sentence_transformers import SentenceTransformer
 
-from __init__ import DATA_PATH, current_datetime_str, logger
+from __init__ import DATA_PATH, DB_NAME, current_datetime_str, logger
 from wiki_page import WikiPage
 
 MODEL = SentenceTransformer('distiluse-base-multilingual-cased-v1')
@@ -37,15 +37,19 @@ class CorpusManager:
         self.df = self.to_df()
 
     def _read(self)-> pd.DataFrame:
-        conn = sqlite3.connect('uap_ent.db')
+        conn = sqlite3.connect(DB_NAME)
         cur = conn.cursor()
-        cur.execute("SELECT page_id, text, position FROM paragraph_corpus")
+        cur.execute("""
+            SELECT page_id, pages.name, text, position
+            FROM paragraphs
+            LEFT JOIN pages ON paragraphs.page_id = pages.id
+        """)
         corpus = cur.fetchall()  # list of (page_id, paragraphs)
-        logger.info(f'Read paragraph_corpus with {len(corpus)} rows')
+        logger.info(f'Read paragraphs with {len(corpus)} rows')
         return corpus
 
     def _get_pages_table(self):
-        conn = sqlite3.connect('uap_ent.db')
+        conn = sqlite3.connect(DB_NAME)
         cur = conn.cursor()
         cur.execute("""
         SELECT id, name, sim_score FROM pages
@@ -59,18 +63,18 @@ class CorpusManager:
         return pages
 
     def get_corpus_page_ids(self):
-        conn = sqlite3.connect('uap_ent.db')
+        conn = sqlite3.connect(DB_NAME)
         cur = conn.cursor()
-        cur.execute("""SELECT page_id FROM paragraph_corpus""")
+        cur.execute("""SELECT page_id FROM paragraphs""")
         pc_page_ids = cur.fetchall()
         pc_page_ids = set([p[0] for p in pc_page_ids])
-        logger.info(f'{len(pc_page_ids)} page_ids in paragraph_corpus table')
+        logger.info(f'{len(pc_page_ids)} page_ids in paragraphs table')
         return pc_page_ids
 
     def _build(self):
         """
         From the pages table, get the pages with sim_score >= self.sim_threshold
-        and the pages not in the paragraph_corpus table.
+        and not in the paragraph_corpus table.
         For each page, create a WikiPage object and save the paragraphs to the database.
         """
         logger.info(f'Building corpus...')
@@ -80,6 +84,7 @@ class CorpusManager:
         u_pages = [p for p in pages if p[0] not in pc_page_ids]
         logger.info(f'{len(u_pages)} pages to add to corpus')
 
+        # iterate over page ids and save paragraphs
         n = 0
         for page_id, page_name, _ in pages:
             if page_id not in pc_page_ids:
@@ -91,7 +96,9 @@ class CorpusManager:
     
     def to_df(self):
         df = pd.DataFrame(self.corpus)
-        df.columns = ['page_id', 'text', 'position']
+        df.columns = ['page_id', 'page_name', 'text', 'position']
+        df = df.drop_duplicates(subset=['page_name', 'text'])
+        df = df.reset_index(drop=True)
         logger.info(f'Converted corpus to dataframe with shape {df.shape}')
         return df
 
@@ -159,7 +166,7 @@ class CorpusEmbedding:
         return corpus_embedding
 
     def _build(self):
-        logger.info(f'encoding corpus...')
+        logger.info(f'Encoding corpus...')
         from nlp_utils import MODEL
         corpus_embedding = MODEL.encode_document(self.corpus['text'])
         return corpus_embedding
