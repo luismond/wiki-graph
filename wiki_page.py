@@ -23,6 +23,7 @@ class WikiPage:
         self.paragraphs = []
         self.shortdescription = None
         self.url = None
+        self.id = None
         self.load()
 
     def load(self):
@@ -67,8 +68,10 @@ class WikiPage:
         soup = bs4.BeautifulSoup(response.text, features="html.parser")
         return soup
 
-    def save_soup(self, page_id) -> None:
+    def save_soup(self) -> None:
         "Save the soup as a binary file."
+        page_id = self.page_id
+        assert page_id is not None
         conn = sqlite3.connect(DB_NAME)
         cur = conn.cursor()
         cur.execute("INSERT OR REPLACE INTO soups (page_id, soup_data) VALUES (?, ?)", 
@@ -84,8 +87,7 @@ class WikiPage:
         (self.page_name, self.lang, self.url, current_datetime_str, sim_score)
         )
         conn.commit()
-        page_id = cur.lastrowid
-        return page_id
+        self.page_id = cur.lastrowid
 
     def get_shortdescription(self) -> str:
         try:

@@ -61,10 +61,10 @@ class Crawler:
         sim_score = self.get_page_similarity_score(wp_new.paragraphs)
 
         # save new_page_name in pages table
-        new_page_id = wp_new.save_page_name(sim_score)
+        wp_new.save_page_name(sim_score)
         if sim_score >= self.sim_threshold:
             try:
-                wp_new.save_soup(new_page_id)
+                wp_new.save_soup()
             except sqlite3.OperationalError as e:
                 logger.error(f'Error saving soup for {new_page_name}: {e}')
 
