@@ -50,7 +50,7 @@ def create_tables():
             lang_code TEXT,
             url TEXT,
             crawled_at TEXT,
-            sim_score REAL
+            sim_score REAL,
             UNIQUE(id, name, lang_code)
         )
         '''
@@ -102,6 +102,20 @@ def create_tables():
             embedding BLOB
         )
     ''')
+    # Log database tables and number of rows in each
+    try:
+        cur.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        tables = cur.fetchall()
+        for table_tuple in tables:
+            table = table_tuple[0]
+            try:
+                cur.execute(f"SELECT COUNT(*) FROM {table}")
+                count = cur.fetchone()[0]
+                logger.info(f"Table '{table}': {count} rows")
+            except Exception as e:
+                logger.info(f"Could not count rows in table '{table}': {e}")
+    except Exception as e:
+        logger.info(f"Could not retrieve table list: {e}")
     conn.commit()
     conn.close()
 
