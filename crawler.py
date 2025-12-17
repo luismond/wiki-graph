@@ -5,7 +5,7 @@ from random import shuffle
 import sqlite3
 from wiki_page import WikiPage
 from nlp_utils import MODEL
-from __init__ import current_datetime_str, logger, DB_NAME
+from __init__ import logger, DB_NAME
 
 
 class Crawler:
