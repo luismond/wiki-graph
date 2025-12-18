@@ -41,16 +41,22 @@ Wikipedia named entity graph explorer
 
 - TODO: work on NER extraction (years, names, orgs, places)
 
+### Database
+
+The database migration is complete, transitioning the project from a file-based storage system (CSV and NPY files) to a centralized SQLite database. This milestone establishes a robust foundation for data management and analysis.
+
+**Key Achievements:**
+- Successfully migrated page metadata, content (soups), and paragraph corpus from flat files.
+- Unified relationship mapping (previously in CSV) within the relational schema.
+- Integrated vector storage for embeddings, enabling efficient semantic search.
+
+**Benefits of SQLite vs CSV/Files:**
+- **Data Integrity:** Foreign key constraints ensure consistent relationships across pages, soups, and links.
+- **Improved Performance:** Proper indexing replaces linear file scans, allowing for rapid querying of complex entity networks.
+- **Simplified Versioning:** Eliminates the complexity of timestamp-based file naming and synchronization.
+- **Scalability:** Provides a structured environment that can scale from local SQLite to larger systems like PostgreSQL if needed.
 
 ### Next steps
-
-**Database migration:**
-- Main goal: migrate to a proper DB (SQLite for simplicity, PostgreSQL for scale)
-- Benefits: eliminates timestamp-based file naming, proper indexing, data integrity, versioning
-- Migration strategy: incremental (pages (ok) → pg corpus (ok) → relationships (ok) → embeddings)
-
-**Data normalization:**
-- Avoid redundancy: timestamped corpus duplicates
 
 **Relationship extraction:**
 - Should extend the corpus database as first-class entities
@@ -61,8 +67,7 @@ Wikipedia named entity graph explorer
 **Schema:**
 - `pages`: id (PK), name (unique), lang_code, url, crawled_at, sim_score
 - `soups`: id (PK), page_id (FK), soup_data (BLOB)
-- `paragraphs`: id (PK), page_id (FK), text, position
-- `embeddings`: paragraph_id (FK), embedding_vector (BLOB/array), model_version
+- `paragraph_corpus`: id (PK), page_id (FK), text, embedding (BLOB/array), position
 - `page_links`: id (PK), source_page_id (FK), target_page_id (FK)
 - `page_langs`: id (PK), page_id (FK), langs
 
@@ -71,7 +76,7 @@ Wikipedia named entity graph explorer
 Each class should produce a table for the DB
 
 - Crawler → pages, soups
-- CorpusManager → paragraphs, embeddings
+- CorpusManager → paragraphs/embeddings
 - RelationshipBuilder → relationships
 
 

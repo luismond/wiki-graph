@@ -2,12 +2,11 @@
 Builds the paragraph corpus, embedding corpus, and saves to the database.
 """
 
-import os
 import pandas as pd
 import numpy as np
 import sqlite3
 import torch
-from __init__ import DATA_PATH, DB_NAME, current_datetime_str, logger
+from __init__ import DB_NAME, logger
 from nlp_utils import MODEL
 from wiki_page import WikiPage
 
@@ -46,23 +45,39 @@ class CorpusManager:
         self._build()
         self.corpus = self._read()
         self.df = self._to_df()
-        ce = CorpusEmbedding(self.df)
-        ce.load()
-        self.corpus_embedding = ce.corpus_embedding
+        self._load_corpus_embedding()
         assert self.df.shape[0] == self.corpus_embedding.shape[0]
-       
 
     def _read(self):
         conn = sqlite3.connect(DB_NAME)
         cur = conn.cursor()
         cur.execute("""
-            SELECT page_id, pages.name, text, position
-            FROM paragraphs
-            LEFT JOIN pages ON paragraphs.page_id = pages.id
+            SELECT paragraph_corpus.id, page_id, pages.name, text, position
+            FROM paragraph_corpus
+            LEFT JOIN pages ON paragraph_corpus.page_id = pages.id
         """)
-        corpus = cur.fetchall()  # list of (page_id, paragraphs)
+        corpus = cur.fetchall()
         logger.info(f'Read paragraphs with {len(corpus)} rows')
         return corpus
+
+    def _load_corpus_embedding(self):
+        """
+        Load all paragraph embeddings from the database and stack them into a numpy array.
+
+        This method fetches the binary embeddings from the `embedding` column in the
+        `paragraph_corpus` table, converts each to a float32 numpy array, and stacks
+        them vertically to produce a 2D array representing the corpus.
+
+        Sets:
+            self.corpus_embedding (np.ndarray): An array of shape (num_paragraphs, embedding_dim).
+        """
+        conn = sqlite3.connect(DB_NAME)
+        cur = conn.cursor()
+        cur.execute("""SELECT embedding FROM paragraph_corpus""")
+        embeddings = [np.frombuffer(e[0], dtype=np.float32) for e in cur.fetchall()]
+        corpus_embedding = np.vstack(embeddings)
+        self.corpus_embedding = corpus_embedding
+        logger.info(f'Loaded embeddings with shape {corpus_embedding.shape}')
 
     def _get_pages_table(self):
         conn = sqlite3.connect(DB_NAME)
@@ -81,10 +96,10 @@ class CorpusManager:
     def _get_corpus_page_ids(self):
         conn = sqlite3.connect(DB_NAME)
         cur = conn.cursor()
-        cur.execute("""SELECT page_id FROM paragraphs""")
+        cur.execute("""SELECT page_id FROM paragraph_corpus""")
         pc_page_ids = cur.fetchall()
         pc_page_ids = set([p[0] for p in pc_page_ids])
-        logger.info(f'{len(pc_page_ids)} page_ids in paragraphs table')
+        logger.info(f'{len(pc_page_ids)} page_ids in paragraph_corpus table')
         return pc_page_ids
 
     def _build(self):
@@ -96,25 +111,32 @@ class CorpusManager:
         logger.info(f'Building corpus...')
         pages = self._get_pages_table()
         pc_page_ids = self._get_corpus_page_ids()
-
-        u_pages = [p for p in pages if p[0] not in pc_page_ids]
-        logger.info(f'{len(u_pages)} pages to add to corpus')
-
         # iterate over page ids and save paragraphs
         n = 0
         for page_id, page_name, _ in pages:
             if page_id not in pc_page_ids:
                 wp = WikiPage(page_name)
-                if len(wp.paragraphs) > 0:
-                    wp.save_paragraphs(page_id)
+                paragraphs = wp.paragraphs
+                if len(paragraphs) > 0:
+                    conn = sqlite3.connect(DB_NAME)
+                    cur = conn.cursor()
+                    for position, paragraph in enumerate(paragraphs):
+                        embedding = MODEL.encode(paragraph)
+                        embedding = np.array(embedding, dtype=np.float32).tobytes()
+                        cur.execute(
+                            "INSERT OR IGNORE INTO paragraph_corpus "
+                            "(page_id, text, embedding, position) VALUES (?, ?, ?, ?)",
+                            (page_id, paragraph, embedding, position)
+                        )
+                        conn.commit()
                     n += 1
         logger.info(f'Added {n} pages to corpus')
     
     def _to_df(self):
         df = pd.DataFrame(self.corpus)
-        df.columns = ['page_id', 'page_name', 'text', 'position']
-        df = df.drop_duplicates(subset=['page_name', 'text'])
-        df = df.reset_index(drop=True)
+        df.columns = ['paragraph_id', 'page_id', 'page_name', 'text', 'position']
+        #df = df.drop_duplicates(subset=['page_name', 'text'])
+        #df = df.reset_index(drop=True)
         logger.info(f'Converted corpus to dataframe with shape {df.shape}')
         return df
          
@@ -144,43 +166,3 @@ class CorpusManager:
         df = df.sort_values(by='score', ascending=False)
         logger.info(f'returned query results with shape {df.shape}')
         return df
-
-
-class CorpusEmbedding:
-    def __init__(self, corpus: pd.DataFrame):
-        self.corpus = corpus
-        self.corpus_embedding = None
-        self.file_name = f"corpus_{current_datetime_str}.npy"
-        self.file_path = os.path.join(DATA_PATH, self.file_name)
-
-    def load(self):
-        """
-        To avoid encoding the whole corpus each run, this function will:
-        - Use the corpus date name
-        - If a corpus embedding exists with this date name, load it
-        - If not, encode the corpus and save it with the current date name
-        - Return the corpus embedding
-        # bug fix: the saved corpus embedding and the text corpus loose alignment.
-        # the text corpus should need to be saved likewise
-
-        """
-        if self.file_name in os.listdir(DATA_PATH):
-            self.corpus_embedding = self._read()
-        else:
-            self.corpus_embedding = self._build()
-            self._save()
-
-    def _read(self):
-        corpus_embedding = np.load(self.file_path)
-        logger.info(f'read {self.file_path} with shape {corpus_embedding.shape}')
-        return corpus_embedding
-
-    def _build(self):
-        logger.info(f'Encoding corpus...')
-        from nlp_utils import MODEL
-        corpus_embedding = MODEL.encode_document(self.corpus['text'])
-        return corpus_embedding
-
-    def _save(self):
-        np.save(self.file_path, self.corpus_embedding)
-        logger.info(f'saved {self.file_name} with shape {self.corpus_embedding.shape}')
