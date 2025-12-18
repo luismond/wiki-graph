@@ -101,6 +101,22 @@ class RelationshipBuilder:
         logger.info(f'Read {len(df)} page_links from page_links table')
         return df
 
+    def read_page_langs(self) -> pd.DataFrame:
+        """Read the page_langs data."""
+        conn = sqlite3.connect(DB_NAME)
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT page_langs.page_id, pages.name, page_langs.langs
+            FROM page_langs
+            LEFT JOIN pages ON page_langs.page_id = pages.id
+        """)
+        page_langs = cur.fetchall()
+        page_langs = [(page_id, name, json.loads(langs)) for (page_id, name, langs) in page_langs]
+        columns = ['page_id', 'name', 'langs']
+        df = pd.DataFrame(page_langs, columns=columns)
+        logger.info(f'Read {len(df)} page_links from page_links table')
+        return df
+
     def filter(
         self,
         df,
