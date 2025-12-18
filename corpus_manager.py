@@ -6,8 +6,7 @@ import pandas as pd
 import numpy as np
 import sqlite3
 import torch
-from __init__ import DB_NAME, logger
-from nlp_utils import MODEL
+from __init__ import DB_NAME, MODEL, logger
 from wiki_page import WikiPage
 
 
@@ -166,3 +165,14 @@ class CorpusManager:
         df = df.sort_values(by='score', ascending=False)
         logger.info(f'returned query results with shape {df.shape}')
         return df
+
+    def get_top_pages(df_sim: pd.DataFrame, top_n: int=20) -> list[str]:
+        "group similarity df by page name and calculate paragraph similarity average"
+        # todo: deduplicate page names
+        df_sim = df_sim.drop(columns=['paragraphs'])
+        df_sim_grouped = df_sim.groupby('page_name', as_index=False)['score'].mean()
+        df_sim_grouped = df_sim_grouped.sort_values(by='score', ascending=False)
+        df_sim_grouped = df_sim_grouped[:top_n]
+        top_pages = df_sim_grouped['page_name'].to_list()
+        logger.info(f'returned {len(top_pages)} top_pages')
+        return top_pages
