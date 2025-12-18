@@ -29,7 +29,4 @@ HEADERS = {
     'User-Agent': f'{APP_NAME} ({EMAIL})'
     }
 
-BASE = os.path.dirname(__file__)
-DATA_PATH = os.path.join(BASE, "data")
-
 current_datetime_str = datetime.now().strftime('%Y-%m-%d-%H')
