@@ -108,8 +108,30 @@ class Crawler:
                 else:
                     self.process_new_page(new_page_name)
                     visited.add(new_page_name)
-        
+            
+    # def crawl_autonyms(self, x_lang: str):
+    #     """
+    #     - For each page id from DB, and given a x_lang code, find its autonym
+    #       (the page name in the x_lang)
+    #     - Fetch autonym page, save metadata and soup.
+    #     - Evtl. a page_langs table would be unnecessary
+    #     """
+    #     #logger.info(f'Crawling pages with similarity threshold {self.sim_threshold}')
 
+    #     page_names = self.get_page_names()
+    #     for page_name in page_names:
+    #         wp = WikiPage(page_name=page_name, lang_code=self.lang_code)
+    #         languages = wp.get_languages()
+    #         if len(languages) == 0:
+    #             continue
+    #         for d in languages:
+    #             if d['code'] == x_lang:
+    #                 autonym = d['key']
+    #                 wp_x = WikiPage(page_name=autonym, lang_code=x_lang)
+    #                 sim_score = self.get_page_similarity_score(wp_x.paragraphs)
+    #                 wp_x.save_page_name(sim_score)
+    #                 wp_x.save_soup()
+    #                 #logger.info(f'saved {autonym} with lang {x_lang} from original {page_name} and {sim_score}')
 
 def main():
     logger.info(f'Starting main...')

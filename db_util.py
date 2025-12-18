@@ -78,12 +78,12 @@ def create_tables():
         )
     ''')
 
-    # Create a page_langs table
     cur.execute('''
-        CREATE TABLE IF NOT EXISTS page_langs (
+        CREATE TABLE IF NOT EXISTS page_autonyms (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             page_id INTEGER NOT NULL REFERENCES pages(id),
-            langs TEXT
+            autonym TEXT,
+            lang_code TEXT
         )
     ''')
 

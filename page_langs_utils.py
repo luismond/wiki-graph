@@ -1,5 +1,5 @@
 "Temp file to bootstrap the solution to fetch autonym pages."
-import json
+
 import pandas as pd
 import sqlite3
 from wiki_page import WikiPage
@@ -23,15 +23,16 @@ def get_pages(sim_threshold):
 
 def populate_page_langs(sim_threshold)-> pd.DataFrame:
     """Use the page names in page table to populate the page_langs table."""
-    logger.info(f'Building page_langs corpus...')
+    logger.info(f'Building page_autonyms corpus...')
+    lang_codes = ['de', 'fr', 'pt', 'es', 'it']
     pages = get_pages(sim_threshold)
 
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
-    cur.execute("SELECT page_id FROM page_langs")
+    cur.execute("SELECT page_id FROM page_autonyms")
     langs_page_ids = cur.fetchall()
     langs_page_ids = set([p[0] for p in langs_page_ids])
-    logger.info(f'{len(langs_page_ids)} page_ids in page_langs table')
+    logger.info(f'{len(langs_page_ids)} page_ids in page_autonyms table')
 
     n = 0
     for page_id, page_name, _ in pages:
@@ -40,35 +41,30 @@ def populate_page_langs(sim_threshold)-> pd.DataFrame:
             languages = wp.get_languages()
             if len(languages) == 0:
                 continue
-            languages = json.dumps(languages)
-            cur.execute(
-                "INSERT INTO page_langs (page_id, langs) VALUES (?, ?)",
-                (page_id, languages)
-                )
-            conn.commit()
-            n += 1
-    logger.info(f'Added {n} page_langs')
+            for lang in languages:
+                autonym = lang['key']
+                lang_code = lang['code']
+                if lang_code in lang_codes:
+                    cur.execute(
+                        "INSERT INTO page_autonyms (page_id, autonym, lang_code) VALUES (?, ?, ?)",
+                        (page_id, autonym, lang_code)
+                        )
+                    conn.commit()
+                    n += 1
+    logger.info(f'Added {n} autonyms')
 
 
 def read_page_langs() -> pd.DataFrame:
-    """Read the page_langs data."""
+    """Read the page_autonyms data."""
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
     cur.execute("""
-        SELECT page_langs.page_id, pages.name, page_langs.langs
-        FROM page_langs
-        LEFT JOIN pages ON page_langs.page_id = pages.id
+        SELECT page_autonyms.page_id, pages.name, page_autonyms.autonym, page_autonyms.lang_code
+        FROM page_autonyms
+        LEFT JOIN pages ON page_autonyms.page_id = pages.id
     """)
     page_langs = cur.fetchall()
-    page_langs = [(page_id, name, json.loads(langs)) for (page_id, name, langs) in page_langs]
-    columns = ['page_id', 'name', 'langs']
+    columns = ['page_id', 'name', 'autonym', 'lang_code']
     df = pd.DataFrame(page_langs, columns=columns)
     logger.info(f'Read {len(df)} from page_langs table')
     return df
-
-
-def get_target_page_name(langs_list: list, x_lang: str):
-    for d in langs_list:
-        if d['code'] == x_lang:
-            return d['key']
-       
