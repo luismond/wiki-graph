@@ -82,7 +82,7 @@ class WikiPage:
         conn = sqlite3.connect(DB_NAME)
         cur = conn.cursor()
         cur.execute(
-        "INSERT OR REPLACE INTO pages (name, lang_code, url, crawled_at, sim_score) VALUES (?, ?, ?, ?, ?)",
+        "INSERT OR IGNORE INTO pages (name, lang_code, url, crawled_at, sim_score) VALUES (?, ?, ?, ?, ?)",
         (self.page_name, self.lang_code, self.url, current_datetime_str, sim_score)
         )
         conn.commit()
