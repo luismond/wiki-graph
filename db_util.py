@@ -56,13 +56,15 @@ def create_tables():
         '''
     )
 
-    # Create a paragraph_corpus table
+    # Create a corpus table (paragraph text + embedding)
     cur.execute('''
-        CREATE TABLE IF NOT EXISTS paragraphs (
+        CREATE TABLE IF NOT EXISTS paragraph_corpus (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             page_id INTEGER REFERENCES pages(id),
             text TEXT,
-            position INTEGER
+            embedding BLOB,
+            position INTEGER,
+            UNIQUE(page_id, text)
         )
     ''')
 
@@ -94,15 +96,6 @@ def create_tables():
         ) 
     ''')
 
-    # Create a paragraph embeddings table
-    cur.execute('''
-        CREATE TABLE IF NOT EXISTS paragraph_embeddings (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            paragraph_id INTEGER REFERENCES paragraph_corpus(id),
-            page_id INTEGER REFERENCES pages(id),
-            embedding BLOB
-        )
-    ''')
     # Log database tables and number of rows in each
     try:
         cur.execute("SELECT name FROM sqlite_master WHERE type='table';")
@@ -120,6 +113,10 @@ def create_tables():
     conn.commit()
     conn.close()
 
+def delete_table(name):
+    conn = sqlite3.connect(DB_NAME)
+    cur = conn.cursor()
+    cur.execute(f'DROP TABLE IF EXISTS {name}')
 
 def get_pages():
     """
