@@ -16,9 +16,9 @@ class WikiPage:
     Represents a single Wikipedia page, including methods to download,
     parse, and extract links and paragraphs.
     """
-    def __init__(self, page_name: str, lang: str = 'en'):
+    def __init__(self, page_name: str, lang_code: str = 'en'):
         self.page_name = page_name
-        self.lang = lang
+        self.lang_code = lang_code
         self.soup = None
         self.paragraphs = []
         self.shortdescription = None
@@ -38,7 +38,7 @@ class WikiPage:
     def get_html_url(self):
         return (
             f'https://api.wikimedia.org/core/v1/wikipedia/'
-            f'{self.lang}/page/{self.page_name}/html'
+            f'{self.lang_code}/page/{self.page_name}/html'
         )
         
     def get_soup(self) -> bs4.BeautifulSoup:
@@ -83,7 +83,7 @@ class WikiPage:
         cur = conn.cursor()
         cur.execute(
         "INSERT OR REPLACE INTO pages (name, lang_code, url, crawled_at, sim_score) VALUES (?, ?, ?, ?, ?)",
-        (self.page_name, self.lang, self.url, current_datetime_str, sim_score)
+        (self.page_name, self.lang_code, self.url, current_datetime_str, sim_score)
         )
         conn.commit()
         self.page_id = cur.lastrowid
@@ -149,7 +149,7 @@ class WikiPage:
         Refer to: https://api.wikimedia.org/wiki/Core_REST_API/Reference/Pages/Get_languages
         """
         url = (
-            f'https://api.wikimedia.org/core/v1/wikipedia/{self.lang}'
+            f'https://api.wikimedia.org/core/v1/wikipedia/{self.lang_code}'
             f'/page/{self.page_name}/links/language'
         )
         response = requests.get(url, headers=HEADERS, timeout=180)
