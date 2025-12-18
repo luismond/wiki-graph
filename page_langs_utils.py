@@ -59,12 +59,16 @@ def read_page_langs() -> pd.DataFrame:
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
     cur.execute("""
-        SELECT page_autonyms.page_id, pages.name, page_autonyms.autonym, page_autonyms.lang_code
+        SELECT page_autonyms.id, page_autonyms.page_id, pages.name, page_autonyms.autonym, page_autonyms.lang_code
         FROM page_autonyms
         LEFT JOIN pages ON page_autonyms.page_id = pages.id
     """)
     page_langs = cur.fetchall()
-    columns = ['page_id', 'name', 'autonym', 'lang_code']
+    return page_langs
+
+
+def to_df(page_langs):
+    columns = ['id', 'page_id', 'name', 'autonym', 'lang_code']
     df = pd.DataFrame(page_langs, columns=columns)
     logger.info(f'Read {len(df)} from page_langs table')
     return df
