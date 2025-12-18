@@ -4,7 +4,7 @@ import json
 import pandas as pd
 import sqlite3
 from wiki_page import WikiPage
-from __init__ import logger
+from __init__ import logger, DB_NAME
 
 
 class RelationshipBuilder:
@@ -19,7 +19,7 @@ class RelationshipBuilder:
         self.data = None
 
     def get_pages(self):
-        conn = sqlite3.connect('uap_ent.db')
+        conn = sqlite3.connect(DB_NAME)
         cur = conn.cursor()
         cur.execute("SELECT id, name, sim_score FROM pages")
         pages = cur.fetchall()
@@ -32,7 +32,7 @@ class RelationshipBuilder:
         pages = self.get_pages()
         page_id_dict = {name: id_ for id_, name, _ in pages}
 
-        conn = sqlite3.connect('uap_ent.db')
+        conn = sqlite3.connect(DB_NAME)
         cur = conn.cursor()
         cur.execute("SELECT source_page_id FROM page_links")
         links_page_ids = cur.fetchall()
@@ -62,7 +62,7 @@ class RelationshipBuilder:
         logger.info(f'Building page_langs corpus...')
         pages = self.get_pages()
 
-        conn = sqlite3.connect('uap_ent.db')
+        conn = sqlite3.connect(DB_NAME)
         cur = conn.cursor()
         cur.execute("SELECT page_id FROM page_langs")
         langs_page_ids = cur.fetchall()
@@ -87,7 +87,7 @@ class RelationshipBuilder:
 
     def read_page_links(self) -> pd.DataFrame:
         """Read the page_links data."""
-        conn = sqlite3.connect('uap_ent.db')
+        conn = sqlite3.connect(DB_NAME)
         cur = conn.cursor()
         cur.execute("""
             SELECT page_links.source_page_id, source_pages.name, 
