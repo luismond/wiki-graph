@@ -7,22 +7,34 @@ import pandas as pd
 import numpy as np
 import sqlite3
 import torch
-from sentence_transformers import SentenceTransformer
-
 from __init__ import DATA_PATH, DB_NAME, current_datetime_str, logger
+from nlp_utils import MODEL
 from wiki_page import WikiPage
-
-MODEL = SentenceTransformer('distiluse-base-multilingual-cased-v1')
-
-
-def get_alpha_ratio(string: str) -> float:
-    """Calculate the ratio of alphabetic characters in a string."""
-    alpha_n = [ch for ch in string if ch.isalpha()]
-    alpha_ratio = len(alpha_n) / len(string)
-    return alpha_ratio 
 
 
 class CorpusManager:
+    """
+    The CorpusManager handles building and managing the Wikipedia paragraph corpus
+    from the database. It can load paragraphs and metadata, convert to a dataframe suitable
+    for downstream processing, and keep track of corpus and embedding arrays.
+
+    Key responsibilities:
+        - Build the paragraph-level corpus from existing pages and paragraphs in the DB.
+        - Load and access the corpus as structured data (e.g., Pandas DataFrame).
+        - Prepare/coordinate corpus embeddings.
+        - Provide convenient access to the main corpus and its properties.
+
+    - sim_threshold (float): Minimum similarity score for included pages.
+    - corpus: List of (page_id, page_name, text, position) tuples.
+    - corpus_embedding: Numpy array of embeddings for each paragraph.
+    - df: DataFrame view of the corpus.
+
+    Usage:
+        cm = CorpusManager(sim_threshold=0.4)
+        cm.load()
+        df = cm.df
+        embeddings = cm.corpus_embedding
+    """
     def __init__(self, sim_threshold: float = .45):
         self.sim_threshold = sim_threshold
         self.corpus = None
@@ -33,10 +45,14 @@ class CorpusManager:
     def load(self) -> pd.DataFrame:
         self._build()
         self.corpus = self._read()
-        self.corpus_embedding = self.load_corpus_embedding()
-        self.df = self.to_df()
+        self.df = self._to_df()
+        ce = CorpusEmbedding(self.df)
+        ce.load()
+        self.corpus_embedding = ce.corpus_embedding
+        assert self.df.shape[0] == self.corpus_embedding.shape[0]
+       
 
-    def _read(self)-> pd.DataFrame:
+    def _read(self):
         conn = sqlite3.connect(DB_NAME)
         cur = conn.cursor()
         cur.execute("""
@@ -62,7 +78,7 @@ class CorpusManager:
         conn.close()
         return pages
 
-    def get_corpus_page_ids(self):
+    def _get_corpus_page_ids(self):
         conn = sqlite3.connect(DB_NAME)
         cur = conn.cursor()
         cur.execute("""SELECT page_id FROM paragraphs""")
@@ -79,7 +95,7 @@ class CorpusManager:
         """
         logger.info(f'Building corpus...')
         pages = self._get_pages_table()
-        pc_page_ids = self.get_corpus_page_ids()
+        pc_page_ids = self._get_corpus_page_ids()
 
         u_pages = [p for p in pages if p[0] not in pc_page_ids]
         logger.info(f'{len(u_pages)} pages to add to corpus')
@@ -94,26 +110,20 @@ class CorpusManager:
                     n += 1
         logger.info(f'Added {n} pages to corpus')
     
-    def to_df(self):
+    def _to_df(self):
         df = pd.DataFrame(self.corpus)
         df.columns = ['page_id', 'page_name', 'text', 'position']
         df = df.drop_duplicates(subset=['page_name', 'text'])
         df = df.reset_index(drop=True)
         logger.info(f'Converted corpus to dataframe with shape {df.shape}')
         return df
-
-    def load_corpus_embedding(self):
-        df = self.to_df()
-        ce = CorpusEmbedding(df)
-        ce.load()
-        self.corpus_embedding = ce.corpus_embedding
          
     def similarity_search(self, query: str, top_k_min: int=500) -> pd.DataFrame:
         """
         Given a query, retrieve corpus rows that resemble the query.
         Return the results in a dataframe, sorted by descending similarity.
         """
-        
+        # embeddings
         corpus_embeddings = self.corpus_embedding
         query_embedding = MODEL.encode_query(query)
 
