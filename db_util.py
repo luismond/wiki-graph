@@ -51,7 +51,7 @@ def create_tables():
             url TEXT,
             crawled_at TEXT,
             sim_score REAL,
-            UNIQUE(id, name, lang_code)
+            UNIQUE(name, lang_code)
         )
         '''
     )
@@ -60,7 +60,7 @@ def create_tables():
     cur.execute('''
         CREATE TABLE IF NOT EXISTS paragraphs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            page_id INTEGER,
+            page_id INTEGER REFERENCES pages(id),
             text TEXT,
             position INTEGER
         )
@@ -119,3 +119,21 @@ def create_tables():
     conn.commit()
     conn.close()
 
+
+def get_pages():
+    """
+    Retrieve page names with similarity above threshold.
+    Shuffle the list of page names to randomize crawling order.
+    """
+    import pandas as pd
+    conn = sqlite3.connect(DB_NAME)
+    cur = conn.cursor()
+    cur.execute("""SELECT * FROM pages""")
+    pages = cur.fetchall()
+    conn.close()
+    if len(pages) == 0:
+        raise ValueError('Pages table is empty')
+    logger.info(f'Retrieved {len(pages)} page_names from DB')
+    df = pd.DataFrame(pages)
+    df.columns = ['id', 'name', 'lang_code', 'url', 'crawled_at', 'sim_score']
+    return df
