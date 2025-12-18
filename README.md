@@ -1,15 +1,11 @@
-# uap-ent
-Wikipedia entity graph explorer
-
+# WikiNER
+Wikipedia named entity graph explorer
 
 ## Goals
-
 - Practice NLP. Named entity recognition, graph theory, clustering, text analysis, topic modeling, term recognition, vector search and DBs.
-
 - Practice data analysis. Dataset building, crawling, APIs, database schemas.
-
 - Practice web dev. Graph visualization, product development, design.
-
+- Learn about lexical search and combine semantic + lexical
 
 ### WikiPage
 - Represents a Wikipedia page and provides access to its content.
@@ -33,7 +29,6 @@ Wikipedia entity graph explorer
 - Updates tracking files
 - Focused on data collection/discovery
 
-
 ### NetworkGraph
 - Manages the corpus relationships
   - Page <> page
@@ -44,19 +39,15 @@ Wikipedia entity graph explorer
 - Generates a network from these relationships
 - Generates an interactive network graph
 
-- issue: if source_page_id exists, how to save subsequent, different relations?
-- simplify the _build method and only collect get_internal_page_names
-- rethink the NER extraction (years, names, orgs, places)
-- maybe in the same table or in separate tables
+- TODO: work on NER extraction (years, names, orgs, places)
 
 
 ### Next steps
 
-
 **Database migration:**
 - Main goal: migrate to a proper DB (SQLite for simplicity, PostgreSQL for scale)
 - Benefits: eliminates timestamp-based file naming, proper indexing, data integrity, versioning
-- Migration strategy: incremental (pages (ok) → pg corpus (ok) → relationships → embeddings)
+- Migration strategy: incremental (pages (ok) → pg corpus (ok) → relationships (ok) → embeddings)
 
 **Data normalization:**
 - Avoid redundancy: timestamped corpus duplicates
@@ -68,17 +59,19 @@ Wikipedia entity graph explorer
 ### Database properties
 
 **Schema:**
-- `pages`: id (PK), name (unique), url, crawled_at, sim_score
+- `pages`: id (PK), name (unique), lang_code, url, crawled_at, sim_score
+- `soups`: id (PK), page_id (FK), soup_data (BLOB)
 - `paragraphs`: id (PK), page_id (FK), text, position
-- `relationships`: id (PK), source_page_id (FK), target (FK), target_type
 - `embeddings`: paragraph_id (FK), embedding_vector (BLOB/array), model_version
+- `page_links`: id (PK), source_page_id (FK), target_page_id (FK)
+- `page_langs`: id (PK), page_id (FK), langs
 
 ### Classes <> tables
 
 Each class should produce a table for the DB
 
-- CorpusManager → paragraphs, embeddings
 - Crawler → pages, soups
+- CorpusManager → paragraphs, embeddings
 - RelationshipBuilder → relationships
 
 
