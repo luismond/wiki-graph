@@ -18,19 +18,24 @@ class Crawler:
         self.sim_threshold = sim_threshold
         self.seed_page_name = seed_page_name
         self.lang_code = lang_code
+        self.load()
+    
+    def load(self):
+        """
+        Initialize crawler with the seed page.
 
+        - Save the page name and soup
+        - Encode the seed paragraphs (todo: save them to vector db)
+        """
+        wp = WikiPage(self.seed_page_name)
+        wp.save_page_name(sim_score=1.0)
+        wp.save_soup()
 
-    @cached_property
-    def seed_paragraphs(self):
-        """Retrieve the paragraphs of an initial set of pages."""
-        seed_page_wp = WikiPage(self.seed_page_name)
-        seed_page_wp.save_page_name(sim_score=1.0)
-        paragraphs = seed_page_wp.paragraphs
+        self.seed_paragraphs = wp.paragraphs
+        self.seed_embedding = self.get_seed_embedding()
         logger.info(f'Loaded seed paragraphs from {self.seed_page_name}')
-        return paragraphs
 
-    @cached_property
-    def seed_embedding(self) -> np.ndarray:
+    def get_seed_embedding(self) -> np.ndarray:
         """
         Encode the seed paragraphs.
         This seed embedding will be used to determine the similarity of the new crawled pages.
@@ -56,10 +61,9 @@ class Crawler:
         save its metadata to the database, and store its soup if the score meets the threshold.
         
         Args:
-            new_page_name (str): The name of the new Wikipedia page to process.
-            sim_score (float): The similarity score between the paragraphs and the seed embedding.
+            page_name (str): The name of the new Wikipedia page to process.
         """
-        wp_new = WikiPage(page_name, lang=self.lang_code)
+        wp_new = WikiPage(page_name, lang_code=self.lang_code)
         sim_score = self.get_page_similarity_score(wp_new.paragraphs)
         wp_new.save_page_name(sim_score)
         if sim_score >= self.sim_threshold:
@@ -78,7 +82,7 @@ class Crawler:
         AND lang_code = ?
         """, (self.sim_threshold, self.lang_code)
         )
-        page_names = cur.fetchall()
+        page_names = [p[0] for p in cur.fetchall()]
         shuffle(page_names)
         conn.close()
         logger.info(f'Retrieved {len(page_names)} page_names from DB')
@@ -97,8 +101,11 @@ class Crawler:
 
         visited = set()
         for page_name in page_names:
+
             wp = WikiPage(page_name=page_name, lang_code=self.lang_code)
-            for new_page_name in wp.get_internal_page_names():
+            new_page_names = wp.get_internal_page_names()
+            logger.info(new_page_names[:5])
+            for new_page_name in new_page_names:
                 if new_page_name in page_names + list(visited):
                     continue
                 else:
