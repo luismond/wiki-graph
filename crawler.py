@@ -123,7 +123,7 @@ class Crawler:
                 sim_score = self.get_page_similarity_score(wp_x.paragraphs)
                 wp_x.save_page_name(sim_score)
                 wp_x.save_soup()
-                logger.info(f'saved {autonym} with lang {x_lang} and {sim_score}')
+                #logger.info(f'saved {autonym} with lang {x_lang} and {sim_score}')
 
 def main():
     logger.info(f'Starting main...')
