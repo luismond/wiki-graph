@@ -4,9 +4,8 @@ import numpy as np
 from random import shuffle
 import sqlite3
 from wiki_page import WikiPage
-from nlp_utils import MODEL
-from __init__ import logger, DB_NAME
-from functools import cached_property
+from __init__ import logger, DB_NAME, MODEL
+
 
 class Crawler:
     def __init__(
