@@ -101,10 +101,8 @@ class Crawler:
 
         visited = set()
         for page_name in page_names:
-
             wp = WikiPage(page_name=page_name, lang_code=self.lang_code)
             new_page_names = wp.get_internal_page_names()
-            logger.info(new_page_names[:5])
             for new_page_name in new_page_names:
                 if new_page_name in page_names + list(visited):
                     continue
