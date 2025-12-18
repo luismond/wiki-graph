@@ -6,31 +6,33 @@ import sqlite3
 from wiki_page import WikiPage
 from nlp_utils import MODEL
 from __init__ import logger, DB_NAME
-
+from functools import cached_property
 
 class Crawler:
-    def __init__(self, sim_threshold: float, seed_page_name: str, lang_code: str = 'en'):
+    def __init__(
+        self,
+        sim_threshold: float,
+        seed_page_name: str,
+        lang_code: str = 'en'
+        ):
         self.sim_threshold = sim_threshold
         self.seed_page_name = seed_page_name
         self.lang_code = lang_code
-        self.seed_paragraphs = None
-        self.seed_embedding = None
-        self.load()
-        
-    def load(self):
-        self.seed_paragraphs = self.get_seed_paragraphs()
-        self.seed_embedding = self.get_seed_embedding()
 
-    def get_seed_paragraphs(self):
+
+    @cached_property
+    def seed_paragraphs(self):
+        """Retrieve the paragraphs of an initial set of pages."""
         seed_page_wp = WikiPage(self.seed_page_name)
         seed_page_wp.save_page_name(sim_score=1.0)
         paragraphs = seed_page_wp.paragraphs
         logger.info(f'Loaded seed paragraphs from {self.seed_page_name}')
         return paragraphs
 
-    def get_seed_embedding(self) -> np.ndarray:
+    @cached_property
+    def seed_embedding(self) -> np.ndarray:
         """
-        Take the paragraphs of an initial set of pages and encode them.
+        Encode the seed paragraphs.
         This seed embedding will be used to determine the similarity of the new crawled pages.
         """
         seed_embedding = MODEL.encode(' '.join(self.seed_paragraphs))
@@ -74,7 +76,7 @@ class Crawler:
             (fetch, compute similarity, save metadata and soup if threshold is met).
 
         Args:
-            sim_threshold (float): The similarity threshold above which a page's soup is saved.
+            sim_threshold (float): The similarity threshold above which a page is saved.
         """
         logger.info(f'Crawling pages with similarity threshold {self.sim_threshold}')
         conn = sqlite3.connect(DB_NAME)
@@ -82,7 +84,8 @@ class Crawler:
         cur.execute("""
         SELECT id, name, sim_score FROM pages
         WHERE sim_score >= ?
-        """, (self.sim_threshold,))
+        """, (self.sim_threshold,)
+        )
         pages = cur.fetchall()
         page_names = [name for _, name, _ in pages]
         shuffle(page_names)
