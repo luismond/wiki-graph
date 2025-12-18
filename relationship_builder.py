@@ -163,6 +163,8 @@ class RelationshipBuilder:
 #         years.extend(matches)
 #     return years
 
+# from gliner import GLiNER
+# model = GLiNER.from_pretrained("urchade/gliner_medium-v2.1")
 # def find_page_persons(page_name: str) -> list:
 #     labels = ["Person"]
 #     soup = get_soup(page_name)

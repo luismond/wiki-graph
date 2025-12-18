@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 import sqlite3
 import torch
+from sentence_transformers.util import community_detection
 from __init__ import DB_NAME, MODEL, logger
 from wiki_page import WikiPage
 
@@ -176,3 +177,23 @@ class CorpusManager:
         top_pages = df_sim_grouped['page_name'].to_list()
         logger.info(f'returned {len(top_pages)} top_pages')
         return top_pages
+
+    def get_page_group_dict(df):
+        """community_detection"""
+        df = df.groupby('page_name')['paragraphs'].apply(lambda paras: ' '.join(paras)).reset_index()
+        corpus_embedding = MODEL.encode_document(df['paragraphs'].tolist())
+        groups_lists = community_detection(corpus_embedding, min_community_size=10, threshold=.6)
+
+        group_dfs = []
+        for group_n, group in enumerate(groups_lists):
+            group_rows = []
+            for row_idx in group:       
+                row = df.iloc[row_idx]
+                row['group'] = group_n
+                group_rows.append(row)
+            group_df = pd.DataFrame(group_rows)
+            group_dfs.append(group_df)
+
+        dfc = pd.concat(group_dfs)
+        group_dict = {k: v for k, v in zip(dfc['page_name'], dfc['group'])}
+        return group_dict
