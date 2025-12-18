@@ -66,7 +66,7 @@ def create_tables():
         )
     ''')
 
-    # Create a relationships table
+    # Create a page_links table
     cur.execute('''
         CREATE TABLE IF NOT EXISTS page_links (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -76,6 +76,7 @@ def create_tables():
         )
     ''')
 
+    # Create a page_langs table
     cur.execute('''
         CREATE TABLE IF NOT EXISTS page_langs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
