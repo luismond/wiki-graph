@@ -16,7 +16,6 @@ class RelationshipBuilder:
     """
     def __init__(self, sim_threshold: float = .45):
         self.sim_threshold = sim_threshold
-        self.data = None
 
     def get_pages(self):
         conn = sqlite3.connect(DB_NAME)
@@ -104,6 +103,7 @@ class RelationshipBuilder:
 
     def filter(
         self,
+        df,
         freq_min=3,
         groupby_source=True,
         group_size=20,
@@ -123,7 +123,6 @@ class RelationshipBuilder:
         Returns:
             pd.DataFrame: Filtered relationship dataframe.
         """
-        df = self.data
         df['target_freq'] = df['target'].map(df['target'].value_counts())
         df = df.sort_values(by='target_freq', ascending=False)
         df = df[df['target_freq'] > freq_min]
