@@ -40,7 +40,7 @@ class CorpusManager:
         self.corpus_embedding = None
         self.df = None
         self.load()
-        
+
     def load(self) -> pd.DataFrame:
         self._build()
         self.corpus = self._read()
@@ -52,7 +52,7 @@ class CorpusManager:
         conn = sqlite3.connect(DB_NAME)
         cur = conn.cursor()
         cur.execute("""
-            SELECT paragraph_corpus.id, page_id, pages.name, text, position
+            SELECT paragraph_corpus.id, page_id, pages.name, text, position, pages.lang_code
             FROM paragraph_corpus
             LEFT JOIN pages ON paragraph_corpus.page_id = pages.id
         """)
@@ -83,7 +83,7 @@ class CorpusManager:
         conn = sqlite3.connect(DB_NAME)
         cur = conn.cursor()
         cur.execute("""
-        SELECT id, name, sim_score FROM pages
+        SELECT id, name, lang_code, sim_score FROM pages
         WHERE sim_score >= ?
         """, (self.sim_threshold,))
         pages = cur.fetchall()
@@ -108,14 +108,14 @@ class CorpusManager:
         and not in the paragraph_corpus table.
         For each page, create a WikiPage object and save the paragraphs to the database.
         """
-        logger.info(f'Building corpus...')
+        logger.info('Building corpus...')
         pages = self._get_pages_table()
         pc_page_ids = self._get_corpus_page_ids()
         # iterate over page ids and save paragraphs
         n = 0
-        for page_id, page_name, _ in pages:
+        for page_id, page_name, lang_code, _ in pages:
             if page_id not in pc_page_ids:
-                wp = WikiPage(page_name)
+                wp = WikiPage(page_name, lang_code=lang_code)
                 paragraphs = wp.paragraphs
                 if len(paragraphs) > 0:
                     conn = sqlite3.connect(DB_NAME)
@@ -131,15 +131,15 @@ class CorpusManager:
                         conn.commit()
                     n += 1
         logger.info(f'Added {n} pages to corpus')
-    
+
     def _to_df(self):
         df = pd.DataFrame(self.corpus)
-        df.columns = ['paragraph_id', 'page_id', 'page_name', 'text', 'position']
-        #df = df.drop_duplicates(subset=['page_name', 'text'])
-        #df = df.reset_index(drop=True)
+        df.columns = [
+            'paragraph_id', 'page_id', 'page_name',
+            'text', 'position', 'lang_code']
         logger.info(f'Converted corpus to dataframe with shape {df.shape}')
         return df
-         
+
     def similarity_search(self, query: str, top_k_min: int=500) -> pd.DataFrame:
         """
         Given a query, retrieve corpus rows that resemble the query.
@@ -187,7 +187,7 @@ class CorpusManager:
         group_dfs = []
         for group_n, group in enumerate(groups_lists):
             group_rows = []
-            for row_idx in group:       
+            for row_idx in group:
                 row = df.iloc[row_idx]
                 row['group'] = group_n
                 group_rows.append(row)
