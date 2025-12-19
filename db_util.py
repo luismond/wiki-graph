@@ -7,7 +7,7 @@ sqlite 101:
 cur.execute("INSERT INTO users (name, age) VALUES (?, ?)", ("Alice", 30)
 
 # Insert binary data
-cur.execute("INSERT INTO soups (page_id, soup_data) VALUES (?, ?)", 
+cur.execute("INSERT INTO soups (page_id, soup_data) VALUES (?, ?)",
             (page_id, sqlite3.Binary(pickled_data)))
 
 # Commit the transaction
@@ -33,6 +33,8 @@ cur.execute('DROP TABLE IF EXISTS table_name')
 
 import sqlite3
 from __init__ import DB_NAME, logger
+import pandas as pd
+from wiki_page import WikiPage
 
 
 def create_tables():
@@ -84,7 +86,8 @@ def create_tables():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             page_id INTEGER NOT NULL REFERENCES pages(id),
             autonym TEXT,
-            lang_code TEXT
+            lang_code TEXT,
+            UNIQUE(autonym, lang_code)
         )
     ''')
 
@@ -155,3 +158,32 @@ def get_page_autonyms_data():
         LEFT JOIN pages ON page_autonyms.page_id = pages.id
     """)
     return cur.fetchall()
+
+
+def populate_page_autonyms(sim_threshold, source_lang_code)-> pd.DataFrame:
+    """Use the page names in page table to populate the page_autonyms table."""
+    logger.info('Building page_autonyms corpus...')
+    pages = get_pages_data(sim_threshold=sim_threshold, lang_code=source_lang_code)
+    # todo:
+    # - assert that data insertion is efficient.
+    # - assert that a 'not already saved' lookup is not needed.
+    lang_codes = ['de', 'fr', 'pt', 'es', 'it']
+    for page_id, page_name, _, _ in pages:
+        wp = WikiPage(page_name=page_name, lang_code=source_lang_code)
+        languages = wp.get_languages()
+        if len(languages) == 0:
+            continue
+        for lang in languages:
+            if type(lang) is not dict:
+                continue
+            autonym = lang['key']
+            lang_code = lang['code']
+            if lang_code in lang_codes:
+                conn = sqlite3.connect(DB_NAME)
+                cur = conn.cursor()
+                cur.execute(
+                    "INSERT OR IGNORE INTO page_autonyms "
+                    "(page_id, autonym, lang_code) VALUES (?, ?, ?)",
+                    (page_id, autonym, lang_code)
+                    )
+                conn.commit()
