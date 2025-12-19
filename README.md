@@ -79,6 +79,12 @@ Each class should produce a table for the DB
 - CorpusManager → paragraphs/embeddings
 - RelationshipBuilder → relationships
 
+### Known bugs
+
+#### Requests using some language codes return a forbidden status
+- While trying to crawl pages in de, fr, it, a 403 (forbidden) status code was received.
+- After logging in to Wikipedia, and adding the languages from the languages drop-down,
+  the API requests for those language codes became available.
 
 ### See also
 
