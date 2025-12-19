@@ -12,6 +12,7 @@ dev.ipynb
 *db
 *journal
 *log
+dev.py
 *__pycache__
 include/
 data/
