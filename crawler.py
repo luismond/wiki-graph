@@ -68,7 +68,7 @@ class Crawler:
         if sim_score >= self.sim_threshold:
             wp_new.save_soup()
 
-    def crawl(self, max_pages: int = 10, max_new_pages: int = 10):
+    def crawl(self, max_pages: int = 50, max_new_pages: int = 50):
         """
         Crawl Wikipedia pages based on a similarity threshold.
         - For each page name from DB, extract internal Wikipedia links (<a> inside <p> tags).
@@ -83,11 +83,13 @@ class Crawler:
         for _, page_name, _, _ in page_data:
             wp = WikiPage(page_name=page_name, lang_code=self.lang_code)
             new_page_names = wp.get_internal_page_names()
+            shuffle(new_page_names)
             for new_page_name in new_page_names[:max_new_pages]:
                 if new_page_name in visited:
                     continue
                 self.process_new_page(new_page_name)
                 visited.add(new_page_name)
+        self.crawl_autonyms()
 
     def crawl_autonyms(self):
         """

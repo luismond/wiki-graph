@@ -140,7 +140,7 @@ class CorpusManager:
         logger.info(f'Converted corpus to dataframe with shape {df.shape}')
         return df
 
-    def similarity_search(self, query: str, top_k_min: int=500) -> pd.DataFrame:
+    def similarity_search(self, query: str, top_k_min: int=100) -> pd.DataFrame:
         """
         Given a query, retrieve corpus rows that resemble the query.
         Return the results in a dataframe, sorted by descending similarity.
