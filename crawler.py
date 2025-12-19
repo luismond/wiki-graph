@@ -97,15 +97,12 @@ class Crawler:
         logger.info(f'Crawling autonyms')
         autonyms_data = get_page_autonyms_data()
         for _, _, _, autonym, lang_code in autonyms_data:
-            #if lang_code == x_lang:
             wp_x = WikiPage(page_name=autonym, lang_code=lang_code)
             if len(wp_x.paragraphs) == 0:
                 continue
             sim_score = self.get_page_similarity_score(wp_x.paragraphs)
             wp_x.save_page_name(sim_score)
             wp_x.save_soup()
-            #logger.info(wp_x.paragraphs[:10])
-            #logger.info(f'saved {autonym} with lang {x_lang} and {sim_score}')
 
 
 def main():
