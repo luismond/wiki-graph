@@ -16,7 +16,7 @@ class WikiPage:
     Represents a single Wikipedia page, including methods to download,
     parse, and extract links and paragraphs.
     """
-    def __init__(self, page_name: str, lang_code: str = 'en'):
+    def __init__(self, page_name: str, lang_code: str):
         self.page_name = page_name
         self.lang_code = lang_code
         self.soup = None
@@ -45,9 +45,12 @@ class WikiPage:
         "Given a page name, either load the saved soup or download the soup."
         conn = sqlite3.connect(DB_NAME)
         cur = conn.cursor()
-        cur.execute("SELECT id, name FROM pages")
-        pages = cur.fetchall() 
-        page_id_dict = {name: id_ for id_, name in pages}
+        cur.execute("""
+        SELECT id, name, lang_code FROM pages
+        WHERE lang_code = ?
+        """, (self.lang_code,))
+        pages = cur.fetchall()
+        page_id_dict = {name: id_ for id_, name, _ in pages}
         if self.page_name in page_id_dict.keys():
             page_id = page_id_dict[self.page_name]
             conn = sqlite3.connect(DB_NAME)
