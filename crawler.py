@@ -3,7 +3,7 @@
 from random import shuffle
 import numpy as np
 from wiki_page import WikiPage
-from db_util import get_pages_data, get_page_autonyms_data
+from db_util import get_pages_data, get_page_autonyms_data, populate_page_autonyms
 from __init__ import logger, MODEL
 
 
@@ -94,7 +94,11 @@ class Crawler:
         - For each id from autonyms table, and given a x_lang code,
         - Fetch autonym page, save metadata and soup.
         """
-        logger.info(f'Crawling autonyms')
+        logger.info('Crawling autonyms')
+        populate_page_autonyms(
+            sim_threshold=self.sim_threshold,
+            source_lang_code=self.lang_code
+            )
         autonyms_data = get_page_autonyms_data()
         for _, _, _, autonym, lang_code in autonyms_data:
             wp_x = WikiPage(page_name=autonym, lang_code=lang_code)
