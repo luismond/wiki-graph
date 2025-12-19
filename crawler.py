@@ -1,11 +1,10 @@
 """Wiki pages crawler."""
 
-import numpy as np
 from random import shuffle
-import sqlite3
+import numpy as np
 from wiki_page import WikiPage
-from page_langs_utils import read_page_langs
-from __init__ import logger, DB_NAME, MODEL
+from db_util import get_pages_data, get_page_autonyms_data
+from __init__ import logger, MODEL
 
 
 class Crawler:
@@ -19,7 +18,7 @@ class Crawler:
         self.seed_page_name = seed_page_name
         self.lang_code = lang_code
         self.load()
-    
+
     def load(self):
         """
         Initialize crawler with the seed page.
@@ -27,7 +26,7 @@ class Crawler:
         - Save the page name and soup
         - Encode the seed paragraphs (todo: save them to vector db)
         """
-        wp = WikiPage(self.seed_page_name)
+        wp = WikiPage(self.seed_page_name, lang_code=self.lang_code)
         wp.save_page_name(sim_score=1.0)
         wp.save_soup()
 
@@ -59,7 +58,7 @@ class Crawler:
         """
         Process a new Wikipedia page name: fetch the page, compute similarity score,
         save its metadata to the database, and store its soup if the score meets the threshold.
-        
+
         Args:
             page_name (str): The name of the new Wikipedia page to process.
         """
@@ -69,26 +68,7 @@ class Crawler:
         if sim_score >= self.sim_threshold:
             wp_new.save_soup()
 
-    def get_page_names(self):
-        """
-        Retrieve page names with similarity above threshold.
-        Shuffle the list of page names to randomize crawling order.
-        """
-        conn = sqlite3.connect(DB_NAME)
-        cur = conn.cursor()
-        cur.execute("""
-        SELECT name FROM pages
-        WHERE sim_score >= ?
-        AND lang_code = ?
-        """, (self.sim_threshold, self.lang_code)
-        )
-        page_names = [p[0] for p in cur.fetchall()]
-        shuffle(page_names)
-        conn.close()
-        logger.info(f'Retrieved {len(page_names)} page_names from DB')
-        return page_names
-
-    def crawl(self):
+    def crawl(self, max_pages: int = 10, max_new_pages: int = 10):
         """
         Crawl Wikipedia pages based on a similarity threshold.
         - For each page name from DB, extract internal Wikipedia links (<a> inside <p> tags).
@@ -96,37 +76,40 @@ class Crawler:
         (fetch the content, compute similarity, save metadata and soup if threshold is met).
         """
         logger.info(f'Crawling pages with similarity threshold {self.sim_threshold}')
-    
-        page_names = self.get_page_names()
 
+        page_data = get_pages_data(self.sim_threshold, self.lang_code)[:max_pages]
+        shuffle(page_data)
         visited = set()
-        for page_name in page_names:
+        for _, page_name, _, _ in page_data:
             wp = WikiPage(page_name=page_name, lang_code=self.lang_code)
             new_page_names = wp.get_internal_page_names()
-            for new_page_name in new_page_names:
-                if new_page_name in page_names + list(visited):
+            for new_page_name in new_page_names[:max_new_pages]:
+                if new_page_name in visited:
                     continue
-                else:
-                    self.process_new_page(new_page_name)
-                    visited.add(new_page_name)
-            
-    def crawl_autonyms(self, x_lang: str):
+                self.process_new_page(new_page_name)
+                visited.add(new_page_name)
+
+    def crawl_autonyms(self):
         """
         - For each id from autonyms table, and given a x_lang code,
         - Fetch autonym page, save metadata and soup.
         """
-        logger.info(f'Crawling pages with x_lang {x_lang}')
-        page_names = read_page_langs()
-        for _, _, _, autonym, lang_code in page_names:
-            if lang_code == x_lang:
-                wp_x = WikiPage(page_name=autonym, lang_code=lang_code)
-                sim_score = self.get_page_similarity_score(wp_x.paragraphs)
-                wp_x.save_page_name(sim_score)
-                wp_x.save_soup()
-                #logger.info(f'saved {autonym} with lang {x_lang} and {sim_score}')
+        logger.info(f'Crawling autonyms')
+        autonyms_data = get_page_autonyms_data()
+        for _, _, _, autonym, lang_code in autonyms_data:
+            #if lang_code == x_lang:
+            wp_x = WikiPage(page_name=autonym, lang_code=lang_code)
+            if len(wp_x.paragraphs) == 0:
+                continue
+            sim_score = self.get_page_similarity_score(wp_x.paragraphs)
+            wp_x.save_page_name(sim_score)
+            wp_x.save_soup()
+            #logger.info(wp_x.paragraphs[:10])
+            #logger.info(f'saved {autonym} with lang {x_lang} and {sim_score}')
+
 
 def main():
-    logger.info(f'Starting main...')
+    logger.info('Starting main...')
     sim_threshold = .45
     for _ in range(2):
         crawler = Crawler(
@@ -135,7 +118,7 @@ def main():
             )
         crawler.crawl()
         sim_threshold *= .97
-    logger.info(f'Finished main')
+    logger.info('Finished main')
 
 
 if __name__ == "__main__":
