@@ -34,6 +34,7 @@ cur.execute('DROP TABLE IF EXISTS table_name')
 import sqlite3
 from __init__ import DB_NAME, logger
 
+
 def create_tables():
     # Create a connection to a database file (will create if it doesn't exist)
     conn = sqlite3.connect(DB_NAME)
@@ -93,7 +94,7 @@ def create_tables():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             page_id INTEGER REFERENCES pages(id),
             soup_data BLOB
-        ) 
+        )
     ''')
 
     # Log database tables and number of rows in each
@@ -113,25 +114,44 @@ def create_tables():
     conn.commit()
     conn.close()
 
+
 def delete_table(name):
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
     cur.execute(f'DROP TABLE IF EXISTS {name}')
 
-def get_pages():
+
+# Table getters
+
+
+def get_pages_data(sim_threshold, lang_code):
     """
-    Retrieve page names with similarity above threshold.
-    Shuffle the list of page names to randomize crawling order.
+    Retrieve page data with similarity above threshold and from lang code.
     """
-    import pandas as pd
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
-    cur.execute("""SELECT * FROM pages""")
+    cur.execute("""
+    SELECT id, name, lang_code, sim_score FROM pages
+    WHERE lang_code = ?
+    AND sim_score >= ?
+    """, (lang_code, sim_threshold)
+    )
     pages = cur.fetchall()
     conn.close()
-    if len(pages) == 0:
-        raise ValueError('Pages table is empty')
-    logger.info(f'Retrieved {len(pages)} page_names from DB')
-    df = pd.DataFrame(pages)
-    df.columns = ['id', 'name', 'lang_code', 'url', 'crawled_at', 'sim_score']
-    return df
+    logger.info(
+        f'{len(pages)} page_names from pages table '
+        f'with {lang_code} and {sim_threshold}'
+        )
+    return pages
+
+
+def get_page_autonyms_data():
+    """Read the page_autonyms data."""
+    conn = sqlite3.connect(DB_NAME)
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT page_autonyms.id, page_autonyms.page_id, pages.name, page_autonyms.autonym, page_autonyms.lang_code
+        FROM page_autonyms
+        LEFT JOIN pages ON page_autonyms.page_id = pages.id
+    """)
+    return cur.fetchall()
