@@ -32,9 +32,7 @@ cur.execute('DROP TABLE IF EXISTS table_name')
 """
 
 import sqlite3
-import pandas as pd
 from __init__ import DB_NAME, logger
-from wiki_page import WikiPage
 
 
 def create_tables():
@@ -130,7 +128,7 @@ def delete_table(name):
     cur.execute(f'DROP TABLE IF EXISTS {name}')
 
 
-# Table getters
+# Data selecters/inserters
 
 
 def get_pages_data(sim_threshold, lang_code):
@@ -159,37 +157,21 @@ def get_page_autonyms_data():
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
     cur.execute("""
-        SELECT page_autonyms.id, page_autonyms.page_id, pages.name, page_autonyms.autonym, page_autonyms.lang_code
+        SELECT page_autonyms.id, page_autonyms.page_id, pages.name, 
+        page_autonyms.autonym, page_autonyms.lang_code
         FROM page_autonyms
         LEFT JOIN pages ON page_autonyms.page_id = pages.id
     """)
     return cur.fetchall()
 
 
-def populate_page_autonyms(sim_threshold, source_lang_code)-> pd.DataFrame:
-    """Use the page names in page table to populate the page_autonyms table."""
-    logger.info('Building page_autonyms corpus...')
-    pages = get_pages_data(sim_threshold=sim_threshold, lang_code=source_lang_code)
-    # todo:
-    # - assert that data insertion is efficient.
-    # - assert that a 'not already saved' lookup is not needed.
-    lang_codes = ['de', 'fr', 'pt', 'es', 'it']
-    for page_id, page_name, _, _ in pages:
-        wp = WikiPage(page_name=page_name, lang_code=source_lang_code)
-        languages = wp.get_languages()
-        if len(languages) == 0:
-            continue
-        for lang in languages:
-            if not isinstance(lang, dict):
-                continue
-            autonym = lang['key']
-            lang_code = lang['code']
-            if lang_code in lang_codes:
-                conn = sqlite3.connect(DB_NAME)
-                cur = conn.cursor()
-                cur.execute(
-                    "INSERT OR IGNORE INTO page_autonyms "
-                    "(page_id, autonym, lang_code) VALUES (?, ?, ?)",
-                    (page_id, autonym, lang_code)
-                    )
-                conn.commit()
+def insert_autonym(page_id, autonym, lang_code):
+    """Insert autonym metadata to autonym table."""
+    conn = sqlite3.connect(DB_NAME)
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT OR IGNORE INTO page_autonyms "
+        "(page_id, autonym, lang_code) VALUES (?, ?, ?)",
+        (page_id, autonym, lang_code)
+        )
+    conn.commit()

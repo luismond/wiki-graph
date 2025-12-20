@@ -3,20 +3,24 @@
 from random import shuffle
 import numpy as np
 from wiki_page import WikiPage
-from db_util import get_pages_data, get_page_autonyms_data, populate_page_autonyms
+from db_util import get_pages_data, get_page_autonyms_data, insert_autonym
 from __init__ import logger, MODEL
 
 
 class Crawler:
     def __init__(
         self,
-        sim_threshold: float,
         seed_page_name: str,
-        lang_code: str = 'en'
+        sim_threshold: float = 0.4,
+        lang_code: str = 'en',
+        max_pages: int = 50,
+        max_new_pages: int = 50
         ):
         self.sim_threshold = sim_threshold
         self.seed_page_name = seed_page_name
         self.lang_code = lang_code
+        self.max_pages = max_pages
+        self.max_new_pages = max_new_pages
         self.load()
 
     def load(self):
@@ -29,7 +33,6 @@ class Crawler:
         wp = WikiPage(self.seed_page_name, lang_code=self.lang_code)
         wp.save_page_name(sim_score=1.0)
         wp.save_soup()
-
         self.seed_paragraphs = wp.paragraphs
         self.seed_embedding = self.get_seed_embedding()
         logger.info(f'Loaded seed paragraphs from {self.seed_page_name}')
@@ -68,7 +71,11 @@ class Crawler:
         if sim_score >= self.sim_threshold:
             wp_new.save_soup()
 
-    def crawl(self, max_pages: int = 50, max_new_pages: int = 50):
+    def crawl(self):
+        self.crawl_source_lang_pages()
+        self.crawl_autonym_pages()
+
+    def crawl_source_lang_pages(self):
         """
         Crawl Wikipedia pages based on a similarity threshold.
         - For each page name from DB, extract internal Wikipedia links (<a> inside <p> tags).
@@ -77,30 +84,26 @@ class Crawler:
         """
         logger.info(f'Crawling pages with similarity threshold {self.sim_threshold}')
 
-        page_data = get_pages_data(self.sim_threshold, self.lang_code)[:max_pages]
+        page_data = get_pages_data(self.sim_threshold, self.lang_code)[:self.max_pages]
         shuffle(page_data)
         visited = set()
         for _, page_name, _, _ in page_data:
             wp = WikiPage(page_name=page_name, lang_code=self.lang_code)
             new_page_names = wp.get_internal_page_names()
             shuffle(new_page_names)
-            for new_page_name in new_page_names[:max_new_pages]:
+            for new_page_name in new_page_names[:self.max_new_pages]:
                 if new_page_name in visited:
                     continue
                 self.process_new_page(new_page_name)
                 visited.add(new_page_name)
-        self.crawl_autonyms()
 
-    def crawl_autonyms(self):
+    def crawl_autonym_pages(self):
         """
         - For each id from autonyms table, and given a x_lang code,
         - Fetch autonym page, save metadata and soup.
         """
         logger.info('Crawling autonyms')
-        populate_page_autonyms(
-            sim_threshold=self.sim_threshold,
-            source_lang_code=self.lang_code
-            )
+        self.populate_autonyms_table()
         autonyms_data = get_page_autonyms_data()
         for _, _, _, autonym, lang_code in autonyms_data:
             wp_x = WikiPage(page_name=autonym, lang_code=lang_code)
@@ -110,11 +113,32 @@ class Crawler:
             wp_x.save_page_name(sim_score)
             wp_x.save_soup()
 
+    def populate_autonyms_table(self):
+        """Use the page names in page table to populate the page_autonyms table."""
+        logger.info('Building page_autonyms corpus...')
+        pages = get_pages_data(sim_threshold=self.sim_threshold, lang_code=self.lang_code)
+        # todo:
+        # - assert that data insertion is efficient.
+        # - assert that a 'not already saved' lookup is not needed.
+        lang_codes = ['de', 'fr', 'pt', 'es', 'it']
+        for page_id, page_name, _, _ in pages:
+            wp = WikiPage(page_name=page_name, lang_code=self.lang_code)
+            languages = wp.get_languages()
+            if len(languages) == 0:
+                continue
+            for lang in languages:
+                if not isinstance(lang, dict):
+                    continue
+                autonym = lang['key']
+                lang_code = lang['code']
+                if lang_code in lang_codes:
+                    insert_autonym(page_id, autonym, lang_code)
+
 
 def main():
     logger.info('Starting main...')
     sim_threshold = .45
-    for _ in range(2):
+    for _ in range(3):
         crawler = Crawler(
             sim_threshold=sim_threshold,
             seed_page_name='Association_football'

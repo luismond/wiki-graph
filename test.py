@@ -2,6 +2,7 @@
 
 from wiki_page import WikiPage as wp
 from corpus_manager import CorpusManager
+from crawler import Crawler
 from db_util import get_db_info
 
 def base_test(page_name, lang_code):
@@ -69,3 +70,13 @@ def test_db_info():
     assert 'page_links' in info
     assert 'page_autonyms' in info
     assert 'soups' in info
+
+
+def test_crawler():
+    seed_page_name = 'Association_football'
+    cr = Crawler(seed_page_name=seed_page_name)
+    assert cr.seed_page_name is not None
+    assert cr.seed_paragraphs is not None
+    assert len(cr.seed_paragraphs) > 0
+    assert cr.seed_embedding is not None
+    
