@@ -1,6 +1,7 @@
 """Unit tests for the wiki-ent project."""
 
 from wiki_page import WikiPage as wp
+from corpus_manager import CorpusManager
 
 
 def base_test(page_name, lang_code):
@@ -42,3 +43,17 @@ def test_wiki_page_pt(page_name="Londres", lang_code="pt"):
 
 def test_wiki_page_it(page_name="Londra", lang_code="it"):
     base_test(page_name, lang_code)
+
+
+def test_corpus_manager():
+    cm = CorpusManager()
+    assert cm.corpus is not None
+    assert cm.corpus_embedding is not None
+    assert cm.df is not None
+    assert len(cm.corpus) > 0
+    assert len(cm.corpus_embedding) > 0
+    assert len(cm.df) > 0
+    assert cm.corpus_embedding.shape[0] == cm.df.shape[0]
+    df = cm.similarity_by_paragraphs(query='soccer')
+    assert df is not None
+    assert len(df) > 0
