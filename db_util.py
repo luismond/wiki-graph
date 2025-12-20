@@ -32,12 +32,13 @@ cur.execute('DROP TABLE IF EXISTS table_name')
 """
 
 import sqlite3
-from __init__ import DB_NAME, logger
 import pandas as pd
+from __init__ import DB_NAME, logger
 from wiki_page import WikiPage
 
 
 def create_tables():
+    """Create the database using the DB_NAME from .env and the tables."""
     # Create a connection to a database file (will create if it doesn't exist)
     conn = sqlite3.connect(DB_NAME)
     logger.info(f'Connected to {DB_NAME}')
@@ -100,25 +101,30 @@ def create_tables():
         )
     ''')
 
-    # Log database tables and number of rows in each
-    try:
-        cur.execute("SELECT name FROM sqlite_master WHERE type='table';")
-        tables = cur.fetchall()
-        for table_tuple in tables:
-            table = table_tuple[0]
-            try:
-                cur.execute(f"SELECT COUNT(*) FROM {table}")
-                count = cur.fetchone()[0]
-                logger.info(f"Table '{table}': {count} rows")
-            except Exception as e:
-                logger.info(f"Could not count rows in table '{table}': {e}")
-    except Exception as e:
-        logger.info(f"Could not retrieve table list: {e}")
+def get_db_info():
+    """Get database tables and number of rows in each."""
+    conn = sqlite3.connect(DB_NAME)
+    logger.info(f'Connected to {DB_NAME}')
+
+    info = {}
+    info['DB_NAME'] = DB_NAME
+    cur = conn.cursor()
+    cur.execute("SELECT name FROM sqlite_master WHERE type='table';")
+    tables = cur.fetchall()
+    for table_tuple in tables:
+        table = table_tuple[0]
+        cur.execute(f"SELECT COUNT(*) FROM {table}")
+        count = cur.fetchone()[0]
+        info[table] = count
     conn.commit()
     conn.close()
+    for i in info.items():
+        logger.info(i)
+    return info
 
 
 def delete_table(name):
+    """Delete a table."""
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
     cur.execute(f'DROP TABLE IF EXISTS {name}')
@@ -174,7 +180,7 @@ def populate_page_autonyms(sim_threshold, source_lang_code)-> pd.DataFrame:
         if len(languages) == 0:
             continue
         for lang in languages:
-            if type(lang) is not dict:
+            if not isinstance(lang, dict):
                 continue
             autonym = lang['key']
             lang_code = lang['code']

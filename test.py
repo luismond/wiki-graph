@@ -2,7 +2,7 @@
 
 from wiki_page import WikiPage as wp
 from corpus_manager import CorpusManager
-
+from db_util import get_db_info
 
 def base_test(page_name, lang_code):
     """Base test, asserting that the WikiPage object is instantiated correctly."""
@@ -57,3 +57,15 @@ def test_corpus_manager():
     df = cm.similarity_by_paragraphs(query='soccer')
     assert df is not None
     assert len(df) > 0
+
+
+def test_db_info():
+    info = get_db_info()
+    assert info is not None
+    assert len(info) > 0
+    assert 'DB_NAME' in info
+    assert 'pages' in info
+    assert 'paragraph_corpus' in info
+    assert 'page_links' in info
+    assert 'page_autonyms' in info
+    assert 'soups' in info
