@@ -84,15 +84,16 @@ class Crawler:
         """
         logger.info(f'Crawling pages with similarity threshold {self.sim_threshold}')
 
-        page_data = get_pages_data(self.sim_threshold, self.lang_code)[:self.max_pages]
+        page_data = get_pages_data(self.sim_threshold, self.lang_code)
+        page_names = [p[1] for p in page_data]
         shuffle(page_data)
         visited = set()
-        for _, page_name, _, _ in page_data:
+        for _, page_name, _, _ in page_data[:self.max_pages]:
             wp = WikiPage(page_name=page_name, lang_code=self.lang_code)
             new_page_names = wp.get_internal_page_names()
             shuffle(new_page_names)
             for new_page_name in new_page_names[:self.max_new_pages]:
-                if new_page_name in visited:
+                if new_page_name in list(visited) + page_names:
                     continue
                 self.process_new_page(new_page_name)
                 visited.add(new_page_name)
@@ -111,11 +112,12 @@ class Crawler:
                 continue
             sim_score = self.get_page_similarity_score(wp_x.paragraphs)
             wp_x.save_page_name(sim_score)
-            wp_x.save_soup()
+            if sim_score >= self.sim_threshold:
+                wp_x.save_soup()
 
     def populate_autonyms_table(self):
         """Use the page names in page table to populate the page_autonyms table."""
-        logger.info('Building page_autonyms corpus...')
+        logger.info('populate_autonyms_table...')
         pages = get_pages_data(sim_threshold=self.sim_threshold, lang_code=self.lang_code)
         # todo:
         # - assert that data insertion is efficient.
