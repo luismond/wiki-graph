@@ -1,63 +1,51 @@
 """Utils to build and visualize page relationships."""
 
-import pandas as pd
 import sqlite3
+import pandas as pd
+from db_util import get_pages_data
 from wiki_page import WikiPage
 from __init__ import logger, DB_NAME
 
 
 class RelationshipBuilder:
-    """
-    Reads the stored page objects and builds a dataframe `relationships` with these columns:
-        - id (PK)
-        - source_page_id (FK)
-        - target_page_id (FK)
-    """
-    def __init__(self, sim_threshold: float = .45):
+    def __init__(
+            self,
+            lang_code: str = 'en',
+            sim_threshold: float = 0.4
+            ):
+        self.lang_code = lang_code
         self.sim_threshold = sim_threshold
-
-    def get_pages(self):
-        conn = sqlite3.connect(DB_NAME)
-        cur = conn.cursor()
-        cur.execute("""
-        SELECT id, name, sim_score FROM pages
-        WHERE sim_score >= ?
-        """, (self.sim_threshold,))
-        pages = cur.fetchall()
-        logger.info(f'{len(pages)} page_ids in pages table with sim_score > {self.sim_threshold}')
-        if len(pages) == 0:
-            raise ValueError(f'No pages found with sim_score > {self.sim_threshold}')
-        conn.close()
-        return pages
 
     def build_page_links(self)-> pd.DataFrame:
         """Use the page names in page table to build the page_links data."""
-        logger.info(f'Building page_links corpus...')
-        pages = self.get_pages()
-        page_id_dict = {name: id_ for id_, name, _ in pages}
+        logger.info('Building page_links corpus...')
+        pages = get_pages_data(self.sim_threshold, self.lang_code)
+        page_id_dict = {name: id_ for id_, name, _, _ in pages}
 
         conn = sqlite3.connect(DB_NAME)
         cur = conn.cursor()
         cur.execute("SELECT source_page_id FROM page_links")
         links_page_ids = cur.fetchall()
-        links_page_ids = set([p[0] for p in links_page_ids])
+        links_page_ids = set(p[0] for p in links_page_ids)
         logger.info(f'{len(links_page_ids)} page_ids in page_links table')
 
         n = 0
-        for page_id, page_name, _ in pages:
-            if page_id not in links_page_ids:
-                wp = WikiPage(page_name)
-                new_page_names = wp.get_internal_page_names()
-                for new_page_name in new_page_names:
-                    if new_page_name not in page_id_dict:
-                        continue
-                    target_page_id = page_id_dict[new_page_name]
-                    cur.execute(
-                        "INSERT INTO page_links (source_page_id, target_page_id) VALUES (?, ?)",
-                        (page_id, target_page_id)
-                        )
-                    conn.commit()
-                    n += 1
+        for page_id, page_name, _, _ in pages:
+            if page_id in links_page_ids:
+                continue
+            wp = WikiPage(page_name, self.lang_code)
+            new_page_names = wp.get_internal_page_names()
+            for new_page_name in new_page_names:
+                if new_page_name not in page_id_dict:
+                    continue
+                target_page_id = page_id_dict[new_page_name]
+                cur.execute(
+                    "INSERT INTO page_links "
+                    "(source_page_id, target_page_id) VALUES (?, ?)",
+                    (page_id, target_page_id)
+                    )
+                conn.commit()
+                n += 1
         logger.info(f'Added {n} page_links')
 
     def read_page_links(self) -> pd.DataFrame:
@@ -65,14 +53,16 @@ class RelationshipBuilder:
         conn = sqlite3.connect(DB_NAME)
         cur = conn.cursor()
         cur.execute("""
-            SELECT page_links.source_page_id, source_pages.name, 
-            page_links.target_page_id, target_pages.name, target_pages.sim_score
-            FROM page_links
-            LEFT JOIN pages AS source_pages ON page_links.source_page_id = source_pages.id
-            LEFT JOIN pages AS target_pages ON page_links.target_page_id = target_pages.id
-        """)
+            SELECT pl.source_page_id, s_pages.name,
+            pl.target_page_id, t_pages.name
+            FROM page_links AS pl
+            LEFT JOIN pages AS s_pages ON pl.source_page_id = s_pages.id
+            LEFT JOIN pages AS t_pages ON pl.target_page_id = t_pages.id
+            WHERE s_pages.lang_code = ?
+        """, (self.lang_code,)
+        )
         page_links = cur.fetchall()
-        columns = ['source_page_id', 'source', 'target_page_id', 'target', 'sim_score']
+        columns = ['s_page_id', 's_page_name', 't_page_id', 't_page_name']
         df = pd.DataFrame(page_links, columns=columns)
         logger.info(f'Read {len(df)} page_links from page_links table')
         return df
@@ -106,8 +96,14 @@ class RelationshipBuilder:
             df = pd.concat([b[:group_size] for (_, b) in df.groupby('source')])
         df = df[df['sim_score'] >= min_sim_score]
         df = df[:max_edges]
-        filter_params = f'freq_min={freq_min}, groupby_source={groupby_source}, group_size={group_size}, max_edges={max_edges}'
-        print(f'Returned filtered data with shape {df.shape}\nFilter params: {filter_params}')
+        filter_params = (
+            f'freq_min={freq_min}, groupby_source={groupby_source}, '
+            'group_size={group_size}, max_edges={max_edges}'
+            )
+        print(
+            f'Returned filtered data with shape {df.shape}\n'
+            f'Filter params: {filter_params}'
+            )
         return df
 
 
