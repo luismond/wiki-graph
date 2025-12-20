@@ -25,6 +25,7 @@ ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
 APP_NAME = os.getenv("APP_NAME")
 EMAIL = os.getenv("EMAIL")
 DB_NAME = os.getenv("DB_NAME")
+SEED_PAGE_NAME = os.getenv("SEED_PAGE_NAME")
 
 HEADERS = {
     'Authorization': f'Bearer {ACCESS_TOKEN}',
@@ -33,4 +34,5 @@ HEADERS = {
 
 MODEL = SentenceTransformer('distiluse-base-multilingual-cased-v1')
 
-current_datetime_str = datetime.now().strftime('%Y-%m-%d-%H')
+#current_datetime_str = datetime.now().strftime('%Y-%m-%d-%H')
+current_datetime_str = datetime.now().strftime('%Y-%m-%d')

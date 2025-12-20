@@ -88,8 +88,9 @@ class WikiPage:
         assert self.page_id is not None
         conn = sqlite3.connect(DB_NAME)
         cur = conn.cursor()
-        cur.execute("INSERT OR REPLACE INTO soups (page_id, soup_data) VALUES (?, ?)",
+        cur.execute("INSERT OR IGNORE INTO soups (page_id, soup_data) VALUES (?, ?)",
             (self.page_id, sqlite3.Binary(pickle.dumps(self.soup))))
+        logger.info(self.page_id)
         conn.commit()
 
     def save_page_name(self, sim_score):
@@ -102,9 +103,9 @@ class WikiPage:
         "(name, lang_code, url, crawled_at, sim_score) VALUES (?, ?, ?, ?, ?)",
         (self.page_name, self.lang_code, self.url, current_datetime_str, sim_score)
         )
-        conn.commit()
         self.page_id = cur.lastrowid
-
+        conn.commit()
+        
     def get_shortdescription(self) -> str:
         # todo: decide if remove or save it along the metadata
         try:

@@ -53,7 +53,7 @@ def create_tables():
             url TEXT,
             crawled_at TEXT,
             sim_score REAL,
-            UNIQUE(name, lang_code)
+            UNIQUE(url)
         )
         '''
     )
@@ -95,7 +95,8 @@ def create_tables():
         CREATE TABLE IF NOT EXISTS soups (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             page_id INTEGER REFERENCES pages(id),
-            soup_data BLOB
+            soup_data BLOB,
+            UNIQUE(page_id)
         )
     ''')
 

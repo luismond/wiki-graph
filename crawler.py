@@ -4,13 +4,13 @@ from random import shuffle
 import numpy as np
 from wiki_page import WikiPage
 from db_util import get_pages_data, get_page_autonyms_data, insert_autonym
-from __init__ import logger, MODEL
+from __init__ import logger, MODEL, SEED_PAGE_NAME
 
 
 class Crawler:
     def __init__(
         self,
-        seed_page_name: str,
+        seed_page_name: str = SEED_PAGE_NAME,
         sim_threshold: float = 0.4,
         lang_code: str = 'en',
         max_pages: int = 50,
