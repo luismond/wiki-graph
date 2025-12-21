@@ -56,7 +56,6 @@ def test_db_info():
     assert 'paragraph_corpus' in info
     assert 'page_links' in info
     assert 'page_autonyms' in info
-    assert 'soups' in info
 
 
 def test_crawler():

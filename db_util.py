@@ -7,7 +7,7 @@ sqlite 101:
 cur.execute("INSERT INTO users (name, age) VALUES (?, ?)", ("Alice", 30)
 
 # Insert binary data
-cur.execute("INSERT INTO soups (page_id, soup_data) VALUES (?, ?)",
+cur.execute("INSERT INTO pages (page_id, page_data) VALUES (?, ?)",
             (page_id, sqlite3.Binary(pickled_data)))
 
 # Commit the transaction
@@ -22,7 +22,7 @@ print(rows)  # Output: [(1, 'Alice', 30)
 conn.close()
 
 # Query one data item
-cur.execute("SELECT soup_data FROM soups WHERE page_id = ?", (page_id,))
+cur.execute("SELECT page_data FROM pages WHERE page_id = ?", (page_id,))
 row = cur.fetchone()
 if row:
     unpickled_object = pickle.loads(row[0])
@@ -90,15 +90,6 @@ def create_tables():
         )
     ''')
 
-    # Create a soups table
-    cur.execute('''
-        CREATE TABLE IF NOT EXISTS soups (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            page_id INTEGER REFERENCES pages(id),
-            soup_data BLOB,
-            UNIQUE(page_id)
-        )
-    ''')
 
 def get_db_info():
     """Get database tables and number of rows in each."""

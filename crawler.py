@@ -29,12 +29,11 @@ class Crawler:
         """
         Initialize crawler with the seed page.
 
-        - Save the page name and soup
+        - Save the page name.
         - Encode the seed paragraphs (todo: save them to vector db)
         """
         wp = WikiPage(self.seed_page_name, lang_code=self.lang_code)
         wp.save_page_name(sim_score=1.0)
-        wp.save_soup()
         self.seed_paragraphs = wp.paragraphs
         self.seed_embedding = self.get_seed_embedding()
         logger.info(f'Loaded seed paragraphs from {self.seed_page_name}')
@@ -62,7 +61,7 @@ class Crawler:
     def process_new_page(self, page_name):
         """
         Process a new Wikipedia page name: fetch the page, compute similarity score,
-        save its metadata to the database, and store its soup if the score meets the threshold.
+        save its metadata to the database.
 
         Args:
             page_name (str): The name of the new Wikipedia page to process.
@@ -70,8 +69,6 @@ class Crawler:
         wp_new = WikiPage(page_name, lang_code=self.lang_code)
         sim_score = self.get_page_similarity_score(wp_new.paragraphs)
         wp_new.save_page_name(sim_score)
-        if sim_score >= self.sim_threshold:
-            wp_new.save_soup()
 
     def crawl(self):
         logger.info(f'Crawling pages with similarity threshold {self.sim_threshold}')
@@ -84,7 +81,7 @@ class Crawler:
         Crawl Wikipedia pages based on a similarity threshold.
         - For each page name from DB, extract internal Wikipedia links (<a> inside <p> tags).
         - For every internal link not already saved, process it as a new page
-        (fetch the content, compute similarity, save metadata and soup if threshold is met).
+        (fetch the content, compute similarity, save metadata).
         """
         page_data = get_pages_data(self.sim_threshold, self.lang_code)
         page_names = [p[1] for p in page_data]
@@ -103,7 +100,7 @@ class Crawler:
     def crawl_autonym_pages(self):
         """
         - For each id from autonyms table, and given a x_lang code,
-        - Fetch autonym page, save metadata and soup.
+        - Fetch autonym page, save metadata.
         """
         logger.info('Crawling autonyms')
         self.populate_autonyms_table()
@@ -114,8 +111,6 @@ class Crawler:
                 continue
             sim_score = self.get_page_similarity_score(wp_x.paragraphs)
             wp_x.save_page_name(sim_score)
-            if sim_score >= self.sim_threshold:
-                wp_x.save_soup()
 
     def populate_autonyms_table(self):
         """Use the page names in page table to populate the page_autonyms table."""

@@ -4,11 +4,10 @@ WikiPage class.
 Represents a single Wikipedia page.
 
 Includes methods to download, parse, and extract links and paragraphs.
-Also, methods to save soups and page data to the database.
+Also, methods to save page data to the database.
 """
 
 import requests
-import pickle
 import bs4
 import sqlite3
 from __init__ import HEADERS, logger, DB_NAME, current_datetime_str
@@ -27,7 +26,7 @@ class WikiPage:
 
     def load(self):
         self.url = self.get_html_url()
-        self.soup = self.get_soup()
+        self.soup = self.download_soup()
         self.paragraphs = self.get_paragraphs_text()
         self.shortdescription = self.get_shortdescription()
 
@@ -39,40 +38,6 @@ class WikiPage:
             f'https://api.wikimedia.org/core/v1/wikipedia/'
             f'{self.lang_code}/page/{self.page_name}/html'
         )
-
-    def get_soup(self) -> bs4.BeautifulSoup:
-        """Either load the saved soup or download the soup."""
-
-        # Get the page table data, filtered by the page's lang code
-        conn = sqlite3.connect(DB_NAME)
-        cur = conn.cursor()
-        cur.execute("""
-        SELECT id, name, lang_code FROM pages
-        WHERE lang_code = ?
-        """, (self.lang_code,)
-        )
-        pages = cur.fetchall()
-        page_id_dict = {name: id_ for id_, name, _ in pages}
-
-        # If the page name exists in the db, retrieve the associated soup
-        if self.page_name in page_id_dict.keys():
-            page_id = page_id_dict[self.page_name]
-            conn = sqlite3.connect(DB_NAME)
-            cur = conn.cursor()
-            cur.execute("SELECT soup_data FROM soups WHERE page_id = ?", (page_id,))
-            row = cur.fetchone()
-            if row:
-                soup = pickle.loads(row[0])
-            else:
-                # Due to differing sim thresholds, it can happen that a page id exists
-                # without a corresponding saved soup.
-                # set a global sim value
-                # Alt., join the pages and soups table
-                # Alt., write an assertion line.
-                soup = self.download_soup()
-        else:
-            soup = self.download_soup()
-        return soup
 
     def download_soup(self) -> bs4.BeautifulSoup:
         """"
@@ -87,15 +52,6 @@ class WikiPage:
         except requests.exceptions.ReadTimeout as e:
             logger.info(str(e))
         return soup
-
-    def save_soup(self) -> None:
-        "Save the soup as a binary data."
-        assert self.page_id is not None
-        conn = sqlite3.connect(DB_NAME)
-        cur = conn.cursor()
-        cur.execute("INSERT OR IGNORE INTO soups (page_id, soup_data) VALUES (?, ?)",
-            (self.page_id, sqlite3.Binary(pickle.dumps(self.soup))))
-        conn.commit()
 
     def save_page_name(self, sim_score):
         """Save the page metadata in the pages table."""
