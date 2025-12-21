@@ -41,7 +41,6 @@ class CorpusManager:
         self.corpus = None
         self.corpus_embedding = None
         self.df = None
-        self.load()
 
     def load(self):
         """Initialize the module, build the corpus and load the vectors."""
