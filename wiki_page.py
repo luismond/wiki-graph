@@ -66,7 +66,7 @@ class WikiPage:
             else:
                 # Due to differing sim thresholds, it can happen that a page id exists
                 # without a corresponding saved soup.
-                # If a global sim value doesn't fix it, investigate the root cause.
+                # set a global sim value
                 # Alt., join the pages and soups table
                 # Alt., write an assertion line.
                 soup = self.download_soup()
@@ -79,8 +79,13 @@ class WikiPage:
         Request a Wikipedia url
         and return the parsed html page as a bs4 soup.
         """
-        response = requests.get(self.url, headers=HEADERS, timeout=180)
-        soup = bs4.BeautifulSoup(response.text, features="html.parser")
+        try:
+            response = requests.get(self.url, headers=HEADERS, timeout=180)
+            soup = bs4.BeautifulSoup(response.text, features="html.parser")
+        except requests.exceptions.ConnectionError as e:
+            logger.info(str(e))
+        except requests.exceptions.ReadTimeout as e:
+            logger.info(str(e))
         return soup
 
     def save_soup(self) -> None:
@@ -90,7 +95,6 @@ class WikiPage:
         cur = conn.cursor()
         cur.execute("INSERT OR IGNORE INTO soups (page_id, soup_data) VALUES (?, ?)",
             (self.page_id, sqlite3.Binary(pickle.dumps(self.soup))))
-        logger.info(self.page_id)
         conn.commit()
 
     def save_page_name(self, sim_score):

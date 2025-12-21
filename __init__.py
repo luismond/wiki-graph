@@ -34,5 +34,4 @@ HEADERS = {
 
 MODEL = SentenceTransformer('distiluse-base-multilingual-cased-v1')
 
-#current_datetime_str = datetime.now().strftime('%Y-%m-%d-%H')
 current_datetime_str = datetime.now().strftime('%Y-%m-%d')

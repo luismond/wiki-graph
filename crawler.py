@@ -141,8 +141,11 @@ class Crawler:
 def main():
     logger.info('Starting main...')
     for _ in range(3):
-        crawler = Crawler()
-        crawler.crawl()
+        try:
+            crawler = Crawler()
+            crawler.crawl()
+        except Exception as e:
+            logger.warning(str(e))
     logger.info('Finished main')
 
 
