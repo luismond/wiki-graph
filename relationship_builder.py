@@ -4,14 +4,14 @@ import sqlite3
 import pandas as pd
 from db_util import get_pages_data
 from wiki_page import WikiPage
-from __init__ import logger, DB_NAME
+from __init__ import logger, DB_NAME, SIM_THRESHOLD
 
 
 class RelationshipBuilder:
     def __init__(
             self,
             lang_code: str = 'en',
-            sim_threshold: float = 0.4
+            sim_threshold: float = SIM_THRESHOLD
             ):
         self.lang_code = lang_code
         self.sim_threshold = sim_threshold

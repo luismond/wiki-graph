@@ -34,4 +34,6 @@ HEADERS = {
 
 MODEL = SentenceTransformer('distiluse-base-multilingual-cased-v1')
 
+SIM_THRESHOLD = 0.4
+
 current_datetime_str = datetime.now().strftime('%Y-%m-%d')

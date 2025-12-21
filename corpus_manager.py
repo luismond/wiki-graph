@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 import torch
 from sentence_transformers.util import community_detection
-from __init__ import DB_NAME, MODEL, logger
+from __init__ import DB_NAME, MODEL, SIM_THRESHOLD, logger
 from wiki_page import WikiPage
 
 
@@ -36,7 +36,7 @@ class CorpusManager:
         df = cm.df
         corpus_embedding = cm.corpus_embedding
     """
-    def __init__(self, sim_threshold: float = .45):
+    def __init__(self, sim_threshold: float = SIM_THRESHOLD):
         self.sim_threshold = sim_threshold
         self.corpus = None
         self.corpus_embedding = None
@@ -96,7 +96,7 @@ class CorpusManager:
         pages = cur.fetchall()
         logger.info(
             f'{len(pages)} page_ids in pages table '
-            'with sim_score > {self.sim_threshold}'
+            f'with sim_score > {self.sim_threshold}'
             )
         if len(pages) == 0:
             raise ValueError(f'No pages found with sim_threshold'
