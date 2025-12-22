@@ -9,7 +9,7 @@ def main():
     logger.info('Starting main...')
     for _ in range(2):
         try:
-            crawler = Crawler(max_pages=10, max_new_pages=10)
+            crawler = Crawler(max_pages=5, max_new_pages=5)
             crawler.crawl()
             cm = CorpusManager()
             cm.load()
