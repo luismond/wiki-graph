@@ -144,17 +144,26 @@ def get_pages_data(sim_threshold, lang_code):
     return pages
 
 
-def get_page_autonyms_data():
-    """Read the page_autonyms data."""
+def get_unsaved_autonym_page_ids(lang_code, sim_threshold):
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
-    cur.execute("""
-        SELECT page_autonyms.id, page_autonyms.page_id, pages.name, 
-        page_autonyms.autonym, page_autonyms.lang_code
-        FROM page_autonyms
-        LEFT JOIN pages ON page_autonyms.page_id = pages.id
-    """)
-    return cur.fetchall()
+    cur.execute(
+        """
+        SELECT id, name FROM pages
+        WHERE lang_code = ?
+        AND sim_score >= ?
+    """, (lang_code, sim_threshold))
+    pages = cur.fetchall()
+    
+    conn = sqlite3.connect(DB_NAME)
+    cur = conn.cursor()
+    cur.execute("SELECT page_id FROM page_autonyms")
+    page_autonyms_page_ids = [i[0] for i in set(cur.fetchall())]
+    
+    unsaved_pages =  set(i for i in pages if i[0] \
+                         not in page_autonyms_page_ids)
+    logger.info(f'{len(unsaved_pages)} unsaved page_ids in page_autonyms')
+    return unsaved_pages
 
 
 def insert_autonym(page_id, autonym, lang_code):

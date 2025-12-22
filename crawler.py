@@ -3,7 +3,8 @@
 from random import shuffle
 import numpy as np
 from wiki_page import WikiPage
-from db_util import get_pages_data, get_page_autonyms_data, insert_autonym
+from db_util import get_pages_data, insert_autonym, \
+    get_unsaved_autonym_page_ids
 from __init__ import logger, MODEL, SEED_PAGE_NAME, SIM_THRESHOLD
 
 
@@ -58,7 +59,7 @@ class Crawler:
             and the seed embedding.
         """
         paragraphs_embedding = MODEL.encode_document(' '.join(paragraphs))
-        sim_score = float(MODEL.similarity(paragraphs_embedding, 
+        sim_score = float(MODEL.similarity(paragraphs_embedding,
                                            self.seed_embedding)[0])
         return sim_score
 
@@ -104,31 +105,12 @@ class Crawler:
                 visited.add(new_page_name)
 
     def crawl_autonym_pages(self):
-        """
-        - For each id from autonyms table, and given a x_lang code,
-        - Fetch autonym page, save metadata.
-        """
-        self.populate_autonyms_table()
-        autonyms_data = get_page_autonyms_data()
-        logger.info('Crawling autonyms')
-        for _, _, _, autonym, lang_code in autonyms_data:
-            wp_x = WikiPage(page_name=autonym, lang_code=lang_code)
-            if len(wp_x.paragraphs) == 0:
-                continue
-            sim_score = self.get_page_similarity_score(wp_x.paragraphs)
-            wp_x.save_page_name(sim_score)
-
-    def populate_autonyms_table(self):
-        """
-        Use the page ids to populate the page_autonyms table.
-        """
+        """Populate the page_autonyms table and save autonym pages."""
         logger.info('populate_autonyms_table...')
-        pages = get_pages_data(self.sim_threshold, self.lang_code)
-        autonyms_data = get_page_autonyms_data()
-        autonyms_page_ids = set(i[1] for i in autonyms_data)
-        for page_id, page_name, _, _ in pages:
-            if page_id in autonyms_page_ids:
-                continue
+        unsaved_pages = get_unsaved_autonym_page_ids(self.lang_code, 
+                                                     self.sim_threshold)
+        n = 0
+        for page_id, page_name in unsaved_pages:
             wp = WikiPage(page_name, self.lang_code)
             languages = wp.get_languages()
             if len(languages) == 0:
@@ -140,3 +122,10 @@ class Crawler:
                 lang_code = lang['code']
                 if lang_code in self.autonym_lang_codes:
                     insert_autonym(page_id, autonym, lang_code)
+                    wp_x = WikiPage(page_name=autonym, lang_code=lang_code)
+                    if len(wp_x.paragraphs) == 0:
+                        continue
+                    sim_score = self.get_page_similarity_score(wp_x.paragraphs)
+                    wp_x.save_page_name(sim_score)
+                    n += 1
+        logger.info(f'Saved {n} autonyms')
