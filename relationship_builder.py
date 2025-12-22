@@ -93,7 +93,6 @@ class RelationshipBuilder:
         Returns:
             pd.DataFrame: Filtered relationship dataframe.
         """
-        #s_page_id	s_page_name	s_page_sim_score	t_page_id	t_page_name
         df = df.drop(columns=['s_page_id', 't_page_id'])
         df.columns = ['source', 'sim_score', 'target']
         df['sim_score'] = df['sim_score'].astype(float)
@@ -184,7 +183,7 @@ def build_graph(df) -> nx.Graph:
     return G
 
 
-def draw_graph_pyvis(df) -> None:
+def draw_graph(df) -> None:
     net = Network(
         height="1800px",
         width="100%",
