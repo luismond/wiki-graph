@@ -1,6 +1,7 @@
 """Main wikiNER script."""
 
 from __init__ import logger
+from db_util import get_db_info
 from crawler import Crawler
 from corpus_manager import CorpusManager
 from relationship_builder import RelationshipBuilder, draw_graph
@@ -9,7 +10,8 @@ def main():
     logger.info('Starting main...')
     for _ in range(2):
         try:
-            crawler = Crawler(max_pages=5, max_new_pages=5)
+            get_db_info()
+            crawler = Crawler(max_pages=15, max_new_pages=15)
             crawler.crawl()
             cm = CorpusManager()
             cm.load()
