@@ -41,27 +41,31 @@ class Crawler:
     def get_seed_embedding(self) -> np.ndarray:
         """
         Encode the seed paragraphs.
-        This seed embedding will be used to determine the similarity of the new crawled pages.
+        This seed embedding will be used to determine the similarity 
+        of the new crawled pages.
         """
         seed_embedding = MODEL.encode(' '.join(self.seed_paragraphs))
         return seed_embedding
 
     def get_page_similarity_score(self, paragraphs: list) -> float:
         """
-        Given a list of paragraphs, encode them and calculate their similarity against the seed.
+        Given a list of paragraphs, encode them and calculate 
+        their similarity against the seed.
         Args:
             paragraphs (list): A list of paragraphs.
         Returns:
-            float: The similarity score between the paragraphs and the seed embedding.
+            float: The similarity score between the paragraphs 
+            and the seed embedding.
         """
         paragraphs_embedding = MODEL.encode_document(' '.join(paragraphs))
-        sim_score = float(MODEL.similarity(paragraphs_embedding, self.seed_embedding)[0])
+        sim_score = float(MODEL.similarity(paragraphs_embedding, 
+                                           self.seed_embedding)[0])
         return sim_score
 
     def process_new_page(self, page_name):
         """
-        Process a new Wikipedia page name: fetch the page, compute similarity score,
-        save its metadata to the database.
+        Process a new Wikipedia page name: fetch the page, 
+        compute similarity score, save its metadata to the database.
 
         Args:
             page_name (str): The name of the new Wikipedia page to process.
@@ -71,7 +75,8 @@ class Crawler:
         wp_new.save_page_name(sim_score)
 
     def crawl(self):
-        logger.info(f'Crawling pages with similarity threshold {self.sim_threshold}')
+        logger.info(f'Crawling pages with similarity threshold '
+                    f'{self.sim_threshold}')
         self.crawl_source_lang_pages()
         self.crawl_autonym_pages()
         logger.info('Crawling complete')
@@ -79,7 +84,8 @@ class Crawler:
     def crawl_source_lang_pages(self):
         """
         Crawl Wikipedia pages based on a similarity threshold.
-        - For each page name from DB, extract internal Wikipedia links (<a> inside <p> tags).
+        - For each page name from DB, extract internal Wikipedia links 
+        (<a> inside <p> tags).
         - For every internal link not already saved, process it as a new page
         (fetch the content, compute similarity, save metadata).
         """
@@ -102,9 +108,9 @@ class Crawler:
         - For each id from autonyms table, and given a x_lang code,
         - Fetch autonym page, save metadata.
         """
-        logger.info('Crawling autonyms')
         self.populate_autonyms_table()
         autonyms_data = get_page_autonyms_data()
+        logger.info('Crawling autonyms')
         for _, _, _, autonym, lang_code in autonyms_data:
             wp_x = WikiPage(page_name=autonym, lang_code=lang_code)
             if len(wp_x.paragraphs) == 0:
@@ -113,14 +119,17 @@ class Crawler:
             wp_x.save_page_name(sim_score)
 
     def populate_autonyms_table(self):
-        """Use the page names in page table to populate the page_autonyms table."""
+        """
+        Use the page ids to populate the page_autonyms table.
+        """
         logger.info('populate_autonyms_table...')
-        pages = get_pages_data(sim_threshold=self.sim_threshold, lang_code=self.lang_code)
-        # todo:
-        # - assert that data insertion is efficient.
-        # - assert that a 'not already saved' lookup is not needed.
+        pages = get_pages_data(self.sim_threshold, self.lang_code)
+        autonyms_data = get_page_autonyms_data()
+        autonyms_page_ids = set(i[1] for i in autonyms_data)
         for page_id, page_name, _, _ in pages:
-            wp = WikiPage(page_name=page_name, lang_code=self.lang_code)
+            if page_id in autonyms_page_ids:
+                continue
+            wp = WikiPage(page_name, self.lang_code)
             languages = wp.get_languages()
             if len(languages) == 0:
                 continue
