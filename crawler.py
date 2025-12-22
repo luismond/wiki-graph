@@ -131,18 +131,3 @@ class Crawler:
                 lang_code = lang['code']
                 if lang_code in self.autonym_lang_codes:
                     insert_autonym(page_id, autonym, lang_code)
-
-
-def main():
-    logger.info('Starting main...')
-    for _ in range(3):
-        try:
-            crawler = Crawler()
-            crawler.crawl()
-        except Exception as e:
-            logger.warning(str(e))
-    logger.info('Finished main')
-
-
-if __name__ == "__main__":
-    main()
