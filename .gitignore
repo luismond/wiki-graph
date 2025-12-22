@@ -13,6 +13,7 @@ dev.ipynb
 *journal
 *log
 dev.py
+tmp.py
 *__pycache__
 include/
 data/
