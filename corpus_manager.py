@@ -2,12 +2,13 @@
 Builds the paragraph corpus, embedding corpus, and saves to the database.
 """
 
-import sqlite3
 import pandas as pd
 import numpy as np
 import torch
 from sentence_transformers.util import community_detection
-from __init__ import DB_NAME, MODEL, SIM_THRESHOLD, logger
+from __init__ import MODEL, SIM_THRESHOLD, logger
+from db_util import insert_paragraph, get_paragraph_embeddings,\
+    get_paragraph_corpus, get_pages_table
 from wiki_page import WikiPage
 
 
@@ -51,16 +52,7 @@ class CorpusManager:
         assert self.df.shape[0] == self.corpus_embedding.shape[0]
 
     def _read(self):
-        conn = sqlite3.connect(DB_NAME)
-        cur = conn.cursor()
-        cur.execute("""
-            SELECT paragraph_corpus.id, page_id, pages.name, 
-            text, position, pages.lang_code
-            FROM paragraph_corpus
-            LEFT JOIN pages ON paragraph_corpus.page_id = pages.id
-        """)
-        corpus = cur.fetchall()
-        logger.info(f'Read paragraphs with {len(corpus)} rows')
+        corpus = get_paragraph_corpus()
         return corpus
 
     def _load_corpus_embedding(self):
@@ -76,41 +68,10 @@ class CorpusManager:
             self.corpus_embedding (np.ndarray): 
                 An array of shape (num_paragraphs, embedding_dim).
         """
-        conn = sqlite3.connect(DB_NAME)
-        cur = conn.cursor()
-        cur.execute("""SELECT embedding FROM paragraph_corpus""")
-        embeddings = [np.frombuffer(e[0], dtype=np.float32) \
-                      for e in cur.fetchall()]
+        embeddings = get_paragraph_embeddings()
         corpus_embedding = np.vstack(embeddings)
         self.corpus_embedding = corpus_embedding
         logger.info(f'Loaded embeddings with shape {corpus_embedding.shape}')
-
-    def _get_pages_table(self):
-        conn = sqlite3.connect(DB_NAME)
-        cur = conn.cursor()
-        cur.execute("""
-        SELECT id, name, lang_code, sim_score FROM pages
-        WHERE sim_score >= ?
-        """, (self.sim_threshold,))
-        pages = cur.fetchall()
-        logger.info(
-            f'{len(pages)} page_ids in pages table '
-            f'with sim_score > {self.sim_threshold}'
-            )
-        if len(pages) == 0:
-            raise ValueError(f'No pages found with sim_threshold'
-                             f' > {self.sim_threshold}')
-        conn.close()
-        return pages
-
-    def _get_corpus_page_ids(self):
-        conn = sqlite3.connect(DB_NAME)
-        cur = conn.cursor()
-        cur.execute("""SELECT page_id FROM paragraph_corpus""")
-        pc_page_ids = cur.fetchall()
-        pc_page_ids = set(p[0] for p in pc_page_ids)
-        logger.info(f'{len(pc_page_ids)} page_ids in paragraph_corpus table')
-        return pc_page_ids
 
     def _build(self):
         """
@@ -119,10 +80,10 @@ class CorpusManager:
         For each page, create a WikiPage object and save it to the database.
         """
         logger.info('Building corpus...')
-        conn = sqlite3.connect(DB_NAME)
-        cur = conn.cursor()
-        pages = self._get_pages_table()
-        pc_page_ids = self._get_corpus_page_ids()
+
+        pages = get_pages_table()
+        corpus = self._read()
+        pc_page_ids = set(i[1] for i in corpus)
 
         n = 0
         for page_id, page_name, lang_code, _ in pages:
@@ -135,12 +96,7 @@ class CorpusManager:
             for position, paragraph in enumerate(paragraphs):
                 embedding = MODEL.encode(paragraph)
                 embedding = np.array(embedding, dtype=np.float32).tobytes()
-                cur.execute(
-                    "INSERT OR IGNORE INTO paragraph_corpus "
-                    "(page_id, text, embedding, position) VALUES (?, ?, ?, ?)",
-                    (page_id, paragraph, embedding, position)
-                )
-                conn.commit()
+                insert_paragraph(page_id, paragraph, embedding, position)
             n += 1
         logger.info(f'Added {n} pages to corpus')
 
@@ -200,32 +156,32 @@ class CorpusManager:
         logger.info(f'Returned {len(dfg)} pages')
         return dfg
 
-    def cluster_by_pages(
-            self,
-            min_community_size=20,
-            threshold=0.5
-            ) -> pd.DataFrame:
-        """Cluster the corpus by pages."""
-        #todo: pre-save the page corpus embeddings
-        df = self.df.groupby('page_name')['text'].apply(
-            lambda paras: ' '.join(paras)).reset_index()
-        paras_embedding = MODEL.encode_document(df['text'].tolist())
+    # def cluster_by_pages(
+    #         self,
+    #         min_community_size=20,
+    #         threshold=0.5
+    #         ) -> pd.DataFrame:
+    #     """Cluster the corpus by pages."""
+    #     #todo: pre-save the page corpus embeddings
+    #     df = self.df.groupby('page_name')['text'].apply(
+    #         lambda paras: ' '.join(paras)).reset_index()
+    #     paras_embedding = MODEL.encode_document(df['text'].tolist())
 
-        groups_lists = community_detection(
-            paras_embedding,
-            min_community_size=min_community_size,
-            threshold=threshold
-            )
+    #     groups_lists = community_detection(
+    #         paras_embedding,
+    #         min_community_size=min_community_size,
+    #         threshold=threshold
+    #         )
 
-        group_dfs = []
-        for group_n, group in enumerate(groups_lists):
-            group_rows = []
-            for row_idx in group:
-                row = df.iloc[row_idx]
-                row['group'] = group_n
-                group_rows.append(row)
-            group_df = pd.DataFrame(group_rows)
-            group_dfs.append(group_df)
+    #     group_dfs = []
+    #     for group_n, group in enumerate(groups_lists):
+    #         group_rows = []
+    #         for row_idx in group:
+    #             row = df.iloc[row_idx]
+    #             row['group'] = group_n
+    #             group_rows.append(row)
+    #         group_df = pd.DataFrame(group_rows)
+    #         group_dfs.append(group_df)
 
-        dfc = pd.concat(group_dfs)
-        return dfc
+    #     dfc = pd.concat(group_dfs)
+    #     return dfc
