@@ -3,8 +3,7 @@
 from __init__ import logger
 from crawler import Crawler
 from corpus_manager import CorpusManager
-from relationship_builder import RelationshipBuilder
-from network_visualizer import draw_graph_pyvis
+from relationship_builder import RelationshipBuilder, draw_graph
 
 def main():
     logger.info('Starting main...')
@@ -18,7 +17,7 @@ def main():
             rlb.build_page_links()
             dfr = rlb.read_page_links()
             dfx = rlb.filter(dfr)
-            draw_graph_pyvis(dfx)
+            draw_graph(dfx)
 
         except Exception as e:
             logger.warning(str(e))
