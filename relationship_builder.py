@@ -53,7 +53,7 @@ class RelationshipBuilder:
         conn = sqlite3.connect(DB_NAME)
         cur = conn.cursor()
         cur.execute("""
-            SELECT pl.source_page_id, s_pages.name,
+            SELECT pl.source_page_id, s_pages.name, s_pages.sim_score,
             pl.target_page_id, t_pages.name
             FROM page_links AS pl
             LEFT JOIN pages AS s_pages ON pl.source_page_id = s_pages.id
@@ -62,7 +62,8 @@ class RelationshipBuilder:
         """, (self.lang_code,)
         )
         page_links = cur.fetchall()
-        columns = ['s_page_id', 's_page_name', 't_page_id', 't_page_name']
+        columns = ['s_page_id', 's_page_name', 's_page_sim_score',
+        't_page_id', 't_page_name']
         df = pd.DataFrame(page_links, columns=columns)
         logger.info(f'Read {len(df)} page_links from page_links table')
         return df
@@ -89,6 +90,10 @@ class RelationshipBuilder:
         Returns:
             pd.DataFrame: Filtered relationship dataframe.
         """
+        #s_page_id	s_page_name	s_page_sim_score	t_page_id	t_page_name
+        df = df.drop(columns=['s_page_id', 't_page_id'])
+        df.columns = ['source', 'sim_score', 'target']
+        df['sim_score'] = df['sim_score'].astype(float)
         df['target_freq'] = df['target'].map(df['target'].value_counts())
         df = df.sort_values(by='target_freq', ascending=False)
         df = df[df['target_freq'] > freq_min]
