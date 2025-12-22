@@ -176,3 +176,42 @@ def insert_autonym(page_id, autonym, lang_code):
         (page_id, autonym, lang_code)
         )
     conn.commit()
+
+
+def get_page_links_page_ids():
+    conn = sqlite3.connect(DB_NAME)
+    cur = conn.cursor()
+    cur.execute("SELECT source_page_id FROM page_links")
+    links_page_ids = cur.fetchall()
+    links_page_ids = set(p[0] for p in links_page_ids)
+    logger.info(f'{len(links_page_ids)} page_ids in page_links table')
+    return links_page_ids
+
+
+def insert_page_link(source_page_id, target_page_id):
+    conn = sqlite3.connect(DB_NAME)
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT INTO page_links "
+        "(source_page_id, target_page_id) VALUES (?, ?)",
+        (source_page_id, target_page_id)
+        )
+    conn.commit()
+
+
+def get_page_links_data(lang_code):
+    conn = sqlite3.connect(DB_NAME)
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT pl.source_page_id, s_pages.name, s_pages.sim_score,
+        pl.target_page_id, t_pages.name
+        FROM page_links AS pl
+        LEFT JOIN pages AS s_pages ON pl.source_page_id = s_pages.id
+        LEFT JOIN pages AS t_pages ON pl.target_page_id = t_pages.id
+        WHERE s_pages.lang_code = ?
+    """, (lang_code,)
+    )
+    page_links = cur.fetchall()
+    logger.info(f'Read {len(page_links)} page_links from page_links table')
+    return page_links
+    

@@ -1,13 +1,15 @@
 """Utils to build and visualize page relationships."""
 
-import sqlite3
 import random
 import pandas as pd
 import networkx as nx
 from pyvis.network import Network
-from db_util import get_pages_data
+from db_util import (
+    get_pages_data, get_page_links_page_ids, insert_page_link,
+    get_page_links_data
+    )
 from wiki_page import WikiPage
-from __init__ import logger, DB_NAME, SIM_THRESHOLD
+from __init__ import logger, SIM_THRESHOLD
 
 
 class RelationshipBuilder:
@@ -25,13 +27,7 @@ class RelationshipBuilder:
         pages = get_pages_data(self.sim_threshold, self.lang_code)
         page_id_dict = {name: id_ for id_, name, _, _ in pages}
 
-        conn = sqlite3.connect(DB_NAME)
-        cur = conn.cursor()
-        cur.execute("SELECT source_page_id FROM page_links")
-        links_page_ids = cur.fetchall()
-        links_page_ids = set(p[0] for p in links_page_ids)
-        logger.info(f'{len(links_page_ids)} page_ids in page_links table')
-
+        links_page_ids = get_page_links_page_ids()
         n = 0
         for page_id, page_name, _, _ in pages:
             if page_id in links_page_ids:
@@ -42,33 +38,17 @@ class RelationshipBuilder:
                 if new_page_name not in page_id_dict:
                     continue
                 target_page_id = page_id_dict[new_page_name]
-                cur.execute(
-                    "INSERT INTO page_links "
-                    "(source_page_id, target_page_id) VALUES (?, ?)",
-                    (page_id, target_page_id)
-                    )
-                conn.commit()
+                insert_page_link(page_id, target_page_id)
                 n += 1
         logger.info(f'Added {n} page_links')
 
     def read_page_links(self) -> pd.DataFrame:
         """Read the page_links data."""
-        conn = sqlite3.connect(DB_NAME)
-        cur = conn.cursor()
-        cur.execute("""
-            SELECT pl.source_page_id, s_pages.name, s_pages.sim_score,
-            pl.target_page_id, t_pages.name
-            FROM page_links AS pl
-            LEFT JOIN pages AS s_pages ON pl.source_page_id = s_pages.id
-            LEFT JOIN pages AS t_pages ON pl.target_page_id = t_pages.id
-            WHERE s_pages.lang_code = ?
-        """, (self.lang_code,)
-        )
-        page_links = cur.fetchall()
-        columns = ['s_page_id', 's_page_name', 's_page_sim_score',
-        't_page_id', 't_page_name']
+        page_links = get_page_links_data(self.lang_code)
+        columns = [
+            's_page_id', 's_page_name', 's_page_sim_score',
+            't_page_id', 't_page_name']
         df = pd.DataFrame(page_links, columns=columns)
-        logger.info(f'Read {len(df)} page_links from page_links table')
         return df
 
     def filter(
