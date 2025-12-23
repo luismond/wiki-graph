@@ -1,34 +1,9 @@
 """
-Use this file to create the database and populate the tables.
+Helper functions for database management.
 
-sqlite 101:
+Functionality includes DB and table creation, selection and insertion of
+data such as pages, autonyms, links, paragraphs and embeddings.
 
-# Insert a row of data
-cur.execute("INSERT INTO users (name, age) VALUES (?, ?)", ("Alice", 30)
-
-# Insert binary data
-cur.execute("INSERT INTO pages (page_id, page_data) VALUES (?, ?)",
-            (page_id, sqlite3.Binary(pickled_data)))
-
-# Commit the transaction
-conn.commit(
-
-# Query data
-cur.execute("SELECT * FROM users")
-rows = cur.fetchall()
-print(rows)  # Output: [(1, 'Alice', 30)
-
-# Close the connection
-conn.close()
-
-# Query one data item
-cur.execute("SELECT page_data FROM pages WHERE page_id = ?", (page_id,))
-row = cur.fetchone()
-if row:
-    unpickled_object = pickle.loads(row[0])
-
-# remove a table
-cur.execute('DROP TABLE IF EXISTS table_name')
 """
 
 import sqlite3
