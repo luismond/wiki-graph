@@ -100,7 +100,7 @@ class PagesGraph:
             f'freq_min={freq_min}, groupby_source={groupby_source}, '
             'group_size={group_size}, max_edges={max_edges}'
             )
-        print(
+        logger.info(
             f'Returned filtered data with shape {df.shape}\n'
             f'Filter params: {filter_params}'
             )
@@ -158,7 +158,7 @@ class PagesGraph:
         net.from_nx(G)
         net.repulsion(node_distance=150)
         net.write_html("network_graph.html", open_browser=False)
-        print('graph completed')
+        logger.info('graph completed')
 
     @staticmethod
     def get_random_html_colors():
