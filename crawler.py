@@ -42,7 +42,7 @@ class Crawler:
     def get_seed_embedding(self) -> np.ndarray:
         """
         Encode the seed paragraphs.
-        This seed embedding will be used to determine the similarity 
+        This seed embedding will be used to determine the similarity
         of the new crawled pages.
         """
         seed_embedding = MODEL.encode(' '.join(self.seed_paragraphs))
@@ -50,12 +50,12 @@ class Crawler:
 
     def get_page_similarity_score(self, paragraphs: list) -> float:
         """
-        Given a list of paragraphs, encode them and calculate 
+        Given a list of paragraphs, encode them and calculate
         their similarity against the seed.
         Args:
             paragraphs (list): A list of paragraphs.
         Returns:
-            float: The similarity score between the paragraphs 
+            float: The similarity score between the paragraphs
             and the seed embedding.
         """
         paragraphs_embedding = MODEL.encode_document(' '.join(paragraphs))
@@ -65,7 +65,7 @@ class Crawler:
 
     def process_new_page(self, page_name):
         """
-        Process a new Wikipedia page name: fetch the page, 
+        Process a new Wikipedia page name: fetch the page,
         compute similarity score, save its metadata to the database.
 
         Args:
@@ -85,7 +85,7 @@ class Crawler:
     def crawl_source_lang_pages(self):
         """
         Crawl Wikipedia pages based on a similarity threshold.
-        - For each page name from DB, extract internal Wikipedia links 
+        - For each page name from DB, extract internal Wikipedia links
         (<a> inside <p> tags).
         - For every internal link not already saved, process it as a new page
         (fetch the content, compute similarity, save metadata).
@@ -107,7 +107,7 @@ class Crawler:
     def crawl_autonym_pages(self):
         """Populate the page_autonyms table and save autonym pages."""
         logger.info('populate_autonyms_table...')
-        unsaved_pages = get_unsaved_autonym_page_ids(self.lang_code, 
+        unsaved_pages = get_unsaved_autonym_page_ids(self.lang_code,
                                                      self.sim_threshold)
         n = 0
         for page_id, page_name in unsaved_pages:
