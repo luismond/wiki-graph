@@ -99,7 +99,7 @@ def delete_table(name):
 # Data selecters/inserters
 
 # pages
-# todo: unify these page getters
+
 def get_pages_data(sim_threshold, lang_code):
     """
     Retrieve page data with similarity above threshold and from lang code.
@@ -118,25 +118,6 @@ def get_pages_data(sim_threshold, lang_code):
         f'{len(pages)} page_names from pages table '
         f'with {lang_code} and {sim_threshold}'
         )
-    return pages
-
-
-def get_pages_table(sim_threshold):
-    conn = sqlite3.connect(DB_NAME)
-    cur = conn.cursor()
-    cur.execute("""
-    SELECT id, name, lang_code, sim_score FROM pages
-    WHERE sim_score >= ?
-    """, (sim_threshold,))
-    pages = cur.fetchall()
-    logger.info(
-        f'{len(pages)} page_ids in pages table '
-        f'with sim_score > {sim_threshold}'
-        )
-    if len(pages) == 0:
-        raise ValueError(f'No pages found with sim_threshold'
-                         f' > {sim_threshold}')
-    conn.close()
     return pages
 
 
@@ -164,12 +145,12 @@ def get_unsaved_autonym_page_ids(lang_code, sim_threshold):
         AND sim_score >= ?
     """, (lang_code, sim_threshold))
     pages = cur.fetchall()
-    
+
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
     cur.execute("SELECT page_id FROM page_autonyms")
     page_autonyms_page_ids = [i[0] for i in set(cur.fetchall())]
-    
+
     unsaved_pages =  set(i for i in pages if i[0] \
                          not in page_autonyms_page_ids)
     logger.info(f'{len(unsaved_pages)} unsaved page_ids in page_autonyms')
@@ -226,7 +207,7 @@ def get_page_links_data(lang_code):
     page_links = cur.fetchall()
     logger.info(f'Read {len(page_links)} page_links from page_links table')
     return page_links
-    
+
 
 # paragraphs
 
@@ -239,7 +220,7 @@ def insert_paragraph(page_id, paragraph, embedding, position):
         (page_id, paragraph, embedding, position)
     )
     conn.commit()
-    
+
 def get_paragraph_embeddings():
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
@@ -247,13 +228,13 @@ def get_paragraph_embeddings():
     embeddings = [np.frombuffer(e[0], dtype=np.float32) \
                   for e in cur.fetchall()]
     return embeddings
-    
+
 
 def get_paragraph_corpus():
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
     cur.execute("""
-        SELECT paragraph_corpus.id, page_id, pages.name, 
+        SELECT paragraph_corpus.id, page_id, pages.name,
         text, position, pages.lang_code
         FROM paragraph_corpus
         LEFT JOIN pages ON paragraph_corpus.page_id = pages.id
@@ -261,12 +242,11 @@ def get_paragraph_corpus():
     corpus = cur.fetchall()
     logger.info(f'Read paragraphs with {len(corpus)} rows')
     return corpus
-   
- 
-def insert_page_metadata(page_name, lang_code, url, 
+
+
+def insert_page_metadata(page_name, lang_code, url,
                          current_datetime_str, sim_score):
     """Save the page metadata in the pages table."""
-    # todo: rename method to "save_page_metadata"
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
     cur.execute(

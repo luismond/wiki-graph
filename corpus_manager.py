@@ -8,7 +8,7 @@ import torch
 from sentence_transformers.util import community_detection
 from __init__ import MODEL, SIM_THRESHOLD, logger
 from db_util import insert_paragraph, get_paragraph_embeddings,\
-    get_paragraph_corpus, get_pages_table
+    get_paragraph_corpus, get_pages_data
 from wiki_page import WikiPage
 
 
@@ -39,6 +39,7 @@ class CorpusManager:
     """
     def __init__(self, sim_threshold: float = SIM_THRESHOLD):
         self.sim_threshold = sim_threshold
+        self.lang_codes = ['en', 'de', 'fr', 'pt', 'es', 'it']
         self.corpus = None
         self.corpus_embedding = None
         self.df = None
@@ -81,7 +82,12 @@ class CorpusManager:
         """
         logger.info('Building corpus...')
 
-        pages = get_pages_table()
+        pages = []
+        for lang_code in self.lang_codes:
+            pages_ = get_pages_data(self.sim_threshold, lang_code)
+            for p in pages_:
+                pages.append(p)
+
         corpus = self._read()
         pc_page_ids = set(i[1] for i in corpus)
 
