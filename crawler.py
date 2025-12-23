@@ -121,11 +121,14 @@ class Crawler:
                 autonym = lang['key']
                 lang_code = lang['code']
                 if lang_code in self.autonym_lang_codes:
-                    insert_autonym(page_id, autonym, lang_code)
+
                     wp_x = WikiPage(page_name=autonym, lang_code=lang_code)
                     if len(wp_x.paragraphs) == 0:
                         continue
                     sim_score = self.get_page_similarity_score(wp_x.paragraphs)
                     wp_x.save_page_name(sim_score)
+                    autonym_page_id = wp_x.page_id
+                    insert_autonym(page_id, autonym,
+                                   autonym_page_id, lang_code)
                     n += 1
         logger.info(f'Saved {n} autonyms')

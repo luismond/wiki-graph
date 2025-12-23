@@ -59,8 +59,9 @@ def create_tables():
     cur.execute('''
         CREATE TABLE IF NOT EXISTS page_autonyms (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            page_id INTEGER NOT NULL REFERENCES pages(id),
+            source_page_id INTEGER NOT NULL REFERENCES pages(id),
             autonym TEXT,
+            autonym_page_id INTEGER NOT NULL REFERENCES pages(id),
             lang_code TEXT,
             UNIQUE(autonym, lang_code)
         )
@@ -148,7 +149,7 @@ def get_unsaved_autonym_page_ids(lang_code, sim_threshold):
 
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
-    cur.execute("SELECT page_id FROM page_autonyms")
+    cur.execute("SELECT source_page_id FROM page_autonyms")
     page_autonyms_page_ids = [i[0] for i in set(cur.fetchall())]
 
     unsaved_pages =  set(i for i in pages if i[0] \
@@ -157,14 +158,15 @@ def get_unsaved_autonym_page_ids(lang_code, sim_threshold):
     return unsaved_pages
 
 
-def insert_autonym(page_id, autonym, lang_code):
+def insert_autonym(page_id, autonym, autonym_page_id, lang_code):
     """Insert autonym metadata to autonym table."""
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
     cur.execute(
         "INSERT OR IGNORE INTO page_autonyms "
-        "(page_id, autonym, lang_code) VALUES (?, ?, ?)",
-        (page_id, autonym, lang_code)
+        "(source_page_id, autonym, autonym_page_id, lang_code) "
+        "VALUES (?, ?, ?, ?)",
+        (page_id, autonym, autonym_page_id, lang_code)
         )
     conn.commit()
 
