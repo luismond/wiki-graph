@@ -192,7 +192,16 @@ def insert_page_link(source_page_id, target_page_id):
     conn.commit()
 
 
-def get_page_links_data(lang_code):
+def get_page_links_data(lang_code) -> list:
+    """
+    Get the source/target page links data and join the page names
+    for visualization.
+
+    Returns:
+        A list of tuples, for example:
+            (source_page_id, source_page_name, source_page_sim_score,
+             target_page_id, target_page_name)
+    """
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
     cur.execute("""
