@@ -1,30 +1,30 @@
-"""
-WikiPage class.
-
-Represents a single Wikipedia page.
-
-Includes methods to download, parse, and extract links and paragraphs.
-Also, methods to save page data to the database.
-"""
-
+"""WikiPage class."""
 import requests
 import bs4
-import sqlite3
-from __init__ import HEADERS, logger, DB_NAME, current_datetime_str
+from __init__ import HEADERS, logger, current_datetime_str
+from db_util import insert_page_metadata
 
 
 class WikiPage:
+    """
+    Represents a single Wikipedia page.
+
+    Includes methods to extract data and save it to the DB, such as
+    page name, description, paragraph text, internal links and languages.
+
+    """
     def __init__(self, page_name: str, lang_code: str):
         self.page_name = page_name
         self.lang_code = lang_code
         self.soup = None
-        self.paragraphs = []
+        self.paragraphs = None
         self.shortdescription = None
         self.url = None
         self.page_id = None
         self.load()
 
     def load(self):
+        """Get the page's url, download the soup and extract the paragraphs."""
         self.url = self.get_html_url()
         self.soup = self.download_soup()
         self.paragraphs = self.get_paragraphs_text()
@@ -34,6 +34,7 @@ class WikiPage:
         return f"<WikiPage {self.page_name}>"
 
     def get_html_url(self):
+        """Format the URL with the language code and page name."""
         return (
             f'https://api.wikimedia.org/core/v1/wikipedia/'
             f'{self.lang_code}/page/{self.page_name}/html'
@@ -54,28 +55,28 @@ class WikiPage:
         return soup
 
     def save_page_name(self, sim_score):
-        """Save the page metadata in the pages table."""
-        # todo: rename method to "save_page_metadata"
-        conn = sqlite3.connect(DB_NAME)
-        cur = conn.cursor()
-        cur.execute(
-        "INSERT OR IGNORE INTO pages "
-        "(name, lang_code, url, crawled_at, sim_score) VALUES (?, ?, ?, ?, ?)",
-        (self.page_name, self.lang_code, self.url, current_datetime_str, sim_score)
-        )
-        self.page_id = cur.lastrowid
-        conn.commit()
-        
+        """
+        Save the page metadata in the pages table and set the page id.
+        """
+        self.page_id = insert_page_metadata(
+            self.page_name, self.lang_code, self.url,
+            current_datetime_str, sim_score
+            )
+
     def get_shortdescription(self) -> str:
-        # todo: decide if remove or save it along the metadata
+        """Extract the short description."""
         try:
-            shortdescription = self.soup.find('div', class_='shortdescription').text
-        except:
-            shortdescription = 'no_shortdescription'
-        return shortdescription
+            shortdescr = self.soup.find('div', class_='shortdescription').text
+        except AttributeError:
+            shortdescr = 'no_shortdescription'
+        return shortdescr
 
     def get_paragraphs_text(self) -> list:
-        "Return the text of all paragraphs."
+        """
+        Return the text of all paragraphs.
+
+        Constraints: minimum words: 5. Alphabetic characters ratio: 75%.
+        """
 
         def get_alpha_ratio(string: str) -> float:
             """Calculate the ratio of alphabetic characters in a string."""
@@ -84,13 +85,10 @@ class WikiPage:
             return alpha_ratio
 
         paragraphs = []
-        try:
-            for p in self.soup.find_all('p'):
-                p_text = p.text
-                if len(p_text.split()) > 5 and get_alpha_ratio(p_text) > .75:
-                    paragraphs.append(p_text)
-        except Exception as e:
-            logger.error(str(e))
+        for p in self.soup.find_all('p'):
+            p_text = p.text
+            if len(p_text.split()) > 5 and get_alpha_ratio(p_text) > .75:
+                paragraphs.append(p_text)
         return paragraphs
 
     def get_internal_page_names(self) -> list:
@@ -105,7 +103,8 @@ class WikiPage:
             for a in p.find_all('a'):
                 try:
                     href = a.get('href')
-                    if href.startswith('.') and not any(e in href for e in exclude):
+                    if href.startswith('.') \
+                        and not any(e in href for e in exclude):
                         hrefs.add(href[2:])
                 except AttributeError:
                     continue
@@ -113,15 +112,13 @@ class WikiPage:
 
     def get_languages(self) -> list:
         """
-        Get a list of dictionaries containing the code, name,
-        key, and title of the page languages.
+        Get a list of languages available for the page.
+        Each language is a dictionary, for example:
 
-        Returns:
-            A list of dictionaries. For example:
-            [{'code': 'sv', 'name': 'svenska', 'key': 'Flygande_tefat', 'title': 'Flygande tefat'},
-             {'code': 'th', 'name': 'ไทย', 'key': 'จานบิน', 'title': 'จานบิน'}]
+        {'code': 'de', 'name': 'German', 'key': 'Erde', 'title': 'Erde'}
 
-        Refer to: https://api.wikimedia.org/wiki/Core_REST_API/Reference/Pages/Get_languages
+        Refer to: https://api.wikimedia.org/wiki/Core_REST_API/
+                  Reference/Pages/Get_languages
         """
         url = (
             f'https://api.wikimedia.org/core/v1/wikipedia/{self.lang_code}'

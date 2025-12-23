@@ -286,4 +286,21 @@ def get_paragraph_corpus():
     corpus = cur.fetchall()
     logger.info(f'Read paragraphs with {len(corpus)} rows')
     return corpus
-    
+   
+ 
+def insert_page_metadata(page_name, lang_code, url, 
+                         current_datetime_str, sim_score):
+    """Save the page metadata in the pages table."""
+    # todo: rename method to "save_page_metadata"
+    conn = sqlite3.connect(DB_NAME)
+    cur = conn.cursor()
+    cur.execute(
+    "INSERT OR IGNORE INTO pages "
+    "(name, lang_code, url, crawled_at, sim_score) "
+    "VALUES (?, ?, ?, ?, ?)",
+    (page_name, lang_code, url,
+     current_datetime_str, sim_score)
+    )
+    page_id = cur.lastrowid
+    conn.commit()
+    return page_id
