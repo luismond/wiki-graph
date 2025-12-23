@@ -2,7 +2,7 @@
 
 import argparse
 from __init__ import logger
-from db_util import get_db_info
+from db_util import create_tables, get_db_info
 from crawler import Crawler
 from corpus_manager import CorpusManager
 from pages_graph import PagesGraph
@@ -27,6 +27,7 @@ def main():
     for n in range(args.runs):
         logger.info(f'Run {n}')
         try:
+            create_tables()
             get_db_info()
             crawler = Crawler(max_pages=args.max_pages,
                               max_new_pages=args.max_new_pages)
