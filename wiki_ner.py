@@ -4,7 +4,8 @@ from __init__ import logger
 from db_util import get_db_info
 from crawler import Crawler
 from corpus_manager import CorpusManager
-from relationship_builder import RelationshipBuilder, draw_graph
+from pages_graph import PagesGraph
+
 
 def main():
     logger.info('Starting main...')
@@ -15,11 +16,8 @@ def main():
             crawler.crawl()
             cm = CorpusManager()
             cm.load()
-            rlb = RelationshipBuilder()
-            rlb.build_page_links()
-            dfr = rlb.read_page_links()
-            dfx = rlb.filter(dfr)
-            draw_graph(dfx)
+            pg = PagesGraph()
+            pg.load()
 
         except Exception as e:
             logger.warning(str(e))
