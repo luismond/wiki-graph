@@ -98,7 +98,7 @@ class PagesGraph:
         df = df[:max_edges]
         filter_params = (
             f'freq_min={freq_min}, groupby_source={groupby_source}, '
-            'group_size={group_size}, max_edges={max_edges}'
+            f'group_size={group_size}, max_edges={max_edges}'
             )
         logger.info(
             f'Returned filtered data with shape {df.shape}\n'
