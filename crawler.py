@@ -5,26 +5,29 @@ import numpy as np
 from wiki_page import WikiPage
 from db_util import get_pages_data, insert_autonym, \
     get_unsaved_autonym_page_ids
-from __init__ import logger, MODEL, SEED_PAGE_NAME, SIM_THRESHOLD
+from __init__ import logger, MODEL, SEED_PAGE_NAME, SIM_THRESHOLD, LANG_CODES
 
 
 class Crawler:
     def __init__(
         self,
-        seed_page_name: str = SEED_PAGE_NAME,
-        sim_threshold: float = SIM_THRESHOLD,
         lang_code: str = 'en',
         max_pages: int = 50,
-        max_new_pages: int = 50,
-        autonym_lang_codes: list = ['de', 'fr', 'pt', 'es', 'it']
+        max_new_pages: int = 50
         ):
-        self.sim_threshold = sim_threshold
-        self.seed_page_name = seed_page_name
-        self.lang_code = lang_code
+        self.sim_threshold = SIM_THRESHOLD
+        self.seed_page_name = SEED_PAGE_NAME
         self.max_pages = max_pages
         self.max_new_pages = max_new_pages
-        self.autonym_lang_codes = autonym_lang_codes
+        self.lang_code = lang_code
+        self.lang_codes = LANG_CODES
+        self.autonym_lang_codes = None
         self.load()
+
+    def set_autonym_lang_codes(self):
+        self.autonym_lang_codes = [l for l in self.lang_codes \
+                                   if l != self.lang_code]
+        logger.info(f'Autonym lang codes: {self.autonym_lang_codes}')
 
     def load(self):
         """

@@ -9,7 +9,7 @@ from db_util import (
     get_page_links_data
     )
 from wiki_page import WikiPage
-from __init__ import logger, SIM_THRESHOLD
+from __init__ import logger, SIM_THRESHOLD, LANG_CODES
 
 
 class PagesGraph:
@@ -25,6 +25,7 @@ class PagesGraph:
             sim_threshold: float = SIM_THRESHOLD
             ):
         self.lang_code = lang_code
+        self.lang_codes = LANG_CODES
         self.sim_threshold = sim_threshold
 
     def load(self):

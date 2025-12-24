@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 import torch
 from sentence_transformers.util import community_detection
-from __init__ import MODEL, SIM_THRESHOLD, logger
+from __init__ import MODEL, SIM_THRESHOLD, LANG_CODES, logger
 from db_util import insert_paragraph, get_paragraph_embeddings,\
     get_paragraph_corpus, get_pages_data
 from wiki_page import WikiPage
@@ -37,9 +37,9 @@ class CorpusManager:
         df = cm.df
         corpus_embedding = cm.corpus_embedding
     """
-    def __init__(self, sim_threshold: float = SIM_THRESHOLD):
-        self.sim_threshold = sim_threshold
-        self.lang_codes = ['en', 'de', 'fr', 'pt', 'es', 'it']
+    def __init__(self):
+        self.sim_threshold = SIM_THRESHOLD
+        self.lang_codes = LANG_CODES
         self.corpus = None
         self.corpus_embedding = None
         self.df = None
