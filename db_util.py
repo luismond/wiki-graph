@@ -274,6 +274,19 @@ def get_paragraph_corpus():
     return corpus
 
 
+def get_paragraphs_by_page_id(page_id):
+    conn = sqlite3.connect(DB_NAME)
+    cur = conn.cursor()
+    cur.execute("""SELECT text, position
+                FROM paragraph_corpus
+                WHERE page_id = ?
+                """, (page_id,))
+    pgfs = cur.fetchall()
+    pgfs = [i[0] for i in sorted(pgfs, key=lambda i: i[1])]
+    if len(pgfs) > 0:
+        return '\n'.join(pgfs)
+
+
 def insert_page_metadata(page_name, lang_code, url,
                          current_datetime_str, sim_score):
     """Save the page metadata in the pages table."""
