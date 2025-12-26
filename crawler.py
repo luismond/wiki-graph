@@ -40,6 +40,7 @@ class Crawler:
         wp.save_page_name(sim_score=1.0)
         self.seed_paragraphs = wp.paragraphs
         self.seed_embedding = self.get_seed_embedding()
+        self.set_autonym_lang_codes()
         logger.info(f'Loaded seed paragraphs from {self.seed_page_name}')
 
     def get_seed_embedding(self) -> np.ndarray:
@@ -124,7 +125,6 @@ class Crawler:
                 autonym = lang['key']
                 lang_code = lang['code']
                 if lang_code in self.autonym_lang_codes:
-
                     wp_x = WikiPage(page_name=autonym, lang_code=lang_code)
                     if len(wp_x.paragraphs) == 0:
                         continue
