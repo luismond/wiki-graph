@@ -158,6 +158,25 @@ def get_unsaved_autonym_page_ids(lang_code, sim_threshold):
     return unsaved_pages
 
 
+def read_autonyms_data(tgt_lang):
+    """
+    Select the autonym data, join the source page name
+    and filter by autonym language.
+    """
+    conn = sqlite3.connect(DB_NAME)
+    cur = conn.cursor()
+    cur.execute("""
+    SELECT pages.name, a.source_page_id, a.autonym,
+           a.autonym_page_id, a.lang_code
+    FROM page_autonyms as a
+    LEFT JOIN pages ON pages.id = a.source_page_id
+    WHERE a.lang_code = ?
+    """, (tgt_lang,)
+    )
+    result = cur.fetchall()
+    return result
+
+
 def insert_autonym(page_id, autonym, autonym_page_id, lang_code):
     """Insert autonym metadata to autonym table."""
     conn = sqlite3.connect(DB_NAME)
