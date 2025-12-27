@@ -7,8 +7,10 @@ import numpy as np
 import torch
 from sentence_transformers.util import community_detection
 from __init__ import MODEL, SIM_THRESHOLD, LANG_CODES, logger
-from db_util import insert_paragraph, get_paragraph_embeddings,\
-    get_paragraph_corpus, get_pages_data
+from db_util import (
+    insert_paragraph, get_paragraph_embeddings, get_paragraph_corpus,
+    get_pages_data, read_autonyms_data, get_paragraphs_by_page_id
+    )
 from wiki_page import WikiPage
 
 
@@ -66,7 +68,7 @@ class CorpusManager:
         and stacks them vertically to produce a 2D array.
 
         Sets:
-            self.corpus_embedding (np.ndarray): 
+            self.corpus_embedding (np.ndarray):
                 An array of shape (num_paragraphs, embedding_dim).
         """
         embeddings = get_paragraph_embeddings()
@@ -162,32 +164,50 @@ class CorpusManager:
         logger.info(f'Returned {len(dfg)} pages')
         return dfg
 
-    # def cluster_by_pages(
-    #         self,
-    #         min_community_size=20,
-    #         threshold=0.5
-    #         ) -> pd.DataFrame:
-    #     """Cluster the corpus by pages."""
-    #     #todo: pre-save the page corpus embeddings
-    #     df = self.df.groupby('page_name')['text'].apply(
-    #         lambda paras: ' '.join(paras)).reset_index()
-    #     paras_embedding = MODEL.encode_document(df['text'].tolist())
+    @staticmethod
+    def get_bitext(tgt_lang) -> pd.DataFrame:
+        """
+        Retrieve aligned bitext data for the specified target language.
 
-    #     groups_lists = community_detection(
-    #         paras_embedding,
-    #         min_community_size=min_community_size,
-    #         threshold=threshold
-    #         )
+        Args:
+            tgt_lang (str): Target language code (e.g., 'fr', 'de', etc.)
 
-    #     group_dfs = []
-    #     for group_n, group in enumerate(groups_lists):
-    #         group_rows = []
-    #         for row_idx in group:
-    #             row = df.iloc[row_idx]
-    #             row['group'] = group_n
-    #             group_rows.append(row)
-    #         group_df = pd.DataFrame(group_rows)
-    #         group_dfs.append(group_df)
+        Returns:
+            pd.DataFrame: DataFrame with columns -
+                'page_name', 'page_id', 'autonym', 'autonym_page_id',
+                'lang_code', 'src_text', 'tgt_text'
 
-    #     dfc = pd.concat(group_dfs)
-    #     return dfc
+        The DataFrame contains matched paragraph texts in English and their
+        corresponding autonym paragraphs in the target language.
+        Each row corresponds to an aligned pair based on cross-lingual
+        Wikipedia autonyms data.
+        """
+        autonyms_data = read_autonyms_data(tgt_lang)
+        df = pd.DataFrame(autonyms_data)
+        df.columns = ['page_name', 'page_id', 'autonym',
+                      'autonym_page_id', 'lang_code']
+        df['src_text'] = df['page_id'].apply(get_paragraphs_by_page_id)
+        df['tgt_text'] = df['autonym_page_id'].apply(get_paragraphs_by_page_id)
+        df = df.dropna()
+        df = df.reset_index(drop=True)
+        return df
+
+    def get_bitext_corpus(self) -> pd.DataFrame:
+        """
+        Collect aligned bitext dataframes for all target languages
+        in the corpus, concatenate them into a single DataFrame,
+        and return the combined bitext corpus.
+
+        Returns:
+            pd.DataFrame: DataFrame containing aligned bitext pairs
+            from all languages in 'lang_codes' except for English.
+        """
+        dfs = []
+        for lang_code in self.lang_codes:
+            if lang_code == 'en':
+                continue
+            df_ = self.get_bitext(lang_code)
+            dfs.append(df_)
+        df = pd.concat(dfs)
+        df = df.reset_index(drop=True)
+        return df
