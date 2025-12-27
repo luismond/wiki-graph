@@ -8,7 +8,7 @@ from db_util import (
     get_pages_data, get_page_links_page_ids, insert_page_link,
     get_page_links_data
     )
-from wiki_page import WikiPage
+from corpus_manager import WikiPage
 from __init__ import logger, SIM_THRESHOLD, LANG_CODES
 
 
