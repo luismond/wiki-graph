@@ -2,12 +2,15 @@
 Builds the paragraph corpus, embedding corpus, and saves to the database.
 """
 
-import sqlite3
 import pandas as pd
 import numpy as np
 import torch
 from sentence_transformers.util import community_detection
-from __init__ import DB_NAME, MODEL, SIM_THRESHOLD, logger
+from __init__ import MODEL, SIM_THRESHOLD, LANG_CODES, logger
+from db_util import (
+    insert_paragraph, get_paragraph_embeddings, get_paragraph_corpus,
+    get_pages_data, read_autonyms_data, get_paragraphs_by_page_id
+    )
 from wiki_page import WikiPage
 
 
@@ -36,8 +39,9 @@ class CorpusManager:
         df = cm.df
         corpus_embedding = cm.corpus_embedding
     """
-    def __init__(self, sim_threshold: float = SIM_THRESHOLD):
-        self.sim_threshold = sim_threshold
+    def __init__(self):
+        self.sim_threshold = SIM_THRESHOLD
+        self.lang_codes = LANG_CODES
         self.corpus = None
         self.corpus_embedding = None
         self.df = None
@@ -51,16 +55,7 @@ class CorpusManager:
         assert self.df.shape[0] == self.corpus_embedding.shape[0]
 
     def _read(self):
-        conn = sqlite3.connect(DB_NAME)
-        cur = conn.cursor()
-        cur.execute("""
-            SELECT paragraph_corpus.id, page_id, pages.name, 
-            text, position, pages.lang_code
-            FROM paragraph_corpus
-            LEFT JOIN pages ON paragraph_corpus.page_id = pages.id
-        """)
-        corpus = cur.fetchall()
-        logger.info(f'Read paragraphs with {len(corpus)} rows')
+        corpus = get_paragraph_corpus()
         return corpus
 
     def _load_corpus_embedding(self):
@@ -73,44 +68,14 @@ class CorpusManager:
         and stacks them vertically to produce a 2D array.
 
         Sets:
-            self.corpus_embedding (np.ndarray): 
+            self.corpus_embedding (np.ndarray):
                 An array of shape (num_paragraphs, embedding_dim).
         """
-        conn = sqlite3.connect(DB_NAME)
-        cur = conn.cursor()
-        cur.execute("""SELECT embedding FROM paragraph_corpus""")
-        embeddings = [np.frombuffer(e[0], dtype=np.float32) \
-                      for e in cur.fetchall()]
-        corpus_embedding = np.vstack(embeddings)
-        self.corpus_embedding = corpus_embedding
-        logger.info(f'Loaded embeddings with shape {corpus_embedding.shape}')
-
-    def _get_pages_table(self):
-        conn = sqlite3.connect(DB_NAME)
-        cur = conn.cursor()
-        cur.execute("""
-        SELECT id, name, lang_code, sim_score FROM pages
-        WHERE sim_score >= ?
-        """, (self.sim_threshold,))
-        pages = cur.fetchall()
-        logger.info(
-            f'{len(pages)} page_ids in pages table '
-            f'with sim_score > {self.sim_threshold}'
+        embeddings = get_paragraph_embeddings()
+        self.corpus_embedding = np.vstack(
+            [np.frombuffer(e[0], dtype=np.float32) for e in embeddings]
             )
-        if len(pages) == 0:
-            raise ValueError(f'No pages found with sim_threshold'
-                             f' > {self.sim_threshold}')
-        conn.close()
-        return pages
-
-    def _get_corpus_page_ids(self):
-        conn = sqlite3.connect(DB_NAME)
-        cur = conn.cursor()
-        cur.execute("""SELECT page_id FROM paragraph_corpus""")
-        pc_page_ids = cur.fetchall()
-        pc_page_ids = set(p[0] for p in pc_page_ids)
-        logger.info(f'{len(pc_page_ids)} page_ids in paragraph_corpus table')
-        return pc_page_ids
+        logger.info('Loaded embeddings.')
 
     def _build(self):
         """
@@ -119,10 +84,15 @@ class CorpusManager:
         For each page, create a WikiPage object and save it to the database.
         """
         logger.info('Building corpus...')
-        conn = sqlite3.connect(DB_NAME)
-        cur = conn.cursor()
-        pages = self._get_pages_table()
-        pc_page_ids = self._get_corpus_page_ids()
+
+        pages = []
+        for lang_code in self.lang_codes:
+            pages_ = get_pages_data(self.sim_threshold, lang_code)
+            for p in pages_:
+                pages.append(p)
+
+        corpus = self._read()
+        pc_page_ids = set(i[1] for i in corpus)
 
         n = 0
         for page_id, page_name, lang_code, _ in pages:
@@ -135,12 +105,7 @@ class CorpusManager:
             for position, paragraph in enumerate(paragraphs):
                 embedding = MODEL.encode(paragraph)
                 embedding = np.array(embedding, dtype=np.float32).tobytes()
-                cur.execute(
-                    "INSERT OR IGNORE INTO paragraph_corpus "
-                    "(page_id, text, embedding, position) VALUES (?, ?, ?, ?)",
-                    (page_id, paragraph, embedding, position)
-                )
-                conn.commit()
+                insert_paragraph(page_id, paragraph, embedding, position)
             n += 1
         logger.info(f'Added {n} pages to corpus')
 
@@ -200,32 +165,82 @@ class CorpusManager:
         logger.info(f'Returned {len(dfg)} pages')
         return dfg
 
-    def cluster_by_pages(
-            self,
-            min_community_size=20,
-            threshold=0.5
-            ) -> pd.DataFrame:
-        """Cluster the corpus by pages."""
-        #todo: pre-save the page corpus embeddings
-        df = self.df.groupby('page_name')['text'].apply(
-            lambda paras: ' '.join(paras)).reset_index()
-        paras_embedding = MODEL.encode_document(df['text'].tolist())
 
-        groups_lists = community_detection(
-            paras_embedding,
-            min_community_size=min_community_size,
-            threshold=threshold
-            )
+class CorpusBitexts:
+    """Manage access to parallel (bitext) corpora for multiple languages."""
+    def __init__(self):
+        self.lang_codes = LANG_CODES
+        self.df = None
+        self.load()
 
-        group_dfs = []
-        for group_n, group in enumerate(groups_lists):
-            group_rows = []
-            for row_idx in group:
-                row = df.iloc[row_idx]
-                row['group'] = group_n
-                group_rows.append(row)
-            group_df = pd.DataFrame(group_rows)
-            group_dfs.append(group_df)
+    def load(self):
+        self.df = self.get_bitext_corpus()
+        self.len = len(self.df)
+        self.word_count = self.get_word_count()
+        logger.info(f'Loaded corpus bitexts with {self.len} rows')
+        logger.info(f'Counted {self.word_count} corpus bitext words')
 
-        dfc = pd.concat(group_dfs)
-        return dfc
+    @staticmethod
+    def get_bitext(tgt_lang) -> pd.DataFrame:
+        """
+        Retrieve aligned bitext data for the specified target language.
+
+        Args:
+            tgt_lang (str): Target language code (e.g., 'fr', 'de', etc.)
+
+        Returns:
+            pd.DataFrame: DataFrame with columns -
+                'page_name', 'page_id', 'autonym', 'autonym_page_id',
+                'lang_code', 'src_text', 'tgt_text'
+
+        The DataFrame contains matched paragraph texts in English and their
+        corresponding autonym paragraphs in the target language.
+        Each row corresponds to an aligned pair based on cross-lingual
+        Wikipedia autonyms data.
+        """
+        autonyms_data = read_autonyms_data(tgt_lang)
+        df = pd.DataFrame(autonyms_data)
+        df.columns = ['page_name', 'page_id', 'autonym',
+                      'autonym_page_id', 'lang_code']
+        df['src_text'] = df['page_id'].apply(get_paragraphs_by_page_id)
+        df['tgt_text'] = df['autonym_page_id'].apply(get_paragraphs_by_page_id)
+        df = df.dropna()
+        df = df.reset_index(drop=True)
+        return df
+
+    def get_bitext_corpus(self) -> pd.DataFrame:
+        """
+        Collect aligned bitext dataframes for all target languages
+        in the corpus, concatenate them into a single DataFrame,
+        and return the combined bitext corpus.
+
+        Returns:
+            pd.DataFrame: DataFrame containing aligned bitext pairs
+            from all languages in 'lang_codes' except for English.
+        """
+        dfs = []
+        for lang_code in self.lang_codes:
+            if lang_code == 'en':
+                continue
+            df_ = self.get_bitext(lang_code)
+            dfs.append(df_)
+        df = pd.concat(dfs)
+        df = df.reset_index(drop=True)
+        return df
+
+    def get_word_count(self) -> int:
+        """
+        Calculates the total number of words in both the source ('src_text')
+        and target ('tgt_text') text columns of the DataFrame.
+
+        Returns:
+            int: The total count of words in both columns.
+        """
+        word_count = 0
+        for i in self.df['src_text'].tolist():
+            for _ in i.split():
+                word_count += 1
+        for i in self.df['tgt_text'].tolist():
+            for _ in i.split():
+                word_count += 1
+        return word_count
