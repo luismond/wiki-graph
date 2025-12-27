@@ -7,7 +7,6 @@ data such as pages, autonyms, links, paragraphs and embeddings.
 """
 
 import sqlite3
-import numpy as np
 from __init__ import DB_NAME, logger
 
 
@@ -255,9 +254,7 @@ def get_paragraph_embeddings():
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
     cur.execute("""SELECT embedding FROM paragraph_corpus""")
-    embeddings = [np.frombuffer(e[0], dtype=np.float32) \
-                  for e in cur.fetchall()]
-    return embeddings
+    return cur.fetchall()
 
 
 def get_paragraph_corpus():

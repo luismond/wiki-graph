@@ -72,9 +72,10 @@ class CorpusManager:
                 An array of shape (num_paragraphs, embedding_dim).
         """
         embeddings = get_paragraph_embeddings()
-        corpus_embedding = np.vstack(embeddings)
-        self.corpus_embedding = corpus_embedding
-        logger.info(f'Loaded embeddings with shape {corpus_embedding.shape}')
+        self.corpus_embedding = np.vstack(
+            [np.frombuffer(e[0], dtype=np.float32) for e in embeddings]
+            )
+        logger.info('Loaded embeddings.')
 
     def _build(self):
         """
