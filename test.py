@@ -8,7 +8,9 @@ from __init__ import SEED_PAGE_NAME
 
 
 def base_test(page_name, lang_code):
-    """Base test, asserting that the WikiPage object is instantiated correctly."""
+    """
+    Base test, asserting that the WikiPage object is instantiated correctly.
+    """
     wiki_page = wp(page_name=page_name, lang_code=lang_code)
     assert wiki_page.soup is not None
     assert wiki_page.download_soup() is not None
@@ -48,7 +50,9 @@ def test_wiki_page_it(page_name="Londra", lang_code="it"):
 
 
 def test_db_info():
-    """Test that get_db_info returns valid database info and expected tables."""
+    """
+    Test that get_db_info returns valid database info and expected tables.
+    """
     info = get_db_info()
     assert info is not None
     assert len(info) > 0
@@ -61,11 +65,13 @@ def test_db_info():
 
 def test_crawler():
     """
-    Test that the Crawler object initializes properly, and all critical seed fields are present and valid.
+    Test that the Crawler object initializes properly,
+    and all seed fields are present and valid.
 
     This test checks the following:
     - The seed_page_name attribute is set and not None.
-    - The seed_paragraphs attribute is set, is not None, and has at least one element.
+    - The seed_paragraphs attribute is set, is not None,
+      and has at least one element.
     - The seed_embedding attribute is set and not None.
     """
     cr = Crawler()
@@ -77,12 +83,15 @@ def test_crawler():
 
 def test_corpus_manager():
     """
-    Test that the CorpusManager object loads the corpus, embeddings, and DataFrame properly.
+    Test that the CorpusManager object loads the corpus, embeddings,
+    and DataFrame properly.
 
     This test checks:
-    - The corpus, corpus_embedding, and df attributes are populated and have correct lengths.
+    - The corpus, corpus_embedding, and df attributes are populated
+      and have correct lengths.
     - The shape of the embeddings matches the number of rows in the DataFrame.
-    - The similarity_by_paragraphs method returns a valid DataFrame with similar paragraphs.
+    - The similarity_by_paragraphs method returns a valid DataFrame
+      with similar paragraphs.
     """
     cm = CorpusManager()
     cm.load()
@@ -100,7 +109,8 @@ def test_corpus_manager():
 
 def test_corpus_bitexts():
     """
-    Test that the CorpusBitexts object loads parallel corpora and counts words correctly.
+    Test that the CorpusBitexts object loads parallel corpora and counts
+     words correctly.
 
     This test checks:
     - The bitext DataFrame is loaded, is not None, and has at least one row.
