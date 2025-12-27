@@ -165,6 +165,21 @@ class CorpusManager:
         logger.info(f'Returned {len(dfg)} pages')
         return dfg
 
+
+class CorpusBitexts:
+    """Manage access to parallel (bitext) corpora for multiple languages."""
+    def __init__(self):
+        self.lang_codes = LANG_CODES
+        self.df = None
+        self.load()
+
+    def load(self):
+        self.df = self.get_bitext_corpus()
+        self.len = len(self.df)
+        self.word_count = self.get_word_count()
+        logger.info(f'Loaded corpus bitexts with {self.len} rows')
+        logger.info(f'Counted {self.word_count} corpus bitext words')
+
     @staticmethod
     def get_bitext(tgt_lang) -> pd.DataFrame:
         """
@@ -212,3 +227,20 @@ class CorpusManager:
         df = pd.concat(dfs)
         df = df.reset_index(drop=True)
         return df
+
+    def get_word_count(self) -> int:
+        """
+        Calculates the total number of words in both the source ('src_text')
+        and target ('tgt_text') text columns of the DataFrame.
+
+        Returns:
+            int: The total count of words in both columns.
+        """
+        word_count = 0
+        for i in self.df['src_text'].tolist():
+            for _ in i.split():
+                word_count += 1
+        for i in self.df['tgt_text'].tolist():
+            for _ in i.split():
+                word_count += 1
+        return word_count
