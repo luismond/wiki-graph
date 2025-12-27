@@ -3,8 +3,7 @@
 import argparse
 from __init__ import logger
 from db_util import create_tables, get_db_info
-from corpus_manager import CorpusManager, Crawler
-from pages_graph import PagesGraph
+from corpus_manager import CorpusManager, Crawler, PagesGraph
 
 
 def main():
