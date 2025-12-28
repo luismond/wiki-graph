@@ -1,4 +1,4 @@
-"""Main wikiNER script."""
+"""wiki-graph CLI."""
 
 import argparse
 from __init__ import logger
@@ -12,7 +12,7 @@ def main():
     Main function to build the corpus.
 
     Usage:
-        python wiki_ner.py --runs 10 --max-pages 10 --max-new-pages 10
+        python wiki_graph.py --runs 10 --max-pages 10 --max-new-pages 10
     """
     logger.info('Starting main...')
     ap = argparse.ArgumentParser()
