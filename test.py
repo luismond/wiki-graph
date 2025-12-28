@@ -1,7 +1,7 @@
 """Unit tests for the wiki-ent project."""
 
-from corpus_manager import WikiPage as wp
-from corpus_manager import get_db_info, CorpusManager, CorpusBitexts, Crawler
+from wiki_graph import WikiPage as wp
+from wiki_graph import get_db_info, CorpusManager, CorpusBitexts, Crawler
 from __init__ import SEED_PAGE_NAME
 
 
