@@ -8,8 +8,10 @@ Functionality includes:
 """
 import sqlite3
 from datetime import datetime
-from __init__ import logger, DB_NAME
+from __init__ import logger, config
 
+
+DB_NAME = config['DB_NAME']
 current_datetime_str = datetime.now().strftime('%Y-%m-%d')
 
 

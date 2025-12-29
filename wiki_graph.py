@@ -11,11 +11,16 @@ import torch
 import networkx as nx
 from pyvis.network import Network
 from sentence_transformers import SentenceTransformer
-from __init__ import (
-    SIM_THRESHOLD, LANG_CODES, SEED_PAGE_NAME, HEADERS, logger,
-    SBERT_MODEL_NAME
-    )
+from __init__ import config, logger, HEADERS
 import db_utils as db
+
+
+# Configuration
+DB_NAME = config["DB_NAME"]
+SEED_PAGE_NAME = config["SEED_PAGE_NAME"]
+SIM_THRESHOLD = config["SIM_THRESHOLD"]
+LANG_CODES = config["LANG_CODES"].split(',')
+SBERT_MODEL_NAME = config["SBERT_MODEL_NAME"]
 
 
 MODEL = SentenceTransformer(SBERT_MODEL_NAME)

@@ -3,7 +3,6 @@
 from wiki_graph import WikiPage as wp
 from wiki_graph import CorpusManager, CorpusBitexts, Crawler
 from db_utils import get_db_info
-from __init__ import SEED_PAGE_NAME
 
 
 def base_test(page_name, lang_code):
@@ -101,7 +100,7 @@ def test_corpus_manager():
     assert len(cm.corpus_embedding) > 0
     assert len(cm.df) > 0
     assert cm.corpus_embedding.shape[0] == cm.df.shape[0]
-    df = cm.similarity_by_paragraphs(query=SEED_PAGE_NAME)
+    df = cm.similarity_by_paragraphs(query="London")
     assert df is not None
     assert len(df) > 0
 
