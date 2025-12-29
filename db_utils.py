@@ -7,7 +7,7 @@ Functionality includes:
         - Pages, autonyms, page links, paragraphs and embeddings).
 """
 import sqlite3
-from __init__ import logger, DB_NAME
+from __init__ import logger, DB_NAME, current_datetime_str
 
 
 def create_tables():
@@ -139,8 +139,8 @@ def get_pages_data(sim_threshold: float, lang_code: str) -> list:
     return pages
 
 
-def insert_page_metadata(page_name: str, lang_code: str, url: str,
-                         current_datetime_str: str, sim_score: float) -> int:
+def insert_page_metadata(page_name: str, lang_code: str,
+                         url: str, sim_score: float) -> int:
     """Save the page metadata in the pages table."""
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()

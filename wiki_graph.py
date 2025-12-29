@@ -12,7 +12,7 @@ import networkx as nx
 from pyvis.network import Network
 from __init__ import (
     MODEL, SIM_THRESHOLD, LANG_CODES, SEED_PAGE_NAME, HEADERS,
-    logger, current_datetime_str
+    logger
     )
 import db_utils as db
 
@@ -431,10 +431,8 @@ class WikiPage:
         """
         Save the page metadata in the pages table and set the page id.
         """
-        self.page_id = db.insert_page_metadata(
-            self.page_name, self.lang_code, self.url,
-            current_datetime_str, sim_score
-            )
+        self.page_id = db.insert_page_metadata(self.page_name, self.lang_code,
+                                               self.url, sim_score)
 
     def get_shortdescription(self) -> str:
         """Extract the short description."""
