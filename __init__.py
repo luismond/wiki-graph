@@ -31,6 +31,7 @@ EMAIL = os.getenv("EMAIL")
 DB_NAME = os.getenv("DB_NAME")
 SEED_PAGE_NAME = os.getenv("SEED_PAGE_NAME")
 SIM_THRESHOLD = os.getenv("SIM_THRESHOLD")
+LANG_CODES = os.getenv("LANG_CODES").split(',')
 
 HEADERS = {
     'Authorization': f'Bearer {ACCESS_TOKEN}',
@@ -38,7 +39,5 @@ HEADERS = {
     }
 
 MODEL = SentenceTransformer('distiluse-base-multilingual-cased-v1')
-
-LANG_CODES = ['en', 'de', 'fr', 'pt', 'es', 'it']
 
 current_datetime_str = datetime.now().strftime('%Y-%m-%d')
