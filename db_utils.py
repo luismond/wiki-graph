@@ -7,7 +7,10 @@ Functionality includes:
         - Pages, autonyms, page links, paragraphs and embeddings).
 """
 import sqlite3
-from __init__ import logger, DB_NAME, current_datetime_str
+from datetime import datetime
+from __init__ import logger, DB_NAME
+
+current_datetime_str = datetime.now().strftime('%Y-%m-%d')
 
 
 def create_tables():
