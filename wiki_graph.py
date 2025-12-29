@@ -8,7 +8,8 @@ import torch
 import networkx as nx
 from pyvis.network import Network
 from sentence_transformers import SentenceTransformer
-from __init__ import config, logger, HEADERS
+from dotenv import dotenv_values
+from __init__ import logger, config
 import db_utils as db
 
 
@@ -16,10 +17,22 @@ import db_utils as db
 DB_NAME = config["DB_NAME"]
 SEED_PAGE_NAME = config["SEED_PAGE_NAME"]
 SIM_THRESHOLD = config["SIM_THRESHOLD"]
-LANG_CODES = config["LANG_CODES"].split(',')
+LANG_CODES = config["LANG_CODES"]
 SBERT_MODEL_NAME = config["SBERT_MODEL_NAME"]
 
 
+# Wikipedia access data
+env_vars = {**dotenv_values()}
+ACCESS_TOKEN = env_vars["ACCESS_TOKEN"]
+APP_NAME = env_vars["APP_NAME"]
+EMAIL = env_vars["EMAIL"]
+HEADERS = {
+    'Authorization': f'Bearer {ACCESS_TOKEN}',
+    'User-Agent': f'{APP_NAME} ({EMAIL})'
+    }
+
+
+# SBERT model
 MODEL = SentenceTransformer(SBERT_MODEL_NAME)
 
 
