@@ -1,6 +1,3 @@
-"""
-Builds the paragraph corpus, embedding corpus, and saves to the database.
-"""
 import random
 from random import shuffle
 import requests
