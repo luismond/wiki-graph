@@ -2,9 +2,8 @@
 
 import argparse
 from __init__ import logger
-from wiki_graph import (
-    CorpusManager, Crawler, PagesGraph, create_tables, get_db_info
-    )
+from wiki_graph import CorpusManager, Crawler, PagesGraph
+import db_utils as db
 
 
 def main():
@@ -26,8 +25,8 @@ def main():
     for n in range(args.runs):
         logger.info(f'Run {n}')
         try:
-            create_tables()
-            get_db_info()
+            db.create_tables()
+            db.get_db_info()
             crawler = Crawler(max_pages=args.max_pages,
                               max_new_pages=args.max_new_pages)
             crawler.crawl()
