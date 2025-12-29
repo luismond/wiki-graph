@@ -3,8 +3,6 @@ from dotenv import load_dotenv
 import warnings
 from datetime import datetime
 from logging import getLogger, FileHandler, Formatter, INFO
-from sentence_transformers import SentenceTransformer
-
 warnings.filterwarnings('ignore')
 
 
@@ -37,7 +35,5 @@ HEADERS = {
     'Authorization': f'Bearer {ACCESS_TOKEN}',
     'User-Agent': f'{APP_NAME} ({EMAIL})'
     }
-
-MODEL = SentenceTransformer('distiluse-base-multilingual-cased-v1')
 
 current_datetime_str = datetime.now().strftime('%Y-%m-%d')

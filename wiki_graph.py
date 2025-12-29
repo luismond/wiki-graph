@@ -10,11 +10,12 @@ import numpy as np
 import torch
 import networkx as nx
 from pyvis.network import Network
-from __init__ import (
-    MODEL, SIM_THRESHOLD, LANG_CODES, SEED_PAGE_NAME, HEADERS,
-    logger
-    )
+from sentence_transformers import SentenceTransformer
+from __init__ import SIM_THRESHOLD, LANG_CODES, SEED_PAGE_NAME, HEADERS, logger
 import db_utils as db
+
+
+MODEL = SentenceTransformer('distiluse-base-multilingual-cased-v1')
 
 
 class CorpusManager:
