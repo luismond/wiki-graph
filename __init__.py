@@ -19,7 +19,6 @@ def get_logger():
 
 logger = get_logger()
 
-
 # env variables
 
 load_dotenv()
@@ -30,6 +29,7 @@ DB_NAME = os.getenv("DB_NAME")
 SEED_PAGE_NAME = os.getenv("SEED_PAGE_NAME")
 SIM_THRESHOLD = os.getenv("SIM_THRESHOLD")
 LANG_CODES = os.getenv("LANG_CODES").split(',')
+SBERT_MODEL_NAME = os.getenv("SBERT_MODEL_NAME")
 
 HEADERS = {
     'Authorization': f'Bearer {ACCESS_TOKEN}',
