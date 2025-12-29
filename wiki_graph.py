@@ -14,7 +14,7 @@ from __init__ import (
     MODEL, SIM_THRESHOLD, LANG_CODES, SEED_PAGE_NAME, HEADERS,
     logger, current_datetime_str
     )
-from db_utils import *
+import db_utils as db
 
 
 class CorpusManager:
@@ -58,7 +58,7 @@ class CorpusManager:
         assert self.df.shape[0] == self.corpus_embedding.shape[0]
 
     def _read(self):
-        corpus = get_paragraph_corpus()
+        corpus = db.get_paragraph_corpus()
         return corpus
 
     def _load_corpus_embedding(self):
@@ -74,7 +74,7 @@ class CorpusManager:
             self.corpus_embedding (np.ndarray):
                 An array of shape (num_paragraphs, embedding_dim).
         """
-        embeddings = get_paragraph_embeddings()
+        embeddings = db.get_paragraph_embeddings()
         self.corpus_embedding = np.vstack(
             [np.frombuffer(e[0], dtype=np.float32) for e in embeddings]
             )
@@ -90,7 +90,7 @@ class CorpusManager:
 
         pages = []
         for lang_code in self.lang_codes:
-            pages_ = get_pages_data(self.sim_threshold, lang_code)
+            pages_ = db.get_pages_data(self.sim_threshold, lang_code)
             for p in pages_:
                 pages.append(p)
 
@@ -108,7 +108,7 @@ class CorpusManager:
             for position, paragraph in enumerate(paragraphs):
                 embedding = MODEL.encode(paragraph)
                 embedding = np.array(embedding, dtype=np.float32).tobytes()
-                insert_paragraph(page_id, paragraph, embedding, position)
+                db.insert_paragraph(page_id, paragraph, embedding, position)
             n += 1
         logger.info(f'Added {n} pages to corpus')
 
@@ -201,12 +201,12 @@ class CorpusBitexts:
         Each row corresponds to an aligned pair based on cross-lingual
         Wikipedia autonyms data.
         """
-        autonyms_data = read_autonyms_data(tgt_lang)
+        autonyms_data = db.read_autonyms_data(tgt_lang)
         df = pd.DataFrame(autonyms_data)
         df.columns = ['page_name', 'page_id', 'autonym',
                       'autonym_page_id', 'lang_code']
-        df['src_text'] = df['page_id'].apply(get_paragraphs_by_page_id)
-        df['tgt_text'] = df['autonym_page_id'].apply(get_paragraphs_by_page_id)
+        df['src_text'] = df['page_id'].apply(db.get_paragraphs_by_page_id)
+        df['tgt_text'] = df['autonym_page_id'].apply(db.get_paragraphs_by_page_id)
         df = df.dropna()
         df = df.reset_index(drop=True)
         return df
@@ -335,7 +335,7 @@ class Crawler:
         - For every internal link not already saved, process it as a new page
         (fetch the content, compute similarity, save metadata).
         """
-        page_data = get_pages_data(self.sim_threshold, self.lang_code)
+        page_data = db.get_pages_data(self.sim_threshold, self.lang_code)
         page_names = [p[1] for p in page_data]
         shuffle(page_data)
         visited = set()
@@ -352,8 +352,8 @@ class Crawler:
     def crawl_autonym_pages(self):
         """Populate the page_autonyms table and save autonym pages."""
         logger.info('populate_autonyms_table...')
-        unsaved_pages = get_unsaved_autonym_page_ids(self.lang_code,
-                                                     self.sim_threshold)
+        unsaved_pages = db.get_unsaved_autonym_page_ids(self.lang_code,
+                                                        self.sim_threshold)
         n = 0
         for page_id, page_name in unsaved_pages:
             wp = WikiPage(page_name, self.lang_code)
@@ -372,8 +372,8 @@ class Crawler:
                     sim_score = self.get_page_similarity_score(wp_x.paragraphs)
                     wp_x.save_page_name(sim_score)
                     autonym_page_id = wp_x.page_id
-                    insert_autonym(page_id, autonym,
-                                   autonym_page_id, lang_code)
+                    db.insert_autonym(page_id, autonym,
+                                      autonym_page_id, lang_code)
                     n += 1
         logger.info(f'Saved {n} autonyms')
 
@@ -431,7 +431,7 @@ class WikiPage:
         """
         Save the page metadata in the pages table and set the page id.
         """
-        self.page_id = insert_page_metadata(
+        self.page_id = db.insert_page_metadata(
             self.page_name, self.lang_code, self.url,
             current_datetime_str, sim_score
             )
@@ -527,10 +527,10 @@ class PagesGraph:
     def build_page_links(self)-> pd.DataFrame:
         """Use the page names in page table to build the page_links data."""
         logger.info('Building page_links corpus...')
-        pages = get_pages_data(self.sim_threshold, self.lang_code)
+        pages = db.get_pages_data(self.sim_threshold, self.lang_code)
         page_id_dict = {name: id_ for id_, name, _, _ in pages}
 
-        links_page_ids = get_page_links_page_ids()
+        links_page_ids = db.get_page_links_page_ids()
         n = 0
         for page_id, page_name, _, _ in pages:
             if page_id in links_page_ids:
@@ -541,13 +541,13 @@ class PagesGraph:
                 if new_page_name not in page_id_dict:
                     continue
                 target_page_id = page_id_dict[new_page_name]
-                insert_page_link(page_id, target_page_id)
+                db.insert_page_link(page_id, target_page_id)
                 n += 1
         logger.info(f'Added {n} page_links')
 
     def read_page_links(self) -> pd.DataFrame:
         """Read the page_links data."""
-        page_links = get_page_links_data(self.lang_code)
+        page_links = db.get_page_links_data(self.lang_code)
         columns = [
             's_page_id', 's_page_name', 's_page_sim_score',
             't_page_id', 't_page_name'
