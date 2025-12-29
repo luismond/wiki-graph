@@ -8,8 +8,7 @@ import torch
 import networkx as nx
 from pyvis.network import Network
 from sentence_transformers import SentenceTransformer
-from dotenv import dotenv_values
-from __init__ import logger, config
+from __init__ import logger, config, headers
 import db_utils as db
 
 
@@ -19,17 +18,6 @@ SEED_PAGE_NAME = config["SEED_PAGE_NAME"]
 SIM_THRESHOLD = config["SIM_THRESHOLD"]
 LANG_CODES = config["LANG_CODES"]
 SBERT_MODEL_NAME = config["SBERT_MODEL_NAME"]
-
-
-# Wikipedia access data
-env_vars = {**dotenv_values()}
-ACCESS_TOKEN = env_vars["ACCESS_TOKEN"]
-APP_NAME = env_vars["APP_NAME"]
-EMAIL = env_vars["EMAIL"]
-HEADERS = {
-    'Authorization': f'Bearer {ACCESS_TOKEN}',
-    'User-Agent': f'{APP_NAME} ({EMAIL})'
-    }
 
 
 # SBERT model
@@ -438,7 +426,7 @@ class WikiPage:
         and return the parsed html page as a bs4 soup.
         """
         try:
-            response = requests.get(self.url, headers=HEADERS, timeout=180)
+            response = requests.get(self.url, headers=headers, timeout=180)
             soup = bs4.BeautifulSoup(response.text, features="html.parser")
         except requests.exceptions.ConnectionError as e:
             logger.info(str(e))
@@ -514,7 +502,7 @@ class WikiPage:
             f'https://api.wikimedia.org/core/v1/wikipedia/{self.lang_code}'
             f'/page/{self.page_name}/links/language'
         )
-        response = requests.get(url, headers=HEADERS, timeout=180)
+        response = requests.get(url, headers=headers, timeout=180)
         languages = response.json()
         return languages
 
