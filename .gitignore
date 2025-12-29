@@ -19,3 +19,4 @@ include/
 data/
 .pytest_cache
 etc/
+config.ini
