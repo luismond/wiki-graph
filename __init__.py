@@ -1,11 +1,18 @@
+from logging import getLogger, FileHandler, Formatter, INFO
 import configparser
 from dotenv import dotenv_values
-from logging import getLogger, FileHandler, Formatter, INFO
-import warnings
-warnings.filterwarnings("ignore")
 
 
 def get_logger():
+    """
+    Initializes and returns a logger that logs INFO level messages to log.log.
+
+    The logger uses a file handler with a standard log message format,
+    suppresses duplicate handlers, and is intended for application-wide usage.
+
+    Returns:
+        logging.Logger: Configured logger for this application.
+    """
     logger = getLogger("log.log")
     logger.setLevel(INFO)
     file_handler = FileHandler("log.log")
@@ -19,6 +26,13 @@ def get_logger():
 
 
 def read_config():
+    """
+    Reads the configuration from the 'config.ini' file and returns a dictionary
+    of configuration values.
+
+    Returns:
+        dict: A dictionary containing the configuration values.
+    """
     config = configparser.ConfigParser()
     config.read("config.ini")
     DB_NAME = config.get("General", "DB_NAME")
@@ -38,15 +52,23 @@ def read_config():
 
 
 def get_headers():
+    """
+    Reads the access token, app name, and email from the '.env' file and
+    returns a headers dictionary.
+
+    Returns:
+        dict: A headers dictionary with Authorization and User-Agent keys
+              for Wikipedia API requests.
+    """
     env_vars = {**dotenv_values()}
     ACCESS_TOKEN = env_vars["ACCESS_TOKEN"]
     APP_NAME = env_vars["APP_NAME"]
     EMAIL = env_vars["EMAIL"]
-    HEADERS = {
+    headers = {
         "Authorization": f"Bearer {ACCESS_TOKEN}",
         "User-Agent": f"{APP_NAME} ({EMAIL})"
         }
-    return HEADERS
+    return headers
 
 
 logger = get_logger()
