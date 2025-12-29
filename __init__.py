@@ -16,21 +16,23 @@ def get_logger():
     logger.addHandler(file_handler)
     return logger
 
-
 logger = get_logger()
+
 
 # env variables
 
 load_dotenv()
-ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
-APP_NAME = os.getenv("APP_NAME")
-EMAIL = os.getenv("EMAIL")
+
 DB_NAME = os.getenv("DB_NAME")
 SEED_PAGE_NAME = os.getenv("SEED_PAGE_NAME")
 SIM_THRESHOLD = os.getenv("SIM_THRESHOLD")
 LANG_CODES = os.getenv("LANG_CODES").split(',')
 SBERT_MODEL_NAME = os.getenv("SBERT_MODEL_NAME")
 
+# Wikipedia access data
+ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
+APP_NAME = os.getenv("APP_NAME")
+EMAIL = os.getenv("EMAIL")
 HEADERS = {
     'Authorization': f'Bearer {ACCESS_TOKEN}',
     'User-Agent': f'{APP_NAME} ({EMAIL})'
