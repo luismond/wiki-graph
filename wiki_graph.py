@@ -1,5 +1,4 @@
 import random
-from random import shuffle
 import requests
 import bs4
 import pandas as pd
@@ -344,12 +343,12 @@ class Crawler:
         """
         page_data = db.get_pages_data(self.sim_threshold, self.lang_code)
         page_names = [p[1] for p in page_data]
-        shuffle(page_data)
+        random.shuffle(page_data)
         visited = set()
         for _, page_name, _, _ in page_data[:self.max_pages]:
             wp = WikiPage(page_name=page_name, lang_code=self.lang_code)
             new_page_names = wp.get_internal_page_names()
-            shuffle(new_page_names)
+            random.shuffle(new_page_names)
             for new_page_name in new_page_names[:self.max_new_pages]:
                 if new_page_name in list(visited) + page_names:
                     continue
